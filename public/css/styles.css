@@ -204,6 +204,12 @@ html, body {
   align-items: stretch;
   height: calc(100vh - var(--topbar-height) - var(--panel-gap));
   margin: 0 var(--panel-gap) var(--panel-gap) var(--panel-gap);
+  contain: layout style;
+}
+/* Smooth live resize: disable width/flex transitions while dragging the main splitter */
+.main-row.is-resizing-columns .middle-panel,
+.main-row.is-resizing-columns .right-panel {
+  transition: none !important;
 }
 
 .panel {
@@ -291,6 +297,7 @@ html, body {
 .resize-handle {
   flex-shrink: 0;
   cursor: col-resize;
+  touch-action: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -298,6 +305,9 @@ html, body {
   transition:
     width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.main-row.is-resizing-columns .resize-handle {
+  transition: none;
 }
 .resize-handle.is-hidden { opacity: 0; pointer-events: none; }
 .resize-grip {
@@ -510,7 +520,7 @@ html, body {
   color: var(--color-type-default);
 }
 
-/* ── Right panel ── */
+/* ── Right panel (single column) ── */
 .right-panel {
   flex-shrink: 0;
   align-self: stretch;
@@ -521,8 +531,8 @@ html, body {
   flex-direction: column;
   min-width: 0;
   transition:
-    width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    flex 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    flex 0.22s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 /* When main column is collapsed, right workspace absorbs remaining width */
@@ -533,6 +543,17 @@ html, body {
   max-width: none;
 }
 
+.right-panel-inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--color-background-base);
+}
+
 .middle-panel.middle-panel--drag-reveal {
   opacity: 1 !important;
   pointer-events: auto !important;
@@ -540,25 +561,6 @@ html, body {
   overflow: hidden;
 }
 
-/* Two resizable columns inside the right panel */
-.right-split {
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  flex: 1 1 auto;
-  min-height: 0;
-  min-width: 0;
-  width: 100%;
-  height: 100%;
-}
-.right-pane {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-  background: var(--color-background-base);
-  overflow: hidden;
-}
 .right-pane-header {
   position: relative;
   flex-shrink: 0;
@@ -597,32 +599,4 @@ html, body {
     linear-gradient(90deg, var(--color-ui-divider-default) 1px, transparent 1px);
   background-size: 24px 24px;
   opacity: 0.35;
-}
-
-.right-split-handle {
-  flex-shrink: 0;
-  width: 8px;
-  cursor: col-resize;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  transition: background 0.15s ease;
-}
-.right-split-handle:hover,
-.right-split-handle.is-dragging {
-  background: var(--color-surface-variant-subtle);
-}
-.right-split-grip {
-  width: 2px;
-  height: var(--space-7);
-  background: var(--color-outline-static);
-  border-radius: var(--space-px);
-  pointer-events: none;
-  transition: height 0.15s ease, background 0.15s ease;
-}
-.right-split-handle:hover .right-split-grip,
-.right-split-handle.is-dragging .right-split-grip {
-  height: var(--space-8);
-  background: var(--color-outline-hover);
 }

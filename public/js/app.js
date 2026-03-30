@@ -1,16 +1,12 @@
 /* ============================================================
    Risk Management Prototype — app.js
-   Sidebar (3-state), middle column collapsible + drag-collapse / drag-expand,
-   right workspace always present (fills when middle collapsed)
+   Sidebar (3-state) · middle column (collapsible + drag) · single right panel
    ============================================================ */
 
 const RIGHT_DEFAULT = 800;
 const RIGHT_MIN = 360;
 const RIGHT_MAX = 1200;
 const HANDLE_W = 8;
-
-const INNER_HANDLE_PX = 8;
-const INNER_MIN_PANE = 120;
 
 const MIDDLE_COLLAPSE_AT = 100;
 const MIDDLE_EXPAND_AT = 200;
@@ -22,10 +18,6 @@ const middlePanel = document.getElementById("middlePanel");
 const middlePanelToggle = document.getElementById("middlePanelToggle");
 const resizeHandle = document.getElementById("resizeHandle");
 const rightPanel = document.getElementById("rightPanel");
-const rightSplit = document.getElementById("rightSplit");
-const rightPaneA = document.getElementById("rightPaneA");
-const rightPaneB = document.getElementById("rightPaneB");
-const rightSplitHandle = document.getElementById("rightSplitHandle");
 
 const SIDEBAR_TITLES = [
   "Sidebar: full — click for compact icons",
@@ -37,7 +29,6 @@ let sidebarStateIndex = 0;
 let middleCollapsed = false;
 let rightPanelWidth = RIGHT_DEFAULT;
 let savedRightPanelWidth = RIGHT_DEFAULT;
-let leftPaneFraction = 0.48;
 
 function getSidebarOuterWidth() {
   if (!sidebar) return 0;
@@ -77,21 +68,7 @@ function applyCollapsedLayout() {
 function applyRightWidthPx(w) {
   if (!rightPanel) return;
   rightPanelWidth = Math.min(RIGHT_MAX, Math.max(RIGHT_MIN, w));
-  rightPanel.style.width = rightPanelWidth + "px";
-  applyInnerSplit();
-}
-
-function applyInnerSplit() {
-  if (!rightSplit || !rightPaneA || !rightPaneB) return;
-  const total = rightSplit.clientWidth;
-  if (total <= INNER_HANDLE_PX) return;
-  const avail = total - INNER_HANDLE_PX;
-  let wA = Math.round(avail * leftPaneFraction);
-  wA = Math.max(INNER_MIN_PANE, Math.min(avail - INNER_MIN_PANE, wA));
-  const wB = avail - wA;
-  leftPaneFraction = wA / avail;
-  rightPaneA.style.flex = `0 0 ${wA}px`;
-  rightPaneB.style.flex = `0 0 ${wB}px`;
+  rightPanel.style.width = `${rightPanelWidth}px`;
 }
 
 function collapseMiddle() {
@@ -99,7 +76,6 @@ function collapseMiddle() {
   middleCollapsed = true;
   savedRightPanelWidth = rightPanelWidth;
   applyCollapsedLayout();
-  requestAnimationFrame(applyInnerSplit);
 }
 
 function expandMiddle() {
@@ -112,7 +88,6 @@ function expandMiddle() {
   rightPanel.style.width = `${rightPanelWidth}px`;
   middlePanelToggle.classList.add("is-active");
   middlePanelToggle.setAttribute("aria-pressed", "true");
-  requestAnimationFrame(applyInnerSplit);
 }
 
 function applySidebarState() {
@@ -134,7 +109,6 @@ function applySidebarState() {
     if (!middleCollapsed) {
       applyRightWidthPx(rightPanelWidth);
     }
-    applyInnerSplit();
   });
 }
 
@@ -176,10 +150,15 @@ let isExpandDragging = false;
 let expandDragStartX = 0;
 let expandDragStartMiddle = 0;
 
+/** rAF-coalesced pointer position for smooth splitter drag */
+let dragPendingX = null;
+let dragRaf = 0;
+
 function endOuterDrag() {
   document.body.style.cursor = "";
   document.body.style.userSelect = "";
   if (resizeHandle) resizeHandle.classList.remove("is-dragging");
+  if (mainRow) mainRow.classList.remove("is-resizing-columns");
 }
 
 function layoutMiddleRightPair(middleW) {
@@ -204,11 +183,7 @@ function bootProtoShell() {
     middlePanel &&
     middlePanelToggle &&
     resizeHandle &&
-    rightPanel &&
-    rightSplit &&
-    rightPaneA &&
-    rightPaneB &&
-    rightSplitHandle;
+    rightPanel;
 
   if (!ok) {
     console.error(
@@ -231,6 +206,39 @@ function bootProtoShell() {
     else collapseMiddle();
   });
 
+  function scheduleDragMove(clientX) {
+    dragPendingX = clientX;
+    if (dragRaf) return;
+    dragRaf = requestAnimationFrame(() => {
+      dragRaf = 0;
+      const x = dragPendingX;
+      dragPendingX = null;
+      if (x === null) return;
+
+      if (isExpandDragging) {
+        const delta = x - expandDragStartX;
+        let mw = expandDragStartMiddle + delta;
+        mw = Math.max(0, Math.min(maxMiddleWidth(), mw));
+        layoutMiddleRightPair(mw);
+        return;
+      }
+
+      if (!isDragging) return;
+      const delta = dragStartX - x;
+      let newRight = dragStartWidth + delta;
+      newRight = Math.min(RIGHT_MAX, Math.max(RIGHT_MIN, newRight));
+      rightPanel.style.width = `${newRight}px`;
+      rightPanelWidth = newRight;
+
+      const mw = middlePanel.getBoundingClientRect().width;
+      if (!middleCollapsed && mw < MIDDLE_COLLAPSE_AT) {
+        collapseMiddle();
+        isDragging = false;
+        endOuterDrag();
+      }
+    });
+  }
+
   resizeHandle.addEventListener("mousedown", (e) => {
     e.preventDefault();
     if (middleCollapsed) {
@@ -240,11 +248,12 @@ function bootProtoShell() {
       const rw = rightPanel.getBoundingClientRect().width;
       rightPanelWidth = rw;
       rightPanel.classList.remove("right-panel--fill");
-      rightPanel.style.width = rw + "px";
+      rightPanel.style.width = `${rw}px`;
       middlePanel.classList.remove("is-hidden");
       middlePanel.classList.add("middle-panel--drag-reveal");
       middlePanel.style.flex = "0 0 0px";
       resizeHandle.classList.add("is-dragging");
+      mainRow.classList.add("is-resizing-columns");
       document.body.style.cursor = "col-resize";
       document.body.style.userSelect = "none";
       return;
@@ -254,38 +263,23 @@ function bootProtoShell() {
     dragStartX = e.clientX;
     dragStartWidth = rightPanelWidth;
     resizeHandle.classList.add("is-dragging");
+    mainRow.classList.add("is-resizing-columns");
     document.body.style.cursor = "col-resize";
     document.body.style.userSelect = "none";
   });
 
   document.addEventListener("mousemove", (e) => {
-    if (isExpandDragging) {
-      const delta = e.clientX - expandDragStartX;
-      let mw = expandDragStartMiddle + delta;
-      mw = Math.max(0, Math.min(maxMiddleWidth(), mw));
-      layoutMiddleRightPair(mw);
-      return;
-    }
-
-    if (!isDragging) return;
-    const delta = dragStartX - e.clientX;
-    let newRight = dragStartWidth + delta;
-    newRight = Math.min(RIGHT_MAX, Math.max(RIGHT_MIN, newRight));
-    rightPanel.style.width = `${newRight}px`;
-    rightPanelWidth = newRight;
-    applyInnerSplit();
-
-    requestAnimationFrame(() => {
-      const mw = middlePanel.getBoundingClientRect().width;
-      if (!middleCollapsed && mw < MIDDLE_COLLAPSE_AT) {
-        collapseMiddle();
-        isDragging = false;
-        endOuterDrag();
-      }
-    });
+    if (!isExpandDragging && !isDragging) return;
+    scheduleDragMove(e.clientX);
   });
 
   document.addEventListener("mouseup", () => {
+    if (dragRaf) {
+      cancelAnimationFrame(dragRaf);
+      dragRaf = 0;
+    }
+    dragPendingX = null;
+
     if (isExpandDragging) {
       isExpandDragging = false;
       endOuterDrag();
@@ -298,56 +292,18 @@ function bootProtoShell() {
         clearMiddleInlineFlex();
         applyCollapsedLayout();
       }
-      requestAnimationFrame(applyInnerSplit);
       return;
     }
 
     if (!isDragging) return;
     isDragging = false;
     endOuterDrag();
-    applyInnerSplit();
   });
-
-  let innerDragging = false;
-  let innerDragStartX = 0;
-  let innerStartFraction = 0;
-
-  rightSplitHandle.addEventListener("mousedown", (e) => {
-    if (middleCollapsed) return;
-    innerDragging = true;
-    innerDragStartX = e.clientX;
-    innerStartFraction = leftPaneFraction;
-    rightSplitHandle.classList.add("is-dragging");
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-    e.preventDefault();
-  });
-
-  document.addEventListener("mousemove", (e) => {
-    if (!innerDragging || !rightSplit) return;
-    const rect = rightSplit.getBoundingClientRect();
-    const avail = rect.width - INNER_HANDLE_PX;
-    if (avail <= 0) return;
-    const delta = e.clientX - innerDragStartX;
-    const next = innerStartFraction + delta / avail;
-    leftPaneFraction = Math.min(0.88, Math.max(0.12, next));
-    applyInnerSplit();
-  });
-
-  document.addEventListener("mouseup", () => {
-    if (!innerDragging) return;
-    innerDragging = false;
-    rightSplitHandle.classList.remove("is-dragging");
-    document.body.style.cursor = "";
-    document.body.style.userSelect = "";
-  });
-
-  if (typeof ResizeObserver !== "undefined") {
-    new ResizeObserver(() => applyInnerSplit()).observe(rightPanel);
-  }
 
   window.addEventListener("resize", () => {
-    applyInnerSplit();
+    if (!middleCollapsed) {
+      applyRightWidthPx(rightPanelWidth);
+    }
   });
 }
 

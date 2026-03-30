@@ -1367,26 +1367,18 @@
     <div class="resize-grip"></div>
   </div>
 
-  <!-- Right workspace: two freely resizable columns -->
+  <!-- Right workspace (single column; grows when middle is collapsed) -->
   <div class="right-panel panel" id="rightPanel">
-    <div class="right-split" id="rightSplit">
-      <div class="right-pane right-pane--a" id="rightPaneA">
-        <div class="right-pane-header">
-          <span class="right-pane-home" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z" stroke-linejoin="round"/>
-            </svg>
-          </span>
-          <span class="right-pane-title">Risk Management</span>
-        </div>
-        <div class="right-pane-body"></div>
+    <div class="right-panel-inner">
+      <div class="right-pane-header">
+        <span class="right-pane-home" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="right-pane-title">Risk Management</span>
       </div>
-      <div class="right-split-handle" id="rightSplitHandle" role="separator" aria-orientation="vertical" aria-label="Resize right panels">
-        <div class="right-split-grip"></div>
-      </div>
-      <div class="right-pane right-pane--b" id="rightPaneB">
-        <div class="right-pane-body right-pane-body--empty"></div>
-      </div>
+      <div class="right-pane-body right-pane-body--empty"></div>
     </div>
   </div>
 
