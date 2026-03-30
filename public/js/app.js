@@ -1,12 +1,13 @@
 /* ============================================================
    Risk Management Prototype — app.js
-   Sidebar (3-state) · middle column (collapsible + drag) · single right panel
+   Sidebar (3-state) · middle column (collapsible + drag) · right drilldown
    ============================================================ */
 
 const RIGHT_DEFAULT = 800;
 const RIGHT_MIN = 360;
 const RIGHT_MAX = 1200;
-const HANDLE_W = 8;
+/** Must match CSS .resize-handle width for layout math */
+const HANDLE_W = 16;
 
 const MIDDLE_COLLAPSE_AT = 100;
 const MIDDLE_EXPAND_AT = 200;
@@ -14,6 +15,7 @@ const MIDDLE_EXPAND_AT = 200;
 const mainRow = document.getElementById("mainRow");
 const sidebar = document.getElementById("sidebar");
 const sidebarToggle = document.getElementById("sidebarToggle");
+const sidebarToggleHost = document.getElementById("sidebarToggleHost");
 const middlePanel = document.getElementById("middlePanel");
 const middlePanelToggle = document.getElementById("middlePanelToggle");
 const resizeHandle = document.getElementById("resizeHandle");
@@ -24,6 +26,178 @@ const SIDEBAR_TITLES = [
   "Sidebar: icons only — click to hide",
   "Sidebar: hidden — click to restore full",
 ];
+
+/**
+ * Right panel drilldown copy per middle view (`data-view` id).
+ * Shown whenever that screen is selected in the nav / middle column.
+ */
+const DRILLDOWN = {
+  "survey-manager": {
+    subtitle: "Surveys & responses",
+    html: `
+      <div class="right-drill-hint">Follow-ups and owners for the active survey workflow.</div>
+      <div class="right-drill-section">
+        <h4>Selected survey</h4>
+        <div class="w-card">
+          <div class="w-card-body">
+            <p class="right-drill-hint" style="margin:0">Q4 Risk Assessment Survey · 48 responses · Due Dec 15</p>
+          </div>
+        </div>
+      </div>
+      <div class="right-drill-section">
+        <h4>Next steps</h4>
+        <div class="w-list">
+          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Send reminder to pending units</span><span class="w-list-meta">12 recipients</span></div></div>
+          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Review flagged answers</span><span class="w-list-meta">3 items</span></div></div>
+        </div>
+      </div>`,
+  },
+  "identification-overview": {
+    subtitle: "Identification pipeline",
+    html: `
+      <div class="right-drill-hint">Snapshot of risk intake across workflows tied to Identification.</div>
+      <div class="right-drill-section"><h4>Pipeline</h4>
+        <div class="w-card"><div class="w-card-body">
+          <p class="right-drill-hint" style="margin:0">Draft 8 · In review 5 · Approved 14</p>
+        </div></div></div>
+      <div class="right-drill-section"><h4>Owners</h4>
+        <div class="w-list">
+          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Risk office</span><span class="w-list-meta">Lead</span></div></div>
+          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Business units</span><span class="w-list-meta">Contributors</span></div></div>
+        </div></div>`,
+  },
+  "workshop-manager": {
+    subtitle: "Workshops",
+    html: `
+      <div class="right-drill-hint">Sessions scheduled from the middle panel drive this drilldown.</div>
+      <div class="right-drill-section"><h4>Upcoming</h4>
+        <div class="w-list">
+          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Cross-functional workshop</span><span class="w-list-meta">Thu 14:00 · Room B</span></div></div>
+          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Control walkthrough</span><span class="w-list-meta">Next week</span></div></div>
+        </div></div>`,
+  },
+  "library-suggestions": {
+    subtitle: "Library",
+    html: `
+      <div class="right-drill-hint">Suggested objects and templates aligned with Identification.</div>
+      <div class="right-drill-section"><h4>Suggestions</h4>
+        <div class="w-card"><div class="w-card-body">
+          <p class="right-drill-hint" style="margin:0">Apply a suggested risk template to accelerate drafting.</p>
+        </div></div></div>`,
+  },
+  "assessment-overview": {
+    subtitle: "Assessment",
+    html: `
+      <div class="right-drill-hint">Ratings and control tests for the Assessment workflow.</div>
+      <div class="right-drill-section"><h4>Status</h4>
+        <div class="w-list">
+          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Inherent risk</span><span class="w-list-meta">Updated 2d ago</span></div></div>
+          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Residual risk</span><span class="w-list-meta">Awaiting sign-off</span></div></div>
+        </div></div>`,
+  },
+  "mitigation-overview": {
+    subtitle: "Mitigation",
+    html: `
+      <div class="right-drill-hint">Plans and owners for treatment of open risks.</div>
+      <div class="right-drill-section"><h4>Active plans</h4>
+        <div class="w-card"><div class="w-card-body">
+          <p class="right-drill-hint" style="margin:0">3 plans in progress · 1 blocked on dependency</p>
+        </div></div></div>`,
+  },
+  reporting: {
+    subtitle: "Reporting",
+    html: `
+      <div class="right-drill-hint">Exports and dashboards for the Reporting area.</div>
+      <div class="right-drill-section"><h4>Scheduled</h4>
+        <div class="w-list">
+          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Monthly risk pack</span><span class="w-list-meta">1st of month</span></div></div>
+        </div></div>`,
+  },
+  "ai-threads": {
+    subtitle: "AI threads",
+    html: `
+      <div class="right-drill-hint">Thread context for the conversation selected in the middle column.</div>
+      <div class="right-drill-section"><h4>Thread</h4>
+        <div class="w-card"><div class="w-card-body">
+          <p class="right-drill-hint" style="margin:0">Sources and citations appear here as you work in AI threads.</p>
+        </div></div></div>`,
+  },
+  messaging: {
+    subtitle: "Messaging",
+    html: `
+      <div class="right-drill-hint">Participants and last activity for the channel in focus.</div>
+      <div class="right-drill-section"><h4>Participants</h4>
+        <div class="w-list">
+          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Risk committee</span><span class="w-list-meta">12 members</span></div></div>
+        </div></div>`,
+  },
+  "object-library": {
+    subtitle: "Object library",
+    html: `
+      <div class="right-drill-hint">Metadata and relationships for the library item in context.</div>
+      <div class="right-drill-section"><h4>Selection</h4>
+        <div class="w-card"><div class="w-card-body">
+          <p class="right-drill-hint" style="margin:0">Pick an object in the middle panel to see lineage and usage here.</p>
+        </div></div></div>`,
+  },
+  integrations: {
+    subtitle: "Integrations",
+    html: `
+      <div class="right-drill-hint">Connection health and sync scope for the integration you are configuring.</div>
+      <div class="right-drill-section"><h4>Sync</h4>
+        <div class="w-list">
+          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Last run</span><span class="w-list-meta">OK · 2h ago</span></div></div>
+        </div></div>`,
+  },
+  settings: {
+    subtitle: "Settings",
+    html: `
+      <div class="right-drill-hint">Effective scope for preferences edited in the middle column.</div>
+      <div class="right-drill-section"><h4>Scope</h4>
+        <div class="w-card"><div class="w-card-body">
+          <p class="right-drill-hint" style="margin:0">Workspace defaults · Applies to all users in this tenant</p>
+        </div></div></div>`,
+  },
+};
+
+function drilldownFallback(label) {
+  return {
+    subtitle: "Context drilldown",
+    html: `<div class="right-drill-hint">Details for <strong>${escapeHtml(label)}</strong> appear here as you work in the main column.</div>`,
+  };
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function updateRightDrilldown(viewId, label) {
+  const titleEl = document.getElementById("rightPaneTitle");
+  const subEl = document.getElementById("rightPaneSubtitle");
+  const bodyEl = document.getElementById("rightDrilldown");
+  if (!titleEl || !subEl || !bodyEl) return;
+
+  const pack = DRILLDOWN[viewId] || drilldownFallback(label);
+  titleEl.textContent = label;
+  subEl.textContent = pack.subtitle;
+  bodyEl.innerHTML = pack.html;
+}
+
+function syncDrilldownFromActiveNav() {
+  const active =
+    document.querySelector(".sb-subitem.is-active[data-view]") ||
+    document.querySelector(".sb-item.is-active[data-view]");
+  if (!active) return;
+  const viewId = active.dataset.view;
+  const label =
+    active.querySelector(".sb-item-label")?.textContent.trim() ||
+    active.textContent.trim();
+  if (viewId) updateRightDrilldown(viewId, label);
+}
 
 let sidebarStateIndex = 0;
 let middleCollapsed = false;
@@ -105,6 +279,19 @@ function applySidebarState() {
     "aria-pressed",
     state === "hidden" ? "false" : "true"
   );
+  if (sidebarToggleHost) {
+    if (state === "hidden") {
+      sidebarToggle.classList.add("tb-btn--sidebar-floating");
+      if (sidebarToggle.parentElement !== document.body) {
+        document.body.appendChild(sidebarToggle);
+      }
+    } else {
+      sidebarToggle.classList.remove("tb-btn--sidebar-floating");
+      if (sidebarToggle.parentElement !== sidebarToggleHost) {
+        sidebarToggleHost.appendChild(sidebarToggle);
+      }
+    }
+  }
   requestAnimationFrame(() => {
     if (!middleCollapsed) {
       applyRightWidthPx(rightPanelWidth);
@@ -131,6 +318,7 @@ function navigateTo(el) {
     document.querySelectorAll(".mp-view").forEach((v) => v.classList.remove("is-active"));
     const target = document.getElementById("view-" + viewId);
     if (target) target.classList.add("is-active");
+    updateRightDrilldown(viewId, label);
   }
 }
 
@@ -150,7 +338,6 @@ let isExpandDragging = false;
 let expandDragStartX = 0;
 let expandDragStartMiddle = 0;
 
-/** rAF-coalesced pointer position for smooth splitter drag */
 let dragPendingX = null;
 let dragRaf = 0;
 
@@ -192,9 +379,10 @@ function bootProtoShell() {
     return;
   }
 
-  resizeHandle.style.width = "8px";
+  resizeHandle.style.width = `${HANDLE_W}px`;
   applyRightWidthPx(rightPanelWidth);
   applySidebarState();
+  syncDrilldownFromActiveNav();
 
   sidebarToggle.addEventListener("click", () => {
     sidebarStateIndex = (sidebarStateIndex + 1) % 3;

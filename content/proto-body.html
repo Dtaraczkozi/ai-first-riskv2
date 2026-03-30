@@ -56,28 +56,6 @@
 <!-- SPRITE-END -->
 
 <!-- ═══════════════════════════════════════════════════════════════
-     Topbar
-     ═══════════════════════════════════════════════════════════════ -->
-<div class="topbar">
-  <div class="topbar-left">
-    <button class="tb-btn is-active" id="sidebarToggle" type="button" title="Sidebar: expand / icon bar / hide" aria-pressed="true" data-sidebar-state="expanded">
-      <svg width="20" height="15" viewBox="0 0 20 15" fill="none" aria-hidden="true">
-        <rect x="0.75" y="0.75" width="18.5" height="13.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="6.75" y1="0.75" x2="6.75" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
-        <rect x="1.5" y="1.5" width="4.5" height="12" fill="currentColor" opacity="0.3" rx="1.5"/>
-      </svg>
-    </button>
-    <button class="tb-btn is-active" id="middlePanelToggle" type="button" title="Main column: click to hide / show (or drag the center handle)" aria-pressed="true">
-      <svg width="20" height="15" viewBox="0 0 20 15" fill="none" aria-hidden="true">
-        <rect x="0.75" y="0.75" width="18.5" height="13.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="7.25" y1="0.75" x2="7.25" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="12.75" y1="0.75" x2="12.75" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
-      </svg>
-    </button>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
      Main layout
      ═══════════════════════════════════════════════════════════════ -->
 <div class="main-row" id="mainRow">
@@ -85,6 +63,15 @@
   <!-- Sidebar -->
   <div class="sidebar panel" id="sidebar">
     <div class="sb-inner">
+      <div class="sb-top-row" id="sidebarToggleHost">
+        <button class="tb-btn is-active" id="sidebarToggle" type="button" title="Sidebar: expand / icon bar / hide" aria-pressed="true" data-sidebar-state="expanded">
+          <svg width="20" height="15" viewBox="0 0 20 15" fill="none" aria-hidden="true">
+            <rect x="0.75" y="0.75" width="18.5" height="13.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="6.75" y1="0.75" x2="6.75" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="1.5" y="1.5" width="4.5" height="12" fill="currentColor" opacity="0.3" rx="1.5"/>
+          </svg>
+        </button>
+      </div>
 
       <!-- Module switcher -->
       <button class="sb-module">
@@ -190,6 +177,13 @@
 
       <div class="mp-header">
         <h3 class="mp-title" id="mpTitle">Survey manager</h3>
+        <button class="tb-btn is-active" id="middlePanelToggle" type="button" title="Main column: click to hide / show (or drag the center handle)" aria-pressed="true">
+          <svg width="20" height="15" viewBox="0 0 20 15" fill="none" aria-hidden="true">
+            <rect x="0.75" y="0.75" width="18.5" height="13.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="7.25" y1="0.75" x2="7.25" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="12.75" y1="0.75" x2="12.75" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </button>
       </div>
 
       <div class="mp-body mp-view is-active" id="view-survey-manager">
@@ -1376,9 +1370,12 @@
             <path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z" stroke-linejoin="round"/>
           </svg>
         </span>
-        <span class="right-pane-title">Risk Management</span>
+        <div class="right-pane-header-text">
+          <span class="right-pane-title" id="rightPaneTitle">Survey manager</span>
+          <span class="right-pane-subtitle" id="rightPaneSubtitle">Context drilldown</span>
+        </div>
       </div>
-      <div class="right-pane-body right-pane-body--empty"></div>
+      <div class="right-pane-body right-pane-drilldown" id="rightDrilldown"></div>
     </div>
   </div>
 
