@@ -3,9 +3,10 @@
    Sidebar (expanded ↔ icon rail) · middle column + icon rail when collapsed · right drilldown
    ============================================================ */
 
-const RIGHT_DEFAULT = 800;
 const RIGHT_MIN = 360;
 const RIGHT_MAX = 1200;
+/** Must match CSS `.middle-panel` min-width */
+const MIDDLE_MIN = 280;
 /** Must match CSS .resize-handle width for layout math */
 const HANDLE_W = 16;
 
@@ -239,8 +240,8 @@ function navigateRailIdentification() {
 
 let sidebarCollapsed = false;
 let middleCollapsed = false;
-let rightPanelWidth = RIGHT_DEFAULT;
-let savedRightPanelWidth = RIGHT_DEFAULT;
+let rightPanelWidth = RIGHT_MIN;
+let savedRightPanelWidth = RIGHT_MIN;
 
 function getSidebarOuterWidth() {
   if (!sidebar) return 0;
@@ -253,11 +254,39 @@ function getMainRowInnerWidth() {
   return mainRow ? mainRow.getBoundingClientRect().width : 0;
 }
 
+/** Usable width for middle + right (excluding sidebar and drag handle). */
+function pairSlotWidth() {
+  return Math.max(0, getMainRowInnerWidth() - getSidebarOuterWidth() - HANDLE_W);
+}
+
+/**
+ * Max middle width: at most half the pair (equal split), and right stays ≥ RIGHT_MIN.
+ * Matches CSS: middle min-width is MIDDLE_MIN (handled when clamping right).
+ */
 function maxMiddleWidth() {
-  return Math.max(
-    0,
-    getMainRowInnerWidth() - getSidebarOuterWidth() - HANDLE_W - RIGHT_MIN
-  );
+  const slot = pairSlotWidth();
+  if (slot <= 0) return 0;
+  return Math.min(slot / 2, slot - RIGHT_MIN);
+}
+
+function clampRightPanelWidth(rw) {
+  const slot = pairSlotWidth();
+  const minR = Math.max(RIGHT_MIN, slot / 2);
+  const maxR = Math.min(RIGHT_MAX, slot - MIDDLE_MIN);
+  if (minR > maxR) {
+    return Math.min(RIGHT_MAX, Math.max(RIGHT_MIN, Math.round(slot / 2)));
+  }
+  return Math.min(maxR, Math.max(minR, rw));
+}
+
+/** Default: middle is half the width of the right panel → middle = slot/3, right = 2×slot/3 */
+function defaultMiddleRightWidths() {
+  const slot = pairSlotWidth();
+  if (slot <= 0) return { mw: 0, rw: RIGHT_MIN };
+  let rw = (2 * slot) / 3;
+  rw = clampRightPanelWidth(rw);
+  const mw = slot - rw;
+  return { mw, rw };
 }
 
 function clearMiddleInlineFlex() {
@@ -290,7 +319,7 @@ function applyCollapsedLayout() {
 
 function applyRightWidthPx(w) {
   if (!rightPanel) return;
-  rightPanelWidth = Math.min(RIGHT_MAX, Math.max(RIGHT_MIN, w));
+  rightPanelWidth = clampRightPanelWidth(w);
   rightPanel.style.width = `${rightPanelWidth}px`;
 }
 
@@ -308,7 +337,7 @@ function expandMiddle() {
   clearMiddleInlineFlex();
   if (mainRow) mainRow.classList.remove("main-row--middle-collapsed", "main-row--middle-expanding");
   rightPanel.classList.remove("right-panel--fill");
-  rightPanelWidth = savedRightPanelWidth;
+  rightPanelWidth = clampRightPanelWidth(savedRightPanelWidth);
   rightPanel.style.width = `${rightPanelWidth}px`;
   syncMiddleToggleButtons();
 }
@@ -385,13 +414,10 @@ function endOuterDrag() {
 
 function layoutMiddleRightPair(middleW) {
   if (!middlePanel || !rightPanel) return;
-  const inner = getMainRowInnerWidth();
-  const sb = getSidebarOuterWidth();
-  const rw = Math.min(
-    RIGHT_MAX,
-    Math.max(RIGHT_MIN, inner - sb - HANDLE_W - middleW)
-  );
-  const mw = inner - sb - HANDLE_W - rw;
+  const slot = pairSlotWidth();
+  let mw = Math.max(0, Math.min(maxMiddleWidth(), middleW));
+  let rw = clampRightPanelWidth(slot - mw);
+  mw = slot - rw;
   middlePanel.style.flex = `0 0 ${mw}px`;
   rightPanel.style.width = `${rw}px`;
   rightPanelWidth = rw;
@@ -415,8 +441,12 @@ function bootProtoShell() {
   }
 
   resizeHandle.style.width = `${HANDLE_W}px`;
-  applyRightWidthPx(rightPanelWidth);
   applySidebarState();
+  requestAnimationFrame(() => {
+    const { rw } = defaultMiddleRightWidths();
+    rightPanelWidth = rw;
+    applyRightWidthPx(rightPanelWidth);
+  });
   syncDrilldownFromActiveNav();
   syncMiddleToggleButtons();
   syncMiddleRail();
@@ -465,7 +495,7 @@ function bootProtoShell() {
       if (!isDragging) return;
       const delta = dragStartX - x;
       let newRight = dragStartWidth + delta;
-      newRight = Math.min(RIGHT_MAX, Math.max(RIGHT_MIN, newRight));
+      newRight = clampRightPanelWidth(newRight);
       rightPanel.style.width = `${newRight}px`;
       rightPanelWidth = newRight;
 
