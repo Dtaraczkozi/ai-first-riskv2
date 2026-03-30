@@ -67,20 +67,11 @@
         <rect x="1.5" y="1.5" width="4.5" height="12" fill="currentColor" opacity="0.3" rx="1.5"/>
       </svg>
     </button>
-    <button class="tb-btn is-active" id="middlePanelToggle" type="button" title="Toggle main content panel" aria-pressed="true">
+    <button class="tb-btn is-active" id="middlePanelToggle" type="button" title="Main column: click to hide / show (or drag the center handle)" aria-pressed="true">
       <svg width="20" height="15" viewBox="0 0 20 15" fill="none" aria-hidden="true">
         <rect x="0.75" y="0.75" width="18.5" height="13.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
         <line x1="7.25" y1="0.75" x2="7.25" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
         <line x1="12.75" y1="0.75" x2="12.75" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
-      </svg>
-    </button>
-  </div>
-  <div class="topbar-right">
-    <button class="tb-btn is-active" id="rightPanelToggle" type="button" title="Toggle right workspace" aria-pressed="true">
-      <svg width="20" height="15" viewBox="0 0 20 15" fill="none" aria-hidden="true">
-        <rect x="0.75" y="0.75" width="18.5" height="13.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
-        <line x1="13.25" y1="0.75" x2="13.25" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
-        <rect x="14" y="1.5" width="4.5" height="12" fill="currentColor" opacity="0.3" rx="1.5"/>
       </svg>
     </button>
   </div>
@@ -89,7 +80,7 @@
 <!-- ═══════════════════════════════════════════════════════════════
      Main layout
      ═══════════════════════════════════════════════════════════════ -->
-<div class="main-row">
+<div class="main-row" id="mainRow">
 
   <!-- Sidebar -->
   <div class="sidebar panel" id="sidebar">
