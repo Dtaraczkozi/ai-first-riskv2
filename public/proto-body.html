@@ -64,7 +64,7 @@
   <div class="sidebar panel" id="sidebar">
     <div class="sb-inner">
       <div class="sb-top-row" id="sidebarToggleHost">
-        <button class="tb-btn is-active" id="sidebarToggle" type="button" title="Sidebar: expand / icon bar / hide" aria-pressed="true" data-sidebar-state="expanded">
+        <button class="tb-btn is-active" id="sidebarToggle" type="button" title="Sidebar: show icons only" aria-pressed="true" data-sidebar-state="expanded">
           <svg width="20" height="15" viewBox="0 0 20 15" fill="none" aria-hidden="true">
             <rect x="0.75" y="0.75" width="18.5" height="13.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
             <line x1="6.75" y1="0.75" x2="6.75" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
@@ -1354,6 +1354,39 @@
 
 
     </div><!-- /mp-inner -->
+  </div>
+
+  <!-- When main column is hidden: icon rail (same destinations as nav / right drilldown) -->
+  <div class="middle-icon-rail panel" id="middleIconRail" aria-label="Workspace navigation">
+    <div class="mir-inner">
+      <button type="button" class="mir-btn" data-rail-group="identification" title="Identification">
+        <svg width="24" height="24" aria-hidden="true"><use href="#icon-identification"/></svg>
+      </button>
+      <button type="button" class="mir-btn" data-view="assessment-overview" title="Assessment">
+        <svg width="24" height="24" aria-hidden="true"><use href="#icon-assessment"/></svg>
+      </button>
+      <button type="button" class="mir-btn" data-view="mitigation-overview" title="Mitigation">
+        <svg width="24" height="24" aria-hidden="true"><use href="#icon-mitigation"/></svg>
+      </button>
+      <button type="button" class="mir-btn" data-view="reporting" title="Reporting">
+        <svg width="24" height="24" aria-hidden="true"><use href="#icon-reporting"/></svg>
+      </button>
+      <button type="button" class="mir-btn" data-view="ai-threads" title="AI threads">
+        <svg width="24" height="24" aria-hidden="true"><use href="#icon-ai-threads"/></svg>
+      </button>
+      <button type="button" class="mir-btn" data-view="messaging" title="Messaging">
+        <svg width="24" height="24" aria-hidden="true"><use href="#icon-messaging"/></svg>
+      </button>
+      <button type="button" class="mir-btn" data-view="object-library" title="Object &amp; context library">
+        <svg width="24" height="24" aria-hidden="true"><use href="#icon-library"/></svg>
+      </button>
+      <button type="button" class="mir-btn" data-view="integrations" title="Integrations">
+        <svg width="24" height="24" aria-hidden="true"><use href="#icon-integrations"/></svg>
+      </button>
+      <button type="button" class="mir-btn" data-view="settings" title="Settings">
+        <svg width="24" height="24" aria-hidden="true"><use href="#icon-settings"/></svg>
+      </button>
+    </div>
   </div>
 
   <!-- Drag resize handle (main column vs right workspace) -->

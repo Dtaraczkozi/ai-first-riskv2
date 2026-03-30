@@ -21,6 +21,7 @@
   --space-5:    40px;
   --space-6:    48px;
   --space-7:    56px;
+  --space-8:    64px;
 
   /* ── Typography: Title scale ── */
   --type-title-h1-size:           28px;
@@ -63,6 +64,7 @@
   --panel-radius:  var(--space-1);
   --sidebar-width: 244px;
   --sidebar-width-collapsed: 56px;
+  --middle-rail-width: 56px;
 
   /* Panel open/close & column resize (when not dragging) — shared so sidebar / middle / right stay in sync */
   --layout-motion-duration: 0.42s;
@@ -106,17 +108,6 @@ html, body {
 }
 .tb-btn.is-active { color: var(--color-type-muted); }
 
-/* Floated to viewport when sidebar is fully hidden (panel width is 0) */
-.tb-btn.tb-btn--sidebar-floating {
-  position: fixed;
-  left: var(--panel-gap);
-  top: var(--panel-gap);
-  z-index: 100;
-  background: var(--color-background-base);
-  box-shadow: 0 1px 0 var(--color-ui-divider-default);
-  border-radius: var(--panel-radius);
-}
-
 /* ── Layout ── */
 .main-row {
   display: flex;
@@ -127,6 +118,7 @@ html, body {
 }
 /* Smooth live resize: disable width/flex transitions while dragging the main splitter */
 .main-row.is-resizing-columns .middle-panel,
+.main-row.is-resizing-columns .middle-icon-rail,
 .main-row.is-resizing-columns .right-panel,
 .main-row.is-resizing-columns .resize-handle {
   transition: none !important;
@@ -223,6 +215,84 @@ html, body {
   opacity: 0;
   pointer-events: none;
   overflow: hidden;
+}
+
+/* Icon rail when main column is collapsed (matches collapsed sidebar width) */
+.middle-icon-rail {
+  flex-shrink: 0;
+  width: 0;
+  min-width: 0;
+  max-width: 0;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transition:
+    width var(--layout-motion-duration) var(--layout-motion-ease),
+    min-width var(--layout-motion-duration) var(--layout-motion-ease),
+    max-width var(--layout-motion-duration) var(--layout-motion-ease),
+    opacity var(--layout-motion-duration) var(--layout-motion-ease),
+    margin var(--layout-motion-duration) var(--layout-motion-ease);
+}
+.main-row.main-row--middle-collapsed .middle-icon-rail {
+  width: var(--middle-rail-width);
+  min-width: var(--middle-rail-width);
+  max-width: var(--middle-rail-width);
+  margin-right: var(--panel-gap);
+  opacity: 1;
+  pointer-events: auto;
+  overflow: hidden;
+}
+.main-row.main-row--middle-expanding .middle-icon-rail {
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  margin-right: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.mir-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-0-5);
+  padding: var(--space-1) 0;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ui-scrollbar-handle) transparent;
+}
+.mir-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+  color: var(--color-type-default);
+  font-family: inherit;
+  transition: background 0.12s ease;
+}
+.mir-btn > svg {
+  color: var(--color-type-muted);
+  flex-shrink: 0;
+}
+.mir-btn:hover {
+  background: var(--color-action-secondary-hover);
+}
+.mir-btn:hover > svg {
+  color: var(--color-type-default);
+}
+.mir-btn.is-active {
+  background: var(--color-selection-primary-default);
+}
+.mir-btn.is-active > svg {
+  color: var(--color-selection-primary-on-selected);
 }
 
 /* ── Resize handle (wide hit area for easier dragging) ── */

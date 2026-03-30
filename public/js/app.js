@@ -1,6 +1,6 @@
 /* ============================================================
    Risk Management Prototype — app.js
-   Sidebar (3-state) · middle column (collapsible + drag) · right drilldown
+   Sidebar (expanded ↔ icon rail) · middle column + icon rail when collapsed · right drilldown
    ============================================================ */
 
 const RIGHT_DEFAULT = 800;
@@ -20,12 +20,10 @@ const middlePanel = document.getElementById("middlePanel");
 const middlePanelToggle = document.getElementById("middlePanelToggle");
 const resizeHandle = document.getElementById("resizeHandle");
 const rightPanel = document.getElementById("rightPanel");
+const middleIconRail = document.getElementById("middleIconRail");
 
-const SIDEBAR_TITLES = [
-  "Sidebar: full — click for compact icons",
-  "Sidebar: icons only — click to hide",
-  "Sidebar: hidden — click to restore full",
-];
+const SIDEBAR_TITLE_EXPANDED = "Sidebar: show icons only";
+const SIDEBAR_TITLE_COLLAPSED = "Sidebar: expand labels";
 
 /**
  * Right panel drilldown copy per middle view (`data-view` id).
@@ -191,15 +189,54 @@ function syncDrilldownFromActiveNav() {
   const active =
     document.querySelector(".sb-subitem.is-active[data-view]") ||
     document.querySelector(".sb-item.is-active[data-view]");
-  if (!active) return;
+  if (!active) {
+    syncMiddleRail();
+    return;
+  }
   const viewId = active.dataset.view;
   const label =
     active.querySelector(".sb-item-label")?.textContent.trim() ||
     active.textContent.trim();
   if (viewId) updateRightDrilldown(viewId, label);
+  syncMiddleRail();
 }
 
-let sidebarStateIndex = 0;
+function syncMiddleRail() {
+  if (!middleIconRail) return;
+  const active =
+    document.querySelector(".sb-subitem.is-active[data-view]") ||
+    document.querySelector(".sb-item.is-active[data-view]");
+  const vid = active?.dataset?.view;
+  const inIdentification =
+    active && active.closest && active.closest("#identificationSubmenu");
+
+  middleIconRail.querySelectorAll(".mir-btn").forEach((btn) => {
+    btn.classList.remove("is-active");
+    const bvid = btn.dataset.view;
+    const group = btn.dataset.railGroup;
+    if (bvid && vid && bvid === vid) btn.classList.add("is-active");
+    if (group === "identification" && inIdentification) btn.classList.add("is-active");
+  });
+}
+
+function navigateToViewId(viewId) {
+  const el = document.querySelector(
+    `.sb-subitem[data-view="${viewId}"], .sb-item[data-view="${viewId}"]`
+  );
+  if (el) navigateTo(el);
+}
+
+function navigateRailIdentification() {
+  const active = document.querySelector("#identificationSubmenu .sb-subitem.is-active");
+  if (active) {
+    navigateTo(active);
+    return;
+  }
+  const first = document.querySelector("#identificationSubmenu .sb-subitem[data-view]");
+  if (first) navigateTo(first);
+}
+
+let sidebarCollapsed = false;
 let middleCollapsed = false;
 let rightPanelWidth = RIGHT_DEFAULT;
 let savedRightPanelWidth = RIGHT_DEFAULT;
@@ -233,10 +270,13 @@ function applyCollapsedLayout() {
   middlePanel.classList.add("is-hidden");
   middlePanel.classList.remove("middle-panel--drag-reveal");
   clearMiddleInlineFlex();
+  if (mainRow) mainRow.classList.add("main-row--middle-collapsed");
+  if (mainRow) mainRow.classList.remove("main-row--middle-expanding");
   rightPanel.classList.add("right-panel--fill");
   rightPanel.style.width = "";
   middlePanelToggle.classList.remove("is-active");
   middlePanelToggle.setAttribute("aria-pressed", "false");
+  syncMiddleRail();
 }
 
 function applyRightWidthPx(w) {
@@ -257,6 +297,7 @@ function expandMiddle() {
   middleCollapsed = false;
   middlePanel.classList.remove("is-hidden", "middle-panel--drag-reveal");
   clearMiddleInlineFlex();
+  if (mainRow) mainRow.classList.remove("main-row--middle-collapsed", "main-row--middle-expanding");
   rightPanel.classList.remove("right-panel--fill");
   rightPanelWidth = savedRightPanelWidth;
   rightPanel.style.width = `${rightPanelWidth}px`;
@@ -266,31 +307,14 @@ function expandMiddle() {
 
 function applySidebarState() {
   if (!sidebar || !sidebarToggle) return;
-  sidebar.classList.remove("is-collapsed", "is-hidden");
-  const states = ["expanded", "collapsed", "hidden"];
-  const state = states[sidebarStateIndex];
-  if (state === "collapsed") sidebar.classList.add("is-collapsed");
-  if (state === "hidden") sidebar.classList.add("is-hidden");
-  sidebarToggle.dataset.sidebarState = state;
-  sidebarToggle.title = SIDEBAR_TITLES[sidebarStateIndex];
-  const visible = state !== "hidden";
-  sidebarToggle.classList.toggle("is-active", visible);
-  sidebarToggle.setAttribute(
-    "aria-pressed",
-    state === "hidden" ? "false" : "true"
-  );
-  if (sidebarToggleHost) {
-    if (state === "hidden") {
-      sidebarToggle.classList.add("tb-btn--sidebar-floating");
-      if (sidebarToggle.parentElement !== document.body) {
-        document.body.appendChild(sidebarToggle);
-      }
-    } else {
-      sidebarToggle.classList.remove("tb-btn--sidebar-floating");
-      if (sidebarToggle.parentElement !== sidebarToggleHost) {
-        sidebarToggleHost.appendChild(sidebarToggle);
-      }
-    }
+  sidebar.classList.remove("is-collapsed");
+  if (sidebarCollapsed) sidebar.classList.add("is-collapsed");
+  sidebarToggle.dataset.sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
+  sidebarToggle.title = sidebarCollapsed ? SIDEBAR_TITLE_COLLAPSED : SIDEBAR_TITLE_EXPANDED;
+  sidebarToggle.classList.add("is-active");
+  sidebarToggle.setAttribute("aria-pressed", "true");
+  if (sidebarToggleHost && sidebarToggle.parentElement !== sidebarToggleHost) {
+    sidebarToggleHost.appendChild(sidebarToggle);
   }
   requestAnimationFrame(() => {
     if (!middleCollapsed) {
@@ -302,8 +326,10 @@ function applySidebarState() {
 function navigateTo(el) {
   if (el.classList.contains("sb-subitem")) {
     document.querySelectorAll(".sb-subitem").forEach((i) => i.classList.remove("is-active"));
+    document.querySelectorAll(".sb-item").forEach((i) => i.classList.remove("is-active"));
     el.classList.add("is-active");
   } else {
+    document.querySelectorAll(".sb-subitem").forEach((i) => i.classList.remove("is-active"));
     document.querySelectorAll(".sb-item").forEach((i) => i.classList.remove("is-active"));
     el.classList.add("is-active");
   }
@@ -320,6 +346,7 @@ function navigateTo(el) {
     if (target) target.classList.add("is-active");
     updateRightDrilldown(viewId, label);
   }
+  syncMiddleRail();
 }
 
 function toggleSubmenu(id) {
@@ -383,9 +410,20 @@ function bootProtoShell() {
   applyRightWidthPx(rightPanelWidth);
   applySidebarState();
   syncDrilldownFromActiveNav();
+  syncMiddleRail();
+
+  if (middleIconRail) {
+    middleIconRail.addEventListener("click", (e) => {
+      const btn = e.target.closest(".mir-btn");
+      if (!btn) return;
+      const vid = btn.dataset.view;
+      if (vid) navigateToViewId(vid);
+      else if (btn.dataset.railGroup === "identification") navigateRailIdentification();
+    });
+  }
 
   sidebarToggle.addEventListener("click", () => {
-    sidebarStateIndex = (sidebarStateIndex + 1) % 3;
+    sidebarCollapsed = !sidebarCollapsed;
     applySidebarState();
   });
 
@@ -437,6 +475,7 @@ function bootProtoShell() {
       rightPanelWidth = rw;
       rightPanel.classList.remove("right-panel--fill");
       rightPanel.style.width = `${rw}px`;
+      if (mainRow) mainRow.classList.add("main-row--middle-expanding");
       middlePanel.classList.remove("is-hidden");
       middlePanel.classList.add("middle-panel--drag-reveal");
       middlePanel.style.flex = "0 0 0px";
@@ -474,10 +513,12 @@ function bootProtoShell() {
       const mw = middlePanel.getBoundingClientRect().width;
       if (mw >= MIDDLE_EXPAND_AT) {
         savedRightPanelWidth = rightPanelWidth;
+        if (mainRow) mainRow.classList.remove("main-row--middle-expanding");
         expandMiddle();
       } else {
         middlePanel.classList.remove("middle-panel--drag-reveal");
         clearMiddleInlineFlex();
+        if (mainRow) mainRow.classList.remove("main-row--middle-expanding");
         applyCollapsedLayout();
       }
       return;
