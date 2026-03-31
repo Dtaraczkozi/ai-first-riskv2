@@ -172,12 +172,33 @@ const W = (() => {
     const onReorder = options.onReorder || null;
 
     let dragItem    = null;
-    let placeholder = null;
+    let placeholderEl = null;
+    let dropBeforeEl = null;
 
     function getItems() {
       return itemSel
         ? [...container.querySelectorAll(itemSel)]
         : [...container.children];
+    }
+
+    function clearPlaceholder() {
+      if (placeholderEl) {
+        placeholderEl.remove();
+        placeholderEl = null;
+      }
+      dropBeforeEl = null;
+    }
+
+    function ensurePlaceholderSizedLike(el) {
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      const cs = getComputedStyle(el);
+      const ph = document.createElement('div');
+      ph.className = 'w-drop-placeholder';
+      ph.style.height = `${Math.max(1, Math.round(r.height))}px`;
+      ph.style.margin = cs.margin;
+      ph.style.borderRadius = cs.borderRadius;
+      return ph;
     }
 
     container.addEventListener('mousedown', (e) => {
@@ -193,10 +214,10 @@ const W = (() => {
       e.preventDefault();
 
       const onMove = (ev) => {
-        const items = getItems();
+        const items = getItems().filter((i) => i !== placeholderEl);
         const y     = ev.clientY;
 
-        // Find the item we're hovering over
+        // Find the item we're hovering over (and whether we should insert before it)
         let target = null;
         for (const item of items) {
           if (item === dragItem) continue;
@@ -205,22 +226,23 @@ const W = (() => {
           if (y < midY) { target = item; break; }
         }
 
-        // Remove existing drop indicators
-        items.forEach(i => {
-          i.classList.remove('is-drop-target', 'is-drop-target-below');
-        });
-
-        if (target && target !== dragItem) {
-          target.classList.add('is-drop-target');
-        } else if (!target) {
-          // Hovering below last item
-          const lastItem = items[items.length - 1];
-          if (lastItem !== dragItem) {
-            lastItem.classList.add('is-drop-target-below');
-          }
+        // Create placeholder once (same-size, single-color)
+        if (!placeholderEl) {
+          placeholderEl = ensurePlaceholderSizedLike(dragItem);
+          if (placeholderEl) container.insertBefore(placeholderEl, dragItem.nextSibling);
         }
 
-        placeholder = target;
+        // Move placeholder to prospective drop location
+        if (!placeholderEl) return;
+        if (target && target !== dragItem) {
+          dropBeforeEl = target;
+          if (placeholderEl.nextSibling !== target) {
+            container.insertBefore(placeholderEl, target);
+          }
+        } else {
+          dropBeforeEl = null;
+          container.appendChild(placeholderEl);
+        }
       };
 
       const onUp = () => {
@@ -231,22 +253,19 @@ const W = (() => {
           dragItem.classList.remove('is-dragging');
 
           // Reorder DOM
-          if (placeholder) {
-            container.insertBefore(dragItem, placeholder);
-          } else {
-            container.appendChild(dragItem);
+          if (placeholderEl) {
+            container.insertBefore(dragItem, placeholderEl);
+          } else if (dropBeforeEl) {
+            container.insertBefore(dragItem, dropBeforeEl);
           }
 
-          // Clear indicators
-          getItems().forEach(i => {
-            i.classList.remove('is-drop-target', 'is-drop-target-below');
-          });
-
-          if (onReorder) onReorder(getItems());
+          const newOrder = getItems().filter((i) => i !== placeholderEl);
+          clearPlaceholder();
+          if (onReorder) onReorder(newOrder);
         }
 
         dragItem    = null;
-        placeholder = null;
+        clearPlaceholder();
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
       };

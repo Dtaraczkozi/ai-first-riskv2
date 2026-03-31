@@ -23,6 +23,18 @@ const middlePanelExpandToggle = document.getElementById("middlePanelExpandToggle
 const resizeHandle = document.getElementById("resizeHandle");
 const rightPanel = document.getElementById("rightPanel");
 const middleIconRail = document.getElementById("middleIconRail");
+const sbNavMenu = document.getElementById("sbNavMenu");
+const sbNavThreads = document.getElementById("sbNavThreads");
+const sbThreadList = document.getElementById("sbThreadList");
+const sbViewMenuBtn = document.getElementById("sbViewMenuBtn");
+const sbViewThreadsBtn = document.getElementById("sbViewThreadsBtn");
+const mpRelevantThreads = document.getElementById("mpRelevantThreads");
+const mpThreadOverlay = document.getElementById("mpThreadOverlay");
+const mpThreadOverlayTitle = document.getElementById("mpThreadOverlayTitle");
+const mpThreadOverlayBody = document.getElementById("mpThreadOverlayBody");
+const rightNavToast = document.getElementById("rightNavToast");
+const rightNavToastLabel = document.getElementById("rightNavToastLabel");
+const rightNavToastBtn = document.getElementById("rightNavToastBtn");
 
 const SIDEBAR_TITLE_EXPANDED = "Sidebar: show icons only";
 const SIDEBAR_TITLE_COLLAPSED = "Sidebar: expand labels";
@@ -159,6 +171,185 @@ const DRILLDOWN = {
         </div></div></div>`,
   },
 };
+
+/**
+ * Lightweight thread model for prototype UI.
+ * - `scopeViewId`: which workflow step/view this thread is related to (for icon + toast navigation)
+ * - `objectHint`: small hint shown in the right-panel toast copy
+ */
+const THREADS = {
+  "t-survey-ops": {
+    title: "Ops survey follow-ups",
+    scopeViewId: "survey-manager",
+    scopeLabel: "Survey manager",
+    objectHint: "Q4 Risk Assessment Survey",
+    updatedLabel: "Updated 1h ago",
+    messages: [
+      { from: "You", text: "Summarise overdue responses and draft a reminder." },
+      { from: "AI", text: "12 units pending. I drafted a concise reminder and highlighted 3 flagged answers for review." },
+      { from: "You", text: "Pin the 3 flagged answers and propose owners." },
+      { from: "AI", text: "Flagged: (1) Backup testing freq, (2) Access policy gaps, (3) Vendor breach exposure. Suggested owners added." },
+    ],
+  },
+  "t-dora-gap": {
+    title: "DORA gap analysis notes",
+    scopeViewId: "assessment-overview",
+    scopeLabel: "Assessment",
+    objectHint: "DORA compliance gap",
+    updatedLabel: "Updated yesterday",
+    messages: [
+      { from: "You", text: "Collect the main gaps and map them to controls." },
+      { from: "AI", text: "Top gaps: third-party oversight, incident reporting SLAs, resilience testing cadence. Draft mapping prepared." },
+    ],
+  },
+  "t-vendor-brainstorm": {
+    title: "Vendor brainstorm thread",
+    scopeViewId: "workshop-manager",
+    scopeLabel: "Workshop manager",
+    objectHint: "Vendor Risk Brainstorm",
+    updatedLabel: "Updated 3d ago",
+    messages: [
+      { from: "You", text: "Summarise outcomes and tag top 5 risks." },
+      { from: "AI", text: "Top risks: single cloud concentration, contract SLA gaps, weak attestations, data residency, access reviews." },
+    ],
+  },
+  "t-q4-pack": {
+    title: "Q4 risk pack review",
+    scopeViewId: "reporting",
+    scopeLabel: "Reporting",
+    objectHint: "Q4 Risk Management Summary",
+    updatedLabel: "Updated 1w ago",
+    messages: [
+      { from: "You", text: "Pull key changes since last quarter and propose an exec summary." },
+      { from: "AI", text: "Highlights drafted: +8 risks identified, 3 overdue actions, 1 critical third-party breach exposure trend." },
+    ],
+  },
+  "t-general-risk-chat": {
+    title: "General risk brainstorming",
+    scopeViewId: null,
+    scopeLabel: "General",
+    objectHint: "Cross-workflow",
+    updatedLabel: "Updated 10m ago",
+    messages: [
+      { from: "You", text: "Help me think through top operational risks this quarter." },
+      { from: "AI", text: "Themes: third-party exposure, resilience testing, key-person dependency, access control hygiene, regulatory change." },
+    ],
+  },
+};
+
+let activeThreadId = null;
+
+function iconHrefForThread(thread) {
+  const vid = thread?.scopeViewId;
+  if (vid === "survey-manager" || vid === "identification-overview" || vid === "library-suggestions" || vid === "workshop-manager") {
+    return "#icon-identification";
+  }
+  if (vid === "assessment-overview") return "#icon-assessment";
+  if (vid === "mitigation-overview") return "#icon-mitigation";
+  if (vid === "reporting") return "#icon-reporting";
+  return "#icon-ai-threads";
+}
+
+function renderSidebarThreads() {
+  if (!sbThreadList) return;
+  const entries = Object.entries(THREADS).map(([id, t]) => ({ id, ...t }));
+  sbThreadList.innerHTML = entries
+    .map((t) => {
+      const icon = iconHrefForThread(t);
+      const meta = t.updatedLabel || `${(t.messages || []).length} messages`;
+      return `
+        <button class="sb-item" type="button" data-thread-id="${t.id}" onclick="openThread('${t.id}','sidebar')">
+          <svg width="24" height="24" aria-hidden="true"><use href="${icon}"/></svg>
+          <span class="sb-item-label">${escapeHtml(t.title)}</span>
+          <span class="sb-thread-meta">${escapeHtml(meta)}</span>
+        </button>`;
+    })
+    .join("");
+}
+
+function setSidebarView(view) {
+  if (!sbNavMenu || !sbNavThreads || !sbViewMenuBtn || !sbViewThreadsBtn) return;
+  const isThreads = view === "threads";
+  sbNavMenu.hidden = isThreads;
+  sbNavThreads.hidden = !isThreads;
+
+  const menuActive = !isThreads;
+  sbViewMenuBtn.classList.toggle("is-active", menuActive);
+  sbViewMenuBtn.setAttribute("aria-pressed", menuActive ? "true" : "false");
+  sbViewThreadsBtn.classList.toggle("is-active", isThreads);
+  sbViewThreadsBtn.setAttribute("aria-pressed", isThreads ? "true" : "false");
+}
+
+function renderRelevantThreadsForView(viewId) {
+  if (!mpRelevantThreads) return;
+  const relevant = Object.entries(THREADS)
+    .filter(([, t]) => !t.scopeViewId || t.scopeViewId === viewId)
+    .map(([id, t]) => ({ id, ...t }));
+
+  if (relevant.length === 0) {
+    mpRelevantThreads.innerHTML = `<div class="mp-thread-empty">No threads linked to this step.</div>`;
+    return;
+  }
+
+  mpRelevantThreads.innerHTML = relevant
+    .map(
+      (t) => `
+      <button class="mp-thread-chip" type="button" data-thread-id="${t.id}" onclick="openThread('${t.id}','footer')">
+        <span class="mp-thread-chip-title">${escapeHtml(t.title)}</span>
+        <span class="mp-thread-chip-meta">${escapeHtml(t.objectHint)}${t.updatedLabel ? ` · ${escapeHtml(t.updatedLabel)}` : ""}</span>
+      </button>`
+    )
+    .join("");
+}
+
+function hideRightToast() {
+  if (!rightNavToast) return;
+  rightNavToast.hidden = true;
+  if (rightNavToastBtn) rightNavToastBtn.onclick = null;
+}
+
+function showRightToastForThread(thread) {
+  if (!rightNavToast || !rightNavToastBtn || !rightNavToastLabel) return;
+  rightNavToast.hidden = false;
+  rightNavToastLabel.textContent = `${thread.scopeLabel} · ${thread.objectHint}`;
+  rightNavToastBtn.textContent = "Open";
+  rightNavToastBtn.onclick = () => navigateToViewId(thread.scopeViewId);
+}
+
+function openThread(threadId, source = "unknown") {
+  const thread = THREADS[threadId];
+  if (!thread || !mpThreadOverlay || !mpThreadOverlayTitle || !mpThreadOverlayBody) return;
+
+  if (middleCollapsed) expandMiddle();
+
+  activeThreadId = threadId;
+  mpThreadOverlayTitle.textContent = thread.title;
+  mpThreadOverlayBody.innerHTML = thread.messages
+    .map(
+      (m) => `
+      <div class="mp-msg">
+        <div class="mp-msg-from">${escapeHtml(m.from)}</div>
+        <div class="mp-msg-text">${escapeHtml(m.text)}</div>
+      </div>`
+    )
+    .join("");
+  mpThreadOverlay.hidden = false;
+  mpThreadOverlay.setAttribute("data-source", source);
+  showRightToastForThread(thread);
+}
+
+function closeThreadOverlay() {
+  if (!mpThreadOverlay) return;
+  mpThreadOverlay.hidden = true;
+  activeThreadId = null;
+  hideRightToast();
+}
+
+function openThreadFromSidebar(el) {
+  const tid = el?.dataset?.threadId;
+  if (!tid) return;
+  openThread(tid, "sidebar");
+}
 
 function drilldownFallback(label) {
   return {
@@ -382,6 +573,7 @@ function navigateTo(el) {
     const target = document.getElementById("view-" + viewId);
     if (target) target.classList.add("is-active");
     updateRightDrilldown(viewId, label);
+    renderRelevantThreadsForView(viewId);
   }
   syncMiddleRail();
 }
@@ -450,6 +642,29 @@ function bootProtoShell() {
   syncDrilldownFromActiveNav();
   syncMiddleToggleButtons();
   syncMiddleRail();
+  const active =
+    document.querySelector(".sb-subitem.is-active[data-view]") ||
+    document.querySelector(".sb-item.is-active[data-view]");
+  if (active?.dataset?.view) renderRelevantThreadsForView(active.dataset.view);
+
+  if (sbViewMenuBtn && sbViewThreadsBtn) {
+    setSidebarView("menu");
+    sbViewMenuBtn.addEventListener("click", () => setSidebarView("menu"));
+    sbViewThreadsBtn.addEventListener("click", () => setSidebarView("threads"));
+  }
+
+  renderSidebarThreads();
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeThreadOverlay();
+  });
+
+  // Enable drag-to-reorder within each list section (in-section only).
+  if (window.W && typeof window.W.dragReorder === "function") {
+    ["surveyList", "workshopList", "reportList", "aiThreadList", "messageList", "libraryList"].forEach(
+      (id) => window.W.dragReorder(id, { handle: ".w-drag-handle", itemSel: ".w-list-item" })
+    );
+  }
 
   if (middleIconRail) {
     middleIconRail.addEventListener("click", (e) => {
@@ -580,6 +795,11 @@ function bootProtoShell() {
 }
 
 bootProtoShell();
+
+// Expose small surface for inline handlers in proto markup
+window.openThreadFromSidebar = openThreadFromSidebar;
+window.openThread = openThread;
+window.closeThreadOverlay = closeThreadOverlay;
 
 window.navigateTo = navigateTo;
 window.toggleSubmenu = toggleSubmenu;
