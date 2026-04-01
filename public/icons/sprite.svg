@@ -47,4 +47,24 @@
     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor" />
 
   </symbol>
+  <symbol id="icon-open-relevant-page" viewBox="0 0 24 24">
+    <path
+      d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"
+      fill="currentColor"
+    />
+  </symbol>
+  <symbol id="icon-chat-material" viewBox="0 0 24 24" fill="none">
+    <path
+      d="M5.25 4.75h11.5a2 2 0 0 1 2 2v6.75a2 2 0 0 1-2 2h-6.9l-3.85 3.85v-3.85h-1a2 2 0 0 1-2-2V6.75a2 2 0 0 1 2-2Z"
+      stroke="currentColor"
+      stroke-width="1.75"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M8.25 9.25h7.5M8.25 12h7.5M8.25 14.75h3.75"
+      stroke="currentColor"
+      stroke-width="1.75"
+      stroke-linecap="round"
+    />
+  </symbol>
 </svg>

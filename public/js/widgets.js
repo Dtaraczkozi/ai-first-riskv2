@@ -165,99 +165,176 @@ const W = (() => {
    */
   function dragReorder(containerId, options = {}) {
     const container = document.getElementById(containerId);
-    if (!container) return;
+    if (!container || container.dataset.wDragInit === "1") return;
+    container.dataset.wDragInit = "1";
 
-    const handleSel = options.handle  || '.w-drag-handle';
-    const itemSel   = options.itemSel || null;
+    const handleSel = options.handle || ".w-drag-handle";
+    const itemSel = options.itemSel || ".w-list-item";
     const onReorder = options.onReorder || null;
 
-    let dragItem    = null;
-    let placeholder = null;
-
     function getItems() {
-      return itemSel
-        ? [...container.querySelectorAll(itemSel)]
-        : [...container.children];
+      return [...container.querySelectorAll(itemSel)];
     }
 
-    container.addEventListener('mousedown', (e) => {
+    function clearDropIndicators() {
+      getItems().forEach((el) => {
+        el.classList.remove("is-drop-target", "is-drop-target-below");
+      });
+    }
+
+    /** Where to insert dragItem: sibling to insert before, or null = append. */
+    function getInsertBefore(clientY, dragItem) {
+      const others = getItems().filter((i) => i !== dragItem);
+      for (const item of others) {
+        const rect = item.getBoundingClientRect();
+        if (clientY < rect.top + rect.height / 2) return item;
+      }
+      return null;
+    }
+
+    function updateDropIndicators(clientY, dragItem) {
+      clearDropIndicators();
+      const insertBefore = getInsertBefore(clientY, dragItem);
+      if (insertBefore) {
+        insertBefore.classList.add("is-drop-target");
+      } else {
+        const items = getItems().filter((i) => i !== dragItem);
+        if (items.length) items[items.length - 1].classList.add("is-drop-target-below");
+      }
+    }
+
+    function applyReorder(clientY, dragItem) {
+      const insertBefore = getInsertBefore(clientY, dragItem);
+      if (insertBefore) {
+        container.insertBefore(dragItem, insertBefore);
+      } else {
+        container.appendChild(dragItem);
+      }
+    }
+
+    container.addEventListener(
+      "click",
+      (e) => {
+        if (e.target.closest(handleSel)) e.stopPropagation();
+      },
+      true
+    );
+
+    let activeDrag = null;
+
+    function noop() {}
+
+    function endDrag(clientY) {
+      const state = activeDrag;
+      if (!state) return;
+      document.removeEventListener("mousemove", state.onMove);
+      document.removeEventListener("mouseup", state.onUp);
+      document.removeEventListener("touchmove", state.onTouchMove);
+      document.removeEventListener("touchend", state.onTouchEnd);
+
+      const { el, moved } = state;
+      el.classList.remove("is-dragging");
+      clearDropIndicators();
+      applyReorder(clientY, el);
+      if (onReorder) onReorder(getItems());
+
+      if (moved) {
+        const block = (ev) => {
+          ev.stopPropagation();
+          document.removeEventListener("click", block, true);
+        };
+        document.addEventListener("click", block, true);
+        setTimeout(() => document.removeEventListener("click", block, true), 0);
+      }
+
+      activeDrag = null;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    }
+
+    container.addEventListener("mousedown", (e) => {
+      if (activeDrag) return;
       const handle = e.target.closest(handleSel);
       if (!handle) return;
+      const item = handle.closest(itemSel);
+      if (!item || item.parentElement !== container) return;
 
-      dragItem = handle.closest(itemSel || '*');
-      if (!dragItem || dragItem.parentElement !== container) return;
-
-      dragItem.classList.add('is-dragging');
-      document.body.style.cursor = 'grabbing';
-      document.body.style.userSelect = 'none';
       e.preventDefault();
+      e.stopPropagation();
 
-      const onMove = (ev) => {
-        const items = getItems();
-        const y     = ev.clientY;
-
-        // Find the item we're hovering over
-        let target = null;
-        for (const item of items) {
-          if (item === dragItem) continue;
-          const rect = item.getBoundingClientRect();
-          const midY = rect.top + rect.height / 2;
-          if (y < midY) { target = item; break; }
-        }
-
-        // Remove existing drop indicators
-        items.forEach(i => {
-          i.classList.remove('is-drop-target', 'is-drop-target-below');
-        });
-
-        if (target && target !== dragItem) {
-          target.classList.add('is-drop-target');
-        } else if (!target) {
-          // Hovering below last item
-          const lastItem = items[items.length - 1];
-          if (lastItem !== dragItem) {
-            lastItem.classList.add('is-drop-target-below');
-          }
-        }
-
-        placeholder = target;
+      const state = {
+        el: item,
+        moved: false,
+        lastEvent: e,
+        onTouchMove: noop,
+        onTouchEnd: noop,
       };
-
-      const onUp = () => {
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
-
-        if (dragItem) {
-          dragItem.classList.remove('is-dragging');
-
-          // Reorder DOM
-          if (placeholder) {
-            container.insertBefore(dragItem, placeholder);
-          } else {
-            container.appendChild(dragItem);
-          }
-
-          // Clear indicators
-          getItems().forEach(i => {
-            i.classList.remove('is-drop-target', 'is-drop-target-below');
-          });
-
-          if (onReorder) onReorder(getItems());
-        }
-
-        dragItem    = null;
-        placeholder = null;
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
+      state.onMove = function onMove(ev) {
+        state.lastEvent = ev;
+        if (Math.abs(ev.movementX) + Math.abs(ev.movementY) > 1) state.moved = true;
+        updateDropIndicators(ev.clientY, item);
       };
+      state.onUp = function onUp() {
+        const y = state.lastEvent ? state.lastEvent.clientY : e.clientY;
+        endDrag(y);
+      };
+      activeDrag = state;
 
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
+      item.classList.add("is-dragging");
+      document.body.style.cursor = "grabbing";
+      document.body.style.userSelect = "none";
+      updateDropIndicators(e.clientY, item);
+
+      document.addEventListener("mousemove", state.onMove);
+      document.addEventListener("mouseup", state.onUp);
     });
+
+    container.addEventListener(
+      "touchstart",
+      (e) => {
+        if (activeDrag) return;
+        const handle = e.target.closest(handleSel);
+        if (!handle) return;
+        const item = handle.closest(itemSel);
+        if (!item || item.parentElement !== container) return;
+
+        e.preventDefault();
+        const touch = e.touches[0];
+        const state = {
+          el: item,
+          moved: false,
+          lastEvent: touch,
+          onMove: noop,
+          onUp: noop,
+          onTouchMove(ev) {
+            if (ev.touches.length !== 1) return;
+            const t = ev.touches[0];
+            state.lastEvent = t;
+            state.moved = true;
+            updateDropIndicators(t.clientY, item);
+            ev.preventDefault();
+          },
+          onTouchEnd(ev) {
+            const t = ev.changedTouches[0];
+            endDrag(t ? t.clientY : state.lastEvent.clientY);
+          },
+        };
+        activeDrag = state;
+
+        item.classList.add("is-dragging");
+        updateDropIndicators(touch.clientY, item);
+
+        document.addEventListener("touchmove", state.onTouchMove, { passive: false });
+        document.addEventListener("touchend", state.onTouchEnd);
+      },
+      { passive: false }
+    );
   }
 
 
   /* ── Public API ───────────────────────────────────────────────────────────── */
   return { collapse, select, contextMenu, closeMenu, dragReorder };
-
 })();
+
+/** Inline handlers and app.js use the global `W`. */
+window.W = W;

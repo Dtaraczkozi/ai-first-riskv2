@@ -14,13 +14,27 @@
   padding: 0 var(--space-3) var(--space-3);
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
   gap: var(--space-2);
+  box-sizing: border-box;
 }
 
 /* mp-view — view switching: only .is-active view is shown.
    Views also carry .mp-body to inherit padding/flex/gap. */
-.mp-view { display: none; }
-.mp-view.is-active { display: flex; }
+.mp-view {
+  display: none;
+}
+.mp-view.is-active {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+}
 
 .w-section {
   display: flex;
@@ -35,6 +49,11 @@
   letter-spacing: var(--type-text-md-letter-spacing);
   color: var(--color-type-muted);
   text-transform: uppercase;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--text-lines-default, 2);
+  overflow: hidden;
+  word-break: break-word;
 }
 
 
@@ -72,9 +91,11 @@
   letter-spacing: var(--type-text-body-letter-spacing);
   color: var(--color-type-default);
   min-width: 0;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--text-lines-default, 2);
   overflow: hidden;
-  text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .w-card-count {
@@ -107,6 +128,24 @@
 /* Flush content — no padding (tables, lists manage their own) */
 .w-card-flush {
   /* intentionally empty — semantic marker */
+}
+
+.w-card-flush:has(.w-table) {
+  overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ui-scrollbar-handle) transparent;
+}
+.w-card-flush:has(.w-table)::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.w-card-flush:has(.w-table)::-webkit-scrollbar-track {
+  background: transparent;
+}
+.w-card-flush:has(.w-table)::-webkit-scrollbar-thumb {
+  background: var(--color-ui-scrollbar-handle);
+  border-radius: 4px;
 }
 
 
@@ -200,19 +239,43 @@
   height: 20px;
   color: var(--color-type-muted);
   flex-shrink: 0;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--layout-motion-duration, 0.42s) var(--layout-motion-ease, cubic-bezier(0.22, 1, 0.36, 1));
 }
 .w-collapsible.is-open > .w-collapsible-trigger .w-collapsible-chevron {
   transform: rotate(180deg);
 }
 
+/* Grid row animation — smooth open/close (avoids arbitrary max-height).
+   Open state uses `auto` for the content row (not `1fr`) so nested flex layouts
+   with min-height:0 do not cap height — all list items stay visible. */
+.w-collapsible {
+  display: grid;
+  grid-template-rows: auto 0fr;
+  transition: grid-template-rows var(--middle-layout-duration, 0.5s) var(--middle-layout-ease, cubic-bezier(0.2, 0.85, 0.25, 1));
+}
+.w-collapsible.is-open {
+  grid-template-rows: auto auto;
+}
 .w-collapsible-content {
   overflow: hidden;
-  max-height: 0;
-  transition: max-height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 0;
 }
-.w-collapsible.is-open > .w-collapsible-content {
-  max-height: 2000px;
+.w-collapsible.is-open .w-collapsible-content {
+  overflow: visible;
+  min-height: auto;
+}
+/* Don’t let flex ancestors (.mp-body, .w-section) shrink an open accordion below its content */
+.w-card.w-collapsible.is-open {
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .w-collapsible {
+    transition-duration: 0.16s;
+  }
+  .w-collapsible-chevron {
+    transition-duration: 0.16s;
+  }
 }
 
 
@@ -257,9 +320,11 @@
 }
 
 .w-ctx-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--text-lines-default, 2);
+  overflow: hidden;
+  word-break: break-word;
   width: 100%;
   padding: var(--space-1) var(--space-2);
   background: none;
@@ -299,6 +364,8 @@
   color: var(--color-type-disabled);
   cursor: grab;
   flex-shrink: 0;
+  touch-action: none;
+  user-select: none;
   transition: color 0.12s ease;
 }
 .w-drag-handle:hover {
@@ -345,6 +412,11 @@
   font-weight: var(--type-text-body-emphasis-weight);
   line-height: var(--type-text-body-line-height);
   color: var(--color-type-muted);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--text-lines-default, 2);
+  overflow: hidden;
+  word-break: break-word;
 }
 
 .w-empty-description {
@@ -353,6 +425,11 @@
   letter-spacing: var(--type-text-md-letter-spacing);
   color: var(--color-type-disabled);
   max-width: 280px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--text-lines-default, 2);
+  overflow: hidden;
+  word-break: break-word;
 }
 
 
@@ -528,12 +605,22 @@
   line-height: var(--type-text-md-line-height);
   letter-spacing: var(--type-text-md-letter-spacing);
   color: var(--color-type-muted);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--text-lines-default, 2);
+  overflow: hidden;
+  word-break: break-word;
 }
 
 .w-stat-trend {
   font-size: var(--type-text-sm-size);
   font-weight: var(--type-text-sm-emphasis-weight);
   line-height: var(--type-text-sm-line-height);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--text-lines-default, 2);
+  overflow: hidden;
+  word-break: break-word;
 }
 .w-stat-trend.is-up   { color: var(--color-status-success-default); }
 .w-stat-trend.is-down { color: var(--color-status-error-default); }
@@ -558,12 +645,107 @@
   letter-spacing: var(--type-text-md-letter-spacing);
   color: var(--color-type-muted);
   border-bottom: 1px solid var(--color-ui-divider-default);
+  vertical-align: top;
 }
 
 .w-table td {
   padding: var(--space-1-5) var(--space-2);
   color: var(--color-type-default);
   border-bottom: 1px solid var(--color-outline-static);
+  vertical-align: top;
+}
+
+/* table-cell cannot use -webkit-line-clamp reliably — cap ~2 lines by height */
+.w-table td:not(.w-table-cell--truncate) {
+  max-height: calc(var(--type-text-body-line-height) * 2 + 6px);
+  overflow: hidden;
+  word-break: break-word;
+}
+
+/* Long LLM-style labels — one line with ellipsis (use with .w-table--fixed on the table) */
+.w-table.w-table--fixed {
+  table-layout: fixed;
+}
+.w-table td.w-table-cell--truncate {
+  max-width: 0;
+  width: 52%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+/* Tables: first column = primary label (fills remaining width); other columns hug content with 8px padding */
+.w-table.w-table--name-first,
+.w-table--recent-risks {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.w-table.w-table--name-first th:first-child,
+.w-table.w-table--name-first td:first-child,
+.w-table--recent-risks th:first-child,
+.w-table--recent-risks td:first-child {
+  width: auto;
+  min-width: 0;
+}
+
+.w-table.w-table--name-first th:not(:first-child),
+.w-table.w-table--name-first td:not(:first-child),
+.w-table--recent-risks th:not(:first-child),
+.w-table--recent-risks td:not(:first-child) {
+  width: 1%;
+  white-space: nowrap;
+  padding: 8px;
+  vertical-align: middle;
+}
+
+/* Recently identified risks: clamp names; status / badges never wrap */
+.w-table--recent-risks td:first-child {
+  max-height: none;
+  overflow: visible;
+}
+
+.w-table--recent-risks__name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--text-lines-default, 2);
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.w-table--recent-risks th.w-table--recent-risks__col-status {
+  white-space: nowrap;
+}
+
+.w-table--recent-risks__col-status {
+  max-height: none !important;
+  overflow: visible !important;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.w-table--recent-risks__col-status .w-badge {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.w-table--recent-risks__col-source,
+.w-table--recent-risks__col-identified {
+  max-height: none !important;
+  overflow: visible !important;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.w-table--recent-risks__col-source .w-badge {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.w-table--recent-risks th.w-table--recent-risks__col-source,
+.w-table--recent-risks th.w-table--recent-risks__col-identified {
+  white-space: nowrap;
 }
 
 .w-table tbody tr:last-child td { border-bottom: none; }
@@ -591,6 +773,11 @@
   line-height: var(--type-text-md-line-height);
   letter-spacing: var(--type-text-md-letter-spacing);
   color: var(--color-type-muted);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--text-lines-default, 2);
+  overflow: hidden;
+  word-break: break-word;
 }
 
 .w-form-input,
@@ -675,9 +862,11 @@
   font-weight: var(--type-text-body-emphasis-weight);
   line-height: var(--type-text-body-line-height);
   color: var(--color-type-default);
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--text-lines-default, 2);
   overflow: hidden;
-  text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .w-list-meta {
@@ -686,4 +875,213 @@
   line-height: var(--type-text-md-line-height);
   letter-spacing: var(--type-text-md-letter-spacing);
   color: var(--color-type-muted);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--text-lines-default, 2);
+  overflow: hidden;
+  word-break: break-word;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Middle column — narrow / min-width (container = .middle-panel)
+   Stack and wrap so nothing is clipped when the panel is thin.
+   ═══════════════════════════════════════════════════════════════ */
+
+@container middle-panel (max-width: 520px) {
+  .middle-panel .mp-inner {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .middle-panel .mp-body {
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+  }
+
+  .middle-panel .mp-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--text-lines-default, 2);
+    overflow: hidden;
+    word-break: break-word;
+  }
+
+  /* Summary cards: keep three columns side by side (no stacking) */
+  .middle-panel .w-stat-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .middle-panel .w-card-header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    row-gap: var(--space-1);
+  }
+
+  .middle-panel .w-card-header .w-card-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--text-lines-default, 2);
+    overflow: hidden;
+    word-break: break-word;
+  }
+
+  /* Accordion trigger: title full width, count + chevron on next row */
+  .middle-panel .w-collapsible-trigger {
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: var(--space-0-5);
+  }
+
+  .middle-panel .w-collapsible-trigger .w-card-title {
+    flex: 1 0 100%;
+    min-width: 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--text-lines-default, 2);
+    overflow: hidden;
+    word-break: break-word;
+  }
+
+  .middle-panel .w-form-actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .middle-panel .w-form-actions .w-btn {
+    flex: 1 1 auto;
+    min-width: min(100%, 12rem);
+    justify-content: center;
+  }
+
+  .middle-panel .w-table {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .middle-panel .w-table th,
+  .middle-panel .w-table td {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .middle-panel .w-table td.w-table-cell--truncate {
+    word-break: normal;
+    overflow-wrap: normal;
+    white-space: nowrap;
+  }
+
+  /* List rows: wrap; text visible; badge + menu follow content */
+  .middle-panel .w-list-item {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    row-gap: var(--space-1);
+    column-gap: var(--space-1);
+  }
+
+  .middle-panel .w-list-item .w-list-content {
+    flex: 1 1 160px;
+    min-width: 0;
+  }
+
+  .middle-panel .w-list-title,
+  .middle-panel .w-list-meta {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--text-lines-default, 2);
+    overflow: hidden;
+    word-break: break-word;
+  }
+
+  .middle-panel .w-list-item .w-badge {
+    flex: 0 0 auto;
+    margin-left: 0;
+  }
+
+  .middle-panel .w-list-item .w-ctx-trigger {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+}
+
+/* Narrow middle: shrink summary card type only (≈10–20%, whole px) so three cards stay readable in one row */
+@container middle-panel (max-width: 420px) {
+  .middle-panel .w-stat-value {
+    font-size: 20px;
+    line-height: 24px;
+  }
+
+  .middle-panel .w-stat-label {
+    font-size: 10px;
+    line-height: 13px;
+  }
+
+  .middle-panel .w-stat-trend {
+    font-size: 9px;
+    line-height: 11px;
+  }
+}
+
+/* Very thin middle column (~min width): stack list rows vertically */
+@container middle-panel (max-width: 380px) {
+  .middle-panel .w-list-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .middle-panel .w-list-item .w-drag-handle,
+  .middle-panel .w-list-item .w-list-icon {
+    align-self: flex-start;
+  }
+
+  .middle-panel .w-list-item .w-list-content {
+    flex: none;
+    width: 100%;
+  }
+
+  .middle-panel .w-list-item .w-badge {
+    align-self: flex-start;
+  }
+
+  .middle-panel .w-list-item .w-ctx-trigger {
+    align-self: flex-end;
+    margin-left: 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   #proto-root — paragraph clamp + utilities (styles load before widgets)
+   ═══════════════════════════════════════════════════════════════ */
+
+#proto-root .w-card-body > p,
+#proto-root .right-pane-drilldown p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--text-lines-default, 2);
+  overflow: hidden;
+  word-break: break-word;
+}
+
+#proto-root .text-clamp-none {
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  -webkit-box-orient: unset !important;
+  overflow: visible !important;
+  word-break: break-word;
+}
+
+#proto-root .text-clamp-1 {
+  -webkit-line-clamp: 1 !important;
+}
+
+#proto-root input:not([type="checkbox"]):not([type="radio"]),
+#proto-root textarea,
+#proto-root select,
+#proto-root .w-form-input,
+#proto-root .w-form-textarea,
+#proto-root .w-form-select {
+  display: revert;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: unset;
+  overflow: revert;
 }

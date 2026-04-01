@@ -52,6 +52,28 @@
     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor" />
 
   </symbol>
+  <!-- Material open_in_new — open relevant context in adjacent panel -->
+  <symbol id="icon-open-relevant-page" viewBox="0 0 24 24">
+    <path
+      d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"
+      fill="currentColor"
+    />
+  </symbol>
+  <!-- Google Material Symbols style: chat (outlined) — bubble, tail, three text lines -->
+  <symbol id="icon-chat-material" viewBox="0 0 24 24" fill="none">
+    <path
+      d="M5.25 4.75h11.5a2 2 0 0 1 2 2v6.75a2 2 0 0 1-2 2h-6.9l-3.85 3.85v-3.85h-1a2 2 0 0 1-2-2V6.75a2 2 0 0 1 2-2Z"
+      stroke="currentColor"
+      stroke-width="1.75"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M8.25 9.25h7.5M8.25 12h7.5M8.25 14.75h3.75"
+      stroke="currentColor"
+      stroke-width="1.75"
+      stroke-linecap="round"
+    />
+  </symbol>
 </svg>
 <!-- SPRITE-END -->
 
@@ -71,16 +93,23 @@
             <rect x="1.5" y="1.5" width="4.5" height="12" fill="currentColor" opacity="0.3" rx="1.5"/>
           </svg>
         </button>
+        <div class="sb-nav-switcher" id="sbNavSwitcher" role="tablist" aria-label="Sidebar content">
+          <button type="button" class="sb-nav-switcher__btn is-active" id="sbModeWorkflow" role="tab" aria-selected="true" data-nav-mode="workflow" title="Workflow navigation" aria-label="Workflow navigation">
+            <svg width="20" height="20" aria-hidden="true"><use href="#icon-identification"/></svg>
+          </button>
+          <button type="button" class="sb-nav-switcher__btn" id="sbModeThreads" role="tab" aria-selected="false" data-nav-mode="threads" title="All agent threads" aria-label="All agent threads">
+            <svg width="20" height="20" aria-hidden="true" class="sb-nav-switcher__icon sb-nav-switcher__icon--chat"><use href="#icon-chat-material"/></svg>
+          </button>
+        </div>
       </div>
 
       <!-- Module switcher -->
-      <button class="sb-module">
+      <button class="sb-module" type="button">
         <svg width="24" height="24" aria-hidden="true"><use href="#icon-mitigation"/></svg>
         <span class="sb-module-name">Risk Management</span>
-        <svg class="sb-module-arrows" width="24" height="24" aria-hidden="true"><use href="#icon-expand"/></svg>
       </button>
 
-      <nav class="sb-nav">
+      <nav class="sb-nav sb-nav--workflow" id="sbNavWorkflow">
 
         <!-- ── Workflows ── -->
         <div class="sb-section">
@@ -126,21 +155,6 @@
           </button>
         </div>
 
-        <!-- ── Conversations ── -->
-        <div class="sb-section">
-          <div class="sb-section-label">Conversations</div>
-
-          <button class="sb-item" data-view="ai-threads" onclick="navigateTo(this)">
-            <svg width="24" height="24" aria-hidden="true"><use href="#icon-ai-threads"/></svg>
-            <span class="sb-item-label">AI threads</span>
-          </button>
-
-          <button class="sb-item" data-view="messaging" onclick="navigateTo(this)">
-            <svg width="24" height="24" aria-hidden="true"><use href="#icon-messaging"/></svg>
-            <span class="sb-item-label">Messaging</span>
-          </button>
-        </div>
-
         <!-- ── Utilities ── -->
         <div class="sb-section">
           <div class="sb-section-label">Utilities</div>
@@ -163,6 +177,13 @@
 
       </nav>
 
+      <nav class="sb-nav sb-nav--threads is-hidden" id="sbNavThreads" aria-label="All agent threads">
+        <div class="sb-section">
+          <div class="sb-section-label">Agent threads</div>
+          <div class="sb-thread-list" id="sbAllThreadsList"></div>
+        </div>
+      </nav>
+
       <div class="sb-footer">
         <div class="sb-logo">D</div>
         <span class="sb-brand">Diligent</span>
@@ -175,18 +196,18 @@
   <div class="middle-panel panel" id="middlePanel">
     <div class="mp-inner">
 
-      <div class="mp-header">
+      <div class="mp-header" id="mpHeader">
         <button class="tb-btn is-active" id="middlePanelToggle" type="button" title="Main column: click to hide / show (or drag the center handle)" aria-pressed="true">
           <svg width="20" height="15" viewBox="0 0 20 15" fill="none" aria-hidden="true">
             <rect x="0.75" y="0.75" width="18.5" height="13.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="7.25" y1="0.75" x2="7.25" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="12.75" y1="0.75" x2="12.75" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="6.75" y1="0.75" x2="6.75" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="1.5" y="1.5" width="4.5" height="12" fill="currentColor" opacity="0.3" rx="1.5"/>
           </svg>
         </button>
         <h3 class="mp-title" id="mpTitle">Survey manager</h3>
       </div>
 
-      <div class="mp-body mp-view is-active" id="view-survey-manager">
+      <div class="mp-body mp-view is-active" id="view-survey-manager" data-agent-context="survey-manager">
 
         <!-- ── Stat cards ───────────────────────────────────────── -->
         <div class="w-stat-row">
@@ -330,7 +351,7 @@
             <span class="w-card-count">48 total</span>
           </div>
           <div class="w-card-flush">
-            <table class="w-table">
+            <table class="w-table w-table--name-first">
               <thead>
                 <tr>
                   <th>Respondent</th>
@@ -390,7 +411,7 @@
       <!-- ═══════════════════════════════════════════════════
            VIEW: Identification Overview
            ═══════════════════════════════════════════════════ -->
-      <div class="mp-body mp-view" id="view-identification-overview">
+      <div class="mp-body mp-view" id="view-identification-overview" data-agent-context="identification-overview">
 
         <div class="w-stat-row">
           <div class="w-card w-stat">
@@ -418,45 +439,45 @@
           </button>
           <div class="w-collapsible-content">
             <div class="w-card-flush">
-              <table class="w-table">
+              <table class="w-table w-table--recent-risks">
                 <thead>
                   <tr>
-                    <th>Risk</th>
-                    <th>Source</th>
-                    <th>Identified</th>
-                    <th>Status</th>
+                    <th scope="col">Risk</th>
+                    <th scope="col" class="w-table--recent-risks__col-source">Source</th>
+                    <th scope="col" class="w-table--recent-risks__col-identified">Identified</th>
+                    <th scope="col" class="w-table--recent-risks__col-status">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr class="is-hoverable">
-                    <td>Third-party data breach exposure</td>
-                    <td><span class="w-badge is-neutral">Survey</span></td>
-                    <td>2 days ago</td>
-                    <td><span class="w-badge is-warning">Pending</span></td>
+                    <td><span class="w-table--recent-risks__name">Third-party data breach exposure</span></td>
+                    <td class="w-table--recent-risks__col-source"><span class="w-badge is-neutral">Survey</span></td>
+                    <td class="w-table--recent-risks__col-identified">2 days ago</td>
+                    <td class="w-table--recent-risks__col-status"><span class="w-badge is-warning">Pending</span></td>
                   </tr>
                   <tr class="is-hoverable">
-                    <td>Regulatory change — DORA compliance gap</td>
-                    <td><span class="w-badge is-neutral">Library</span></td>
-                    <td>4 days ago</td>
-                    <td><span class="w-badge is-success">In assessment</span></td>
+                    <td><span class="w-table--recent-risks__name">Regulatory change — DORA compliance gap</span></td>
+                    <td class="w-table--recent-risks__col-source"><span class="w-badge is-neutral">Library</span></td>
+                    <td class="w-table--recent-risks__col-identified">4 days ago</td>
+                    <td class="w-table--recent-risks__col-status"><span class="w-badge is-success">In assessment</span></td>
                   </tr>
                   <tr class="is-hoverable">
-                    <td>Insufficient backup testing frequency</td>
-                    <td><span class="w-badge is-neutral">Workshop</span></td>
-                    <td>1 week ago</td>
-                    <td><span class="w-badge is-warning">Pending</span></td>
+                    <td><span class="w-table--recent-risks__name">Insufficient backup testing frequency</span></td>
+                    <td class="w-table--recent-risks__col-source"><span class="w-badge is-neutral">Workshop</span></td>
+                    <td class="w-table--recent-risks__col-identified">1 week ago</td>
+                    <td class="w-table--recent-risks__col-status"><span class="w-badge is-warning">Pending</span></td>
                   </tr>
                   <tr class="is-hoverable">
-                    <td>Key person dependency — IT architecture</td>
-                    <td><span class="w-badge is-neutral">Survey</span></td>
-                    <td>1 week ago</td>
-                    <td><span class="w-badge is-success">In assessment</span></td>
+                    <td><span class="w-table--recent-risks__name">Key person dependency — IT architecture</span></td>
+                    <td class="w-table--recent-risks__col-source"><span class="w-badge is-neutral">Survey</span></td>
+                    <td class="w-table--recent-risks__col-identified">1 week ago</td>
+                    <td class="w-table--recent-risks__col-status"><span class="w-badge is-success">In assessment</span></td>
                   </tr>
                   <tr class="is-hoverable">
-                    <td>Obsolete access control policies</td>
-                    <td><span class="w-badge is-neutral">Workshop</span></td>
-                    <td>2 weeks ago</td>
-                    <td><span class="w-badge is-neutral">Approved</span></td>
+                    <td><span class="w-table--recent-risks__name">Obsolete access control policies</span></td>
+                    <td class="w-table--recent-risks__col-source"><span class="w-badge is-neutral">Workshop</span></td>
+                    <td class="w-table--recent-risks__col-identified">2 weeks ago</td>
+                    <td class="w-table--recent-risks__col-status"><span class="w-badge is-neutral">Approved</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -501,7 +522,7 @@
       <!-- ═══════════════════════════════════════════════════
            VIEW: Workshop Manager
            ═══════════════════════════════════════════════════ -->
-      <div class="mp-body mp-view" id="view-workshop-manager">
+      <div class="mp-body mp-view" id="view-workshop-manager" data-agent-context="workshop-manager">
 
         <div class="w-stat-row">
           <div class="w-card w-stat">
@@ -620,7 +641,7 @@
       <!-- ═══════════════════════════════════════════════════
            VIEW: Library Suggestions
            ═══════════════════════════════════════════════════ -->
-      <div class="mp-body mp-view" id="view-library-suggestions">
+      <div class="mp-body mp-view" id="view-library-suggestions" data-agent-context="library-suggestions">
 
         <div class="w-stat-row">
           <div class="w-card w-stat">
@@ -705,7 +726,7 @@
       <!-- ═══════════════════════════════════════════════════
            VIEW: Assessment Overview
            ═══════════════════════════════════════════════════ -->
-      <div class="mp-body mp-view" id="view-assessment-overview">
+      <div class="mp-body mp-view" id="view-assessment-overview" data-agent-context="assessment-overview">
 
         <div class="w-stat-row">
           <div class="w-card w-stat">
@@ -785,7 +806,7 @@
       <!-- ═══════════════════════════════════════════════════
            VIEW: Mitigation Overview
            ═══════════════════════════════════════════════════ -->
-      <div class="mp-body mp-view" id="view-mitigation-overview">
+      <div class="mp-body mp-view" id="view-mitigation-overview" data-agent-context="mitigation-overview">
 
         <div class="w-stat-row">
           <div class="w-card w-stat">
@@ -813,7 +834,7 @@
           </button>
           <div class="w-collapsible-content">
             <div class="w-card-flush">
-              <table class="w-table">
+              <table class="w-table w-table--fixed">
                 <thead>
                   <tr>
                     <th>Action</th>
@@ -824,31 +845,31 @@
                 </thead>
                 <tbody>
                   <tr class="is-hoverable">
-                    <td>Implement vendor security attestation</td>
+                    <td class="w-table-cell--truncate">Implement a recurring vendor security attestation workflow with evidence collection, scoring rubric aligned to SOC 2, and executive-ready exception reporting for third-party access to customer data</td>
                     <td>Sarah Kim</td>
                     <td><span style="color:var(--color-status-error)">Nov 30 ↑</span></td>
                     <td><span class="w-badge is-error">Overdue</span></td>
                   </tr>
                   <tr class="is-hoverable">
-                    <td>Draft DORA compliance roadmap</td>
+                    <td class="w-table-cell--truncate">Draft a phased DORA compliance roadmap that maps ICT risk management, incident reporting, and resilience testing milestones to board checkpoints and regulator expectations</td>
                     <td>Tom Reeves</td>
                     <td>Jan 15</td>
                     <td><span class="w-badge is-warning">In progress</span></td>
                   </tr>
                   <tr class="is-hoverable">
-                    <td>Succession plan for IT architecture role</td>
+                    <td class="w-table-cell--truncate">Succession and knowledge-transfer plan for the enterprise IT architecture lead role, including shadowing, decision log continuity, and critical system ownership handover</td>
                     <td>HR / Priya Nair</td>
                     <td>Feb 1</td>
                     <td><span class="w-badge is-warning">In progress</span></td>
                   </tr>
                   <tr class="is-hoverable">
-                    <td>Monthly backup recovery tests</td>
+                    <td class="w-table-cell--truncate">Monthly backup and disaster-recovery testing program with randomized restore drills, RTO/RPO verification, and documented remediation for any failed recovery objectives</td>
                     <td>Marcus Lee</td>
                     <td>Recurring</td>
                     <td><span class="w-badge is-neutral">Scheduled</span></td>
                   </tr>
                   <tr class="is-hoverable">
-                    <td>Update access control policy doc</td>
+                    <td class="w-table-cell--truncate">Update the enterprise access control policy to reflect zero-trust principles, privileged access reviews, and joiner–mover–leaver automation tied to the identity provider</td>
                     <td>Security team</td>
                     <td>Dec 20</td>
                     <td><span class="w-badge is-success">Complete</span></td>
@@ -894,7 +915,7 @@
       <!-- ═══════════════════════════════════════════════════
            VIEW: Reporting
            ═══════════════════════════════════════════════════ -->
-      <div class="mp-body mp-view" id="view-reporting">
+      <div class="mp-body mp-view" id="view-reporting" data-agent-context="reporting">
 
         <div class="w-stat-row">
           <div class="w-card w-stat">
@@ -1353,57 +1374,53 @@
       </div><!-- /view-settings -->
 
 
+      <!-- ═══════════════════════════════════════════════════
+           VIEW: Agent thread (conversation) — opened from strips or All threads
+           ═══════════════════════════════════════════════════ -->
+      <div class="mp-body mp-view mp-view--agent-thread" id="view-agent-thread">
+        <div class="mp-thread-chat">
+          <div class="mp-thread-chat__header">
+            <div class="mp-thread-chat__title-wrap">
+              <span class="mp-thread-chat__step" id="agentThreadStepBadge" hidden></span>
+              <h3 class="mp-thread-chat__title" id="agentThreadTitle">Thread</h3>
+            </div>
+            <div class="mp-thread-chat__actions">
+              <button type="button" class="tb-btn mp-thread-chat__open-page" id="agentThreadOpenPageBtn" hidden title="Open relevant page in side panel" aria-label="Open relevant page in side panel">
+                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-open-relevant-page"/></svg>
+              </button>
+              <button type="button" class="tb-btn mp-thread-chat__close" id="agentThreadCloseBtn" title="Close conversation" aria-label="Close conversation">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M6.4 6.4L12 12l5.6-5.6 1.4 1.4L13.4 12l5.6 5.6-1.4 1.4L12 13.4l-5.6 5.6-1.4-1.4 5.6-5.6-5.6-5.6 1.4-1.4z" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="mp-thread-chat__messages" id="agentThreadMessages" role="log" aria-live="polite"></div>
+          <div class="mp-thread-chat__composer">
+            <label class="visually-hidden" for="agentThreadInput">Message</label>
+            <textarea class="w-form-textarea mp-thread-chat__input" id="agentThreadInput" rows="2" placeholder="Reply in this thread…" readonly></textarea>
+            <div class="mp-thread-chat__composer-actions">
+              <span class="mp-thread-chat__hint">Prototype — sending disabled</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
     </div><!-- /mp-inner -->
   </div>
 
   <!-- When main column is hidden: icon rail (same destinations as nav / right drilldown) -->
-  <div class="middle-icon-rail panel" id="middleIconRail" aria-label="Workspace navigation">
+  <div class="middle-icon-rail panel" id="middleIconRail" aria-label="Main column">
     <div class="mir-inner">
       <div class="mir-top-row">
         <button class="tb-btn is-active" id="middlePanelExpandToggle" type="button" title="Main column: expand (or drag the center handle)" aria-pressed="true">
           <svg width="20" height="15" viewBox="0 0 20 15" fill="none" aria-hidden="true">
             <rect x="0.75" y="0.75" width="18.5" height="13.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="7.25" y1="0.75" x2="7.25" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="12.75" y1="0.75" x2="12.75" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="6.75" y1="0.75" x2="6.75" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="1.5" y="1.5" width="4.5" height="12" fill="currentColor" opacity="0.3" rx="1.5"/>
           </svg>
         </button>
-      </div>
-      <div class="mir-groups">
-        <div class="mir-group">
-          <button type="button" class="mir-btn" data-rail-group="identification" title="Identification">
-            <svg width="24" height="24" aria-hidden="true"><use href="#icon-identification"/></svg>
-          </button>
-          <button type="button" class="mir-btn" data-view="assessment-overview" title="Assessment">
-            <svg width="24" height="24" aria-hidden="true"><use href="#icon-assessment"/></svg>
-          </button>
-          <button type="button" class="mir-btn" data-view="mitigation-overview" title="Mitigation">
-            <svg width="24" height="24" aria-hidden="true"><use href="#icon-mitigation"/></svg>
-          </button>
-          <button type="button" class="mir-btn" data-view="reporting" title="Reporting">
-            <svg width="24" height="24" aria-hidden="true"><use href="#icon-reporting"/></svg>
-          </button>
-        </div>
-        <div class="mir-sep" role="separator" aria-hidden="true"></div>
-        <div class="mir-group">
-          <button type="button" class="mir-btn" data-view="ai-threads" title="AI threads">
-            <svg width="24" height="24" aria-hidden="true"><use href="#icon-ai-threads"/></svg>
-          </button>
-          <button type="button" class="mir-btn" data-view="messaging" title="Messaging">
-            <svg width="24" height="24" aria-hidden="true"><use href="#icon-messaging"/></svg>
-          </button>
-        </div>
-        <div class="mir-sep" role="separator" aria-hidden="true"></div>
-        <div class="mir-group">
-          <button type="button" class="mir-btn" data-view="object-library" title="Object &amp; context library">
-            <svg width="24" height="24" aria-hidden="true"><use href="#icon-library"/></svg>
-          </button>
-          <button type="button" class="mir-btn" data-view="integrations" title="Integrations">
-            <svg width="24" height="24" aria-hidden="true"><use href="#icon-integrations"/></svg>
-          </button>
-          <button type="button" class="mir-btn" data-view="settings" title="Settings">
-            <svg width="24" height="24" aria-hidden="true"><use href="#icon-settings"/></svg>
-          </button>
-        </div>
       </div>
     </div>
   </div>
