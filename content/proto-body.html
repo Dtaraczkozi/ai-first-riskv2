@@ -351,12 +351,11 @@
             <span class="w-card-count">48 total</span>
           </div>
           <div class="w-card-flush">
-            <table class="w-table w-table--name-first">
+            <table class="w-table w-table--name-first w-table--recent-responses">
               <thead>
                 <tr>
                   <th>Respondent</th>
                   <th>Survey</th>
-                  <th>Submitted</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -364,25 +363,21 @@
                 <tr class="is-hoverable">
                   <td>Sarah Kim</td>
                   <td>Q4 Risk Assessment</td>
-                  <td>2 hours ago</td>
                   <td><span class="w-badge is-success">Complete</span></td>
                 </tr>
                 <tr class="is-hoverable">
                   <td>Tom Reeves</td>
                   <td>Q4 Risk Assessment</td>
-                  <td>Yesterday</td>
                   <td><span class="w-badge is-success">Complete</span></td>
                 </tr>
                 <tr class="is-hoverable">
                   <td>Priya Nair</td>
                   <td>Vendor Risk Q.</td>
-                  <td>3 days ago</td>
                   <td><span class="w-badge is-warning">Partial</span></td>
                 </tr>
                 <tr class="is-hoverable">
                   <td>Marcus Lee</td>
                   <td>Q4 Risk Assessment</td>
-                  <td>4 days ago</td>
                   <td><span class="w-badge is-neutral">In progress</span></td>
                 </tr>
               </tbody>
@@ -1003,7 +998,7 @@
                 <div class="w-list-item is-selectable is-selected" onclick="W.select(this,{scope:'#aiThreadList'})">
                   <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-ai-threads"/></svg></div>
                   <div class="w-list-content">
-                    <span class="w-list-title">Analyse Q4 risk trends</span>
+                    <span class="w-list-title">Q4 risk trends</span>
                     <span class="w-list-meta">Updated 1 hour ago · 12 messages</span>
                   </div>
                   <span class="w-badge is-success">Active</span>
@@ -1015,7 +1010,7 @@
                 <div class="w-list-item is-selectable" onclick="W.select(this,{scope:'#aiThreadList'})">
                   <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-ai-threads"/></svg></div>
                   <div class="w-list-content">
-                    <span class="w-list-title">Summarise vendor assessment findings</span>
+                    <span class="w-list-title">Vendor assessment summary</span>
                     <span class="w-list-meta">Updated yesterday · 7 messages</span>
                   </div>
                   <span class="w-badge is-neutral">Idle</span>
@@ -1027,7 +1022,7 @@
                 <div class="w-list-item is-selectable" onclick="W.select(this,{scope:'#aiThreadList'})">
                   <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-ai-threads"/></svg></div>
                   <div class="w-list-content">
-                    <span class="w-list-title">Draft DORA gap analysis report</span>
+                    <span class="w-list-title">DORA gap report</span>
                     <span class="w-list-meta">Updated 3 days ago · 18 messages</span>
                   </div>
                   <span class="w-badge is-neutral">Idle</span>
@@ -1434,11 +1429,6 @@
   <div class="right-panel panel" id="rightPanel">
     <div class="right-panel-inner">
       <div class="right-pane-header">
-        <span class="right-pane-home" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z" stroke-linejoin="round"/>
-          </svg>
-        </span>
         <div class="right-pane-header-text">
           <span class="right-pane-title" id="rightPaneTitle">Survey manager</span>
           <span class="right-pane-subtitle" id="rightPaneSubtitle">Context drilldown</span>

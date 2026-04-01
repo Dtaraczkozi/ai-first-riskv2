@@ -653,10 +653,8 @@ html, body {
 .sb-thread-item__text {
   flex: 1;
   min-width: 0;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: var(--text-lines-default);
-  overflow: hidden;
+  display: block;
+  overflow: visible;
   word-break: break-word;
 }
 
@@ -701,14 +699,15 @@ html, body {
   background: var(--color-ui-scrollbar-handle);
   border-radius: 4px;
 }
-/* Same horizontal inset as `.sb-inner`; icon above title like sidebar + module stack */
+/* Same horizontal inset as `.sb-inner`; icon above title like sidebar + module stack.
+   Horizontal padding matches `.mp-body` so title aligns with cards below. */
 .mp-header {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
   gap: var(--space-1);
-  padding: 10px 0 12px;
+  padding: 10px var(--space-3) 12px;
   flex-shrink: 0;
   width: 100%;
   box-sizing: border-box;
@@ -766,10 +765,7 @@ html, body {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border-bottom: 1px solid var(--color-ui-divider-default);
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: var(--text-lines-default);
-  overflow: hidden;
+  overflow: visible;
   word-break: break-word;
 }
 .mp-agent-strip__empty {
@@ -784,7 +780,7 @@ html, body {
 }
 .mp-agent-strip__btn {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-1);
   width: 100%;
   padding: 10px var(--space-2);
@@ -811,8 +807,9 @@ html, body {
   height: 16px;
   flex-shrink: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  margin-top: 2px;
   color: var(--color-type-muted);
 }
 .mp-agent-strip__icon svg {
@@ -891,10 +888,8 @@ html, body {
   line-height: var(--type-title-h3-lg-line-height);
   letter-spacing: var(--type-title-h3-lg-letter-spacing);
   color: var(--color-type-default);
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: var(--text-lines-default);
-  overflow: hidden;
+  display: block;
+  overflow: visible;
   word-break: break-word;
 }
 .mp-thread-chat__messages {
@@ -1006,38 +1001,31 @@ html, body {
 }
 
 .right-pane-header {
-  position: relative;
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-1);
+  justify-content: flex-start;
   padding: var(--space-1-5) var(--space-2);
-  padding-left: calc(var(--space-2) + 28px);
   border-bottom: 1px solid var(--color-ui-divider-default);
   min-height: 52px;
 }
 .right-pane-header-text {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 2px;
   min-width: 0;
+  width: 100%;
+  max-width: 100%;
 }
-.right-pane-home {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-type-muted);
-  position: absolute;
-  left: var(--space-2);
-}
+/* Atlas: side sheet / panel header — title h3-lg emphasis, subtitle text-md */
 .right-pane-title {
-  font-size: var(--type-text-body-size);
-  font-weight: var(--type-text-body-emphasis-weight);
+  font-size: var(--type-title-h3-lg-size);
+  line-height: var(--type-title-h3-lg-line-height);
+  letter-spacing: var(--type-title-h3-lg-letter-spacing);
+  font-weight: var(--type-title-h3-lg-emphasis-weight);
   color: var(--color-type-default);
-  letter-spacing: 0.02em;
-  text-align: center;
+  text-align: left;
   width: 100%;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -1046,10 +1034,12 @@ html, body {
   word-break: break-word;
 }
 .right-pane-subtitle {
-  font-size: var(--type-text-sm-size);
-  font-weight: var(--type-text-sm-weight);
+  font-size: var(--type-text-md-size);
+  line-height: var(--type-text-md-line-height);
+  letter-spacing: var(--type-text-md-letter-spacing);
+  font-weight: var(--type-text-md-weight);
   color: var(--color-type-muted);
-  letter-spacing: 0.02em;
+  text-align: left;
   width: 100%;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -1071,27 +1061,28 @@ html, body {
 .right-drill-section {
   margin-bottom: var(--space-2);
 }
+/* Atlas: section label — body emphasis, overline-style (was text-sm) */
 .right-drill-section h4 {
-  font-size: var(--type-text-sm-size);
-  font-weight: var(--type-text-sm-weight);
+  font-size: var(--type-text-body-size);
+  line-height: var(--type-text-body-line-height);
+  font-weight: var(--type-text-body-emphasis-weight);
   color: var(--color-type-disabled);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: var(--space-1);
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: var(--text-lines-default);
-  overflow: hidden;
+  display: block;
+  overflow: visible;
   word-break: break-word;
 }
+/* Atlas: supporting copy — semantic text-body */
 .right-drill-hint {
-  font-size: var(--type-text-sm-size);
+  font-size: var(--type-text-body-size);
+  line-height: var(--type-text-body-line-height);
+  letter-spacing: var(--type-text-body-letter-spacing);
+  font-weight: var(--type-text-body-weight);
   color: var(--color-type-muted);
-  line-height: 1.45;
   margin-bottom: var(--space-1-5);
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: var(--text-lines-default);
-  overflow: hidden;
+  display: block;
+  overflow: visible;
   word-break: break-word;
 }

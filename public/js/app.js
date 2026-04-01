@@ -386,62 +386,52 @@ const STEP_LABELS = {
 const AGENT_THREADS = [
   {
     id: "at-survey-copy",
-    title:
-      "Q4 survey wording — aligning risk terminology with the updated enterprise policy, board reporting cadence, and cross-functional review comments",
+    title: "Q4 survey wording",
     workflowView: "survey-manager",
   },
   {
     id: "at-survey-remind",
-    title:
-      "Reminder email for pending business units — tone, escalation path, and deadline language consistent with last quarter’s comms audit findings",
+    title: "Pending-unit reminder email",
     workflowView: "survey-manager",
   },
   {
     id: "at-id-pipeline",
-    title:
-      "Identification pipeline triage — which draft risks to advance given capacity, duplicate detection, and dependency on workshop outcomes",
+    title: "Identification triage",
     workflowView: "identification-overview",
   },
   {
     id: "at-workshop-agenda",
-    title:
-      "Cross-functional workshop agenda — timeboxing, stakeholder coverage, and which scenarios to defer to a follow-up async deep dive",
+    title: "Workshop agenda",
     workflowView: "workshop-manager",
   },
   {
     id: "at-lib-templates",
-    title:
-      "Library template recommendations — matching object types to first-pass operational and IT risks with minimal customization",
+    title: "Library templates",
     workflowView: "library-suggestions",
   },
   {
     id: "at-assess-residual",
-    title:
-      "Residual risk sign-off — evidence package, control test freshness, and exception handling before committee review",
+    title: "Residual sign-off",
     workflowView: "assessment-overview",
   },
   {
     id: "at-mit-plan",
-    title:
-      "Mitigation treatment plan — owner assignment for the integration dependency blocker, milestones, and risk office accountability",
+    title: "Mitigation owners",
     workflowView: "mitigation-overview",
   },
   {
     id: "at-report-pack",
-    title:
-      "Monthly executive risk pack — export order, chart theming, and appendix tables aligned to the reporting calendar",
+    title: "Executive risk pack",
     workflowView: "reporting",
   },
   {
     id: "at-general-tips",
-    title:
-      "General workspace guidance — exports, filters, and where to find the latest reporting presets without breaking your saved views",
+    title: "Workspace tips",
     workflowView: null,
   },
   {
     id: "at-general-shortcuts",
-    title:
-      "Navigation and layout shortcuts — middle column, right drilldown, and when to collapse panels for focus work",
+    title: "Navigation shortcuts",
     workflowView: null,
   },
 ];

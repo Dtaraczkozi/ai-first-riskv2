@@ -220,8 +220,10 @@
 .w-collapsible-trigger {
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
   gap: var(--space-1);
   width: 100%;
+  min-width: 0;
   padding: var(--space-1-5) var(--space-2);
   background: none;
   border: none;
@@ -229,6 +231,17 @@
   font-family: inherit;
   color: var(--color-type-default);
   text-align: left;
+}
+
+.w-collapsible-trigger .w-card-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: unset;
 }
 .w-collapsible-trigger:hover {
   background: var(--color-surface-variant-subtle);
@@ -700,6 +713,49 @@
   vertical-align: middle;
 }
 
+/*
+ * Survey manager — Recent responses (Respondent · Survey · Status)
+ * Auto layout + min width avoids overlapping headers in narrow panels.
+ */
+.w-table.w-table--name-first.w-table--recent-responses {
+  table-layout: auto;
+  min-width: 22rem;
+}
+
+.w-table.w-table--name-first.w-table--recent-responses th:not(:first-child),
+.w-table.w-table--name-first.w-table--recent-responses td:not(:first-child) {
+  width: auto;
+  min-width: 0;
+}
+
+.w-table.w-table--name-first.w-table--recent-responses th:nth-child(2),
+.w-table.w-table--name-first.w-table--recent-responses td:nth-child(2) {
+  min-width: 6rem;
+  max-width: 14rem;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  max-height: none;
+  overflow: visible;
+  vertical-align: top;
+}
+
+.w-table.w-table--name-first.w-table--recent-responses th:nth-child(3),
+.w-table.w-table--name-first.w-table--recent-responses td:nth-child(3) {
+  min-width: 5.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 10rem;
+  vertical-align: middle;
+}
+
+.w-table.w-table--name-first.w-table--recent-responses th:first-child,
+.w-table.w-table--name-first.w-table--recent-responses td:first-child {
+  min-width: 6.5rem;
+  max-width: 9rem;
+}
+
 /* Recently identified risks: clamp names; status / badges never wrap */
 .w-table--recent-risks td:first-child {
   max-height: none;
@@ -882,6 +938,16 @@
   word-break: break-word;
 }
 
+/* AI Threads — full title + meta visible at min width (no 2-line clamp) */
+#view-ai-threads .w-list-title,
+#view-ai-threads .w-list-meta {
+  display: block;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: unset;
+  overflow: visible;
+  word-break: break-word;
+}
+
 
 /* ═══════════════════════════════════════════════════════════════
    Middle column — narrow / min-width (container = .middle-panel)
@@ -895,6 +961,11 @@
   }
 
   .middle-panel .mp-body {
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+  }
+
+  .middle-panel .mp-header {
     padding-left: var(--space-2);
     padding-right: var(--space-2);
   }
@@ -926,21 +997,22 @@
     word-break: break-word;
   }
 
-  /* Accordion trigger: title full width, count + chevron on next row */
+  /* Accordion: keep title + count + chevron on one row; ellipsis only if title is very long */
   .middle-panel .w-collapsible-trigger {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
-    row-gap: var(--space-0-5);
+    min-width: 0;
   }
 
   .middle-panel .w-collapsible-trigger .w-card-title {
-    flex: 1 0 100%;
+    flex: 1 1 auto;
     min-width: 0;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: var(--text-lines-default, 2);
+    display: block;
     overflow: hidden;
-    word-break: break-word;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: unset;
   }
 
   .middle-panel .w-form-actions {
@@ -963,6 +1035,13 @@
   .middle-panel .w-table td {
     word-break: break-word;
     overflow-wrap: anywhere;
+  }
+
+  /* Recent responses: Status column single-line + ellipsis */
+  .middle-panel .w-table--recent-responses th:nth-child(3),
+  .middle-panel .w-table--recent-responses td:nth-child(3) {
+    word-break: normal;
+    overflow-wrap: normal;
   }
 
   .middle-panel .w-table td.w-table-cell--truncate {
@@ -1053,12 +1132,21 @@
    #proto-root — paragraph clamp + utilities (styles load before widgets)
    ═══════════════════════════════════════════════════════════════ */
 
-#proto-root .w-card-body > p,
-#proto-root .right-pane-drilldown p {
+#proto-root .w-card-body > p {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: var(--text-lines-default, 2);
   overflow: hidden;
+  word-break: break-word;
+}
+
+/* Right panel: full body copy, no 2-line clamp (Atlas text-body in .right-drill-hint / drilldown) */
+#proto-root .right-pane-drilldown p {
+  display: block;
+  overflow: visible;
+  font-size: var(--type-text-body-size);
+  line-height: var(--type-text-body-line-height);
+  letter-spacing: var(--type-text-body-letter-spacing);
   word-break: break-word;
 }
 
