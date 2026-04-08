@@ -122,10 +122,10 @@
             <svg class="sb-item-chevron" width="24" height="24" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
           </button>
           <div class="sb-submenu is-open" id="identificationSubmenu">
-            <button class="sb-subitem" data-view="identification-overview" onclick="navigateTo(this)">Overview</button>
-            <button class="sb-subitem is-active" data-view="survey-manager" onclick="navigateTo(this)">Survey manager</button>
-            <button class="sb-subitem" data-view="workshop-manager" onclick="navigateTo(this)">Workshop manager</button>
-            <button class="sb-subitem" data-view="library-suggestions" onclick="navigateTo(this)">Library suggestions</button>
+            <button class="sb-subitem is-active" data-view="identification-overview" onclick="navigateTo(this)">Overview</button>
+            <button class="sb-subitem" data-view="internal-identification" onclick="navigateTo(this)">Internal identification</button>
+            <button class="sb-subitem" data-view="external-suggestions" onclick="navigateTo(this)">External suggestions</button>
+            <button class="sb-subitem" data-view="survey-manager" onclick="navigateTo(this)">Survey manager</button>
           </div>
 
           <!-- Assessment (expandable container) -->
@@ -136,6 +136,7 @@
           </button>
           <div class="sb-submenu" id="assessmentSubmenu">
             <button class="sb-subitem" data-view="assessment-overview" onclick="navigateTo(this)">Overview</button>
+            <button class="sb-subitem" data-view="assessment-active" onclick="navigateTo(this)">Active assessments</button>
           </div>
 
           <!-- Mitigation (expandable container) -->
@@ -204,10 +205,13 @@
             <rect x="1.5" y="1.5" width="4.5" height="12" fill="currentColor" opacity="0.3" rx="1.5"/>
           </svg>
         </button>
-        <h3 class="mp-title" id="mpTitle">Survey manager</h3>
+        <div class="mp-header-text-row">
+          <h3 class="mp-title" id="mpTitle">Overview</h3>
+          <div class="mp-header-actions" id="mpHeaderActions" hidden></div>
+        </div>
       </div>
 
-      <div class="mp-body mp-view is-active" id="view-survey-manager" data-agent-context="survey-manager">
+      <div class="mp-body mp-view" id="view-survey-manager" data-agent-context="survey-manager">
 
         <!-- ── Stat cards ───────────────────────────────────────── -->
         <div class="w-stat-row">
@@ -228,120 +232,56 @@
           </div>
         </div>
 
-        <!-- ── Collapsible: Survey list ─────────────────────────── -->
-        <div class="w-card w-collapsible is-open" id="surveyListSection">
-          <button class="w-collapsible-trigger" onclick="W.collapse('surveyListSection')">
-            <span class="w-card-title">Surveys</span>
-            <span class="w-card-count">14</span>
-            <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true">
-              <use href="#icon-chevron-down"/>
-            </svg>
-          </button>
-          <div class="w-collapsible-content">
-            <div class="w-card-flush">
-              <div class="w-list" id="surveyList">
+        <div class="w-section-title">Surveys</div>
+        <div class="wf-survey-cards">
 
-                <div class="w-list-item is-selectable is-selected" onclick="W.select(this, {scope:'#surveyList'})">
-                  <div class="w-drag-handle" title="Drag to reorder">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="5" r="1.5" fill="currentColor"/><circle cx="13" cy="5" r="1.5" fill="currentColor"/><circle cx="7" cy="10" r="1.5" fill="currentColor"/><circle cx="13" cy="10" r="1.5" fill="currentColor"/><circle cx="7" cy="15" r="1.5" fill="currentColor"/><circle cx="13" cy="15" r="1.5" fill="currentColor"/></svg>
-                  </div>
-                  <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-identification"/></svg></div>
-                  <div class="w-list-content">
-                    <span class="w-list-title">Q4 Risk Assessment Survey</span>
-                    <span class="w-list-meta">48 responses · Due Dec 15</span>
-                  </div>
-                  <span class="w-badge is-success">Active</span>
-                  <button class="w-ctx-trigger" title="More options" onclick="event.stopPropagation(); W.contextMenu(this,[
-                    {label:'Edit survey', action:()=>{}},
-                    {label:'Duplicate', action:()=>{}},
-                    'divider',
-                    {label:'Archive', action:(){}, danger:false},
-                    {label:'Delete', action:()=>{}, danger:true}
-                  ])">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3" r="1.5" fill="currentColor"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="8" cy="13" r="1.5" fill="currentColor"/></svg>
-                  </button>
-                </div>
-
-                <div class="w-list-item is-selectable" onclick="W.select(this, {scope:'#surveyList'})">
-                  <div class="w-drag-handle" title="Drag to reorder">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="5" r="1.5" fill="currentColor"/><circle cx="13" cy="5" r="1.5" fill="currentColor"/><circle cx="7" cy="10" r="1.5" fill="currentColor"/><circle cx="13" cy="10" r="1.5" fill="currentColor"/><circle cx="7" cy="15" r="1.5" fill="currentColor"/><circle cx="13" cy="15" r="1.5" fill="currentColor"/></svg>
-                  </div>
-                  <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-identification"/></svg></div>
-                  <div class="w-list-content">
-                    <span class="w-list-title">Vendor Risk Questionnaire</span>
-                    <span class="w-list-meta">12 responses · Due Jan 30</span>
-                  </div>
-                  <span class="w-badge is-warning">Draft</span>
-                  <button class="w-ctx-trigger" title="More options" onclick="event.stopPropagation(); W.contextMenu(this,[
-                    {label:'Edit survey', action:()=>{}},
-                    {label:'Duplicate', action:()=>{}},
-                    'divider',
-                    {label:'Delete', action:()=>{}, danger:true}
-                  ])">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3" r="1.5" fill="currentColor"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="8" cy="13" r="1.5" fill="currentColor"/></svg>
-                  </button>
-                </div>
-
-                <div class="w-list-item is-selectable" onclick="W.select(this, {scope:'#surveyList'})">
-                  <div class="w-drag-handle" title="Drag to reorder">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="5" r="1.5" fill="currentColor"/><circle cx="13" cy="5" r="1.5" fill="currentColor"/><circle cx="7" cy="10" r="1.5" fill="currentColor"/><circle cx="13" cy="10" r="1.5" fill="currentColor"/><circle cx="7" cy="15" r="1.5" fill="currentColor"/><circle cx="13" cy="15" r="1.5" fill="currentColor"/></svg>
-                  </div>
-                  <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-identification"/></svg></div>
-                  <div class="w-list-content">
-                    <span class="w-list-title">Annual IT Controls Assessment</span>
-                    <span class="w-list-meta">0 responses · Overdue since Nov 1</span>
-                  </div>
-                  <span class="w-badge is-error">Overdue</span>
-                  <button class="w-ctx-trigger" title="More options" onclick="event.stopPropagation(); W.contextMenu(this,[
-                    {label:'Edit survey', action:()=>{}},
-                    {label:'Extend deadline', action:()=>{}},
-                    'divider',
-                    {label:'Delete', action:()=>{}, danger:true}
-                  ])">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3" r="1.5" fill="currentColor"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="8" cy="13" r="1.5" fill="currentColor"/></svg>
-                  </button>
-                </div>
-
+          <div class="w-card w-collapsible is-open" id="surveyCard1">
+            <button class="w-collapsible-trigger" onclick="W.collapse('surveyCard1')">
+              <span class="w-card-title">Q4 Risk Assessment Survey</span>
+              <span class="w-badge is-success">Active</span>
+              <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+            </button>
+            <div class="w-collapsible-content">
+              <div class="w-card-body">
+                <p class="wf-two-line" style="margin:0 0 var(--space-2)">48 responses · Due Dec 15 · Risk office owner. Expanded: results and AI suggestions from responses (mock).</p>
+                <table class="w-table w-table--fixed">
+                  <thead><tr><th>Suggestion</th><th>From</th><th>Severity</th></tr></thead>
+                  <tbody>
+                    <tr><td>Latency in control testing evidence</td><td>Sarah Kim</td><td><span class="w-badge is-warning">Medium</span></td></tr>
+                    <tr><td>Policy exception — privileged access</td><td>Tom Reeves</td><td><span class="w-badge is-error">High</span></td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- ── Collapsible: New survey form ─────────────────────── -->
-        <div class="w-card w-collapsible" id="newSurveySection">
-          <button class="w-collapsible-trigger" onclick="W.collapse('newSurveySection')">
-            <span class="w-card-title">New survey</span>
-            <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true">
-              <use href="#icon-chevron-down"/>
-            </svg>
-          </button>
-          <div class="w-collapsible-content">
-            <div class="w-card-body">
-              <form class="w-form" onsubmit="return false">
-                <div class="w-form-field">
-                  <label class="w-form-label" for="surveyName">Survey name</label>
-                  <input class="w-form-input" type="text" id="surveyName" placeholder="e.g. Q1 Operational Risk Review">
-                </div>
-                <div class="w-form-field">
-                  <label class="w-form-label" for="surveyType">Type</label>
-                  <select class="w-form-select" id="surveyType">
-                    <option>Risk assessment</option>
-                    <option>Vendor questionnaire</option>
-                    <option>Controls self-assessment</option>
-                    <option>Incident debrief</option>
-                  </select>
-                </div>
-                <div class="w-form-field">
-                  <label class="w-form-label" for="surveyDesc">Description</label>
-                  <textarea class="w-form-textarea" id="surveyDesc" placeholder="What is this survey for?"></textarea>
-                </div>
-                <div class="w-form-actions">
-                  <button class="w-btn is-secondary" type="button" onclick="W.collapse('newSurveySection')">Cancel</button>
-                  <button class="w-btn is-primary" type="submit">Create survey</button>
-                </div>
-              </form>
+          <div class="w-card w-collapsible" id="surveyCard2">
+            <button class="w-collapsible-trigger" onclick="W.collapse('surveyCard2')">
+              <span class="w-card-title">Vendor Risk Questionnaire</span>
+              <span class="w-badge is-warning">Draft</span>
+              <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+            </button>
+            <div class="w-collapsible-content">
+              <div class="w-card-body">
+                <p class="wf-two-line" style="margin:0 0 var(--space-2)">12 responses · Due Jan 30 · Draft message and recipients not finalised.</p>
+                <p class="right-drill-hint" style="margin:0">No suggestions until publish (mock).</p>
+              </div>
             </div>
           </div>
+
+          <div class="w-card w-collapsible" id="surveyCard3">
+            <button class="w-collapsible-trigger" onclick="W.collapse('surveyCard3')">
+              <span class="w-card-title">Annual IT Controls Assessment</span>
+              <span class="w-badge is-error">Overdue</span>
+              <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+            </button>
+            <div class="w-collapsible-content">
+              <div class="w-card-body">
+                <p class="wf-two-line" style="margin:0 0 var(--space-2)">0 responses · Overdue since Nov 1 · Extend or close.</p>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         <!-- ── Table: Recent responses ──────────────────────────── -->
@@ -406,316 +346,169 @@
       <!-- ═══════════════════════════════════════════════════
            VIEW: Identification Overview
            ═══════════════════════════════════════════════════ -->
-      <div class="mp-body mp-view" id="view-identification-overview" data-agent-context="identification-overview">
+      <div class="mp-body mp-view is-active" id="view-identification-overview" data-agent-context="identification-overview">
 
-        <div class="w-stat-row">
-          <div class="w-card w-stat">
-            <span class="w-stat-value">47</span>
-            <span class="w-stat-label">Risks identified</span>
-            <span class="w-stat-trend is-up">+8 this quarter</span>
+        <div class="w-card wf-id-viz">
+          <div class="w-card-header">
+            <span class="w-card-title">Newly surfaced risks by origin</span>
           </div>
-          <div class="w-card w-stat">
-            <span class="w-stat-value">3</span>
-            <span class="w-stat-label">Active sources</span>
-            <span class="w-stat-trend">Surveys, Workshops, Library</span>
-          </div>
-          <div class="w-card w-stat">
-            <span class="w-stat-value">12</span>
-            <span class="w-stat-label">Awaiting review</span>
-            <span class="w-stat-trend is-down">↑ from 5</span>
-          </div>
-        </div>
-
-        <div class="w-card w-collapsible is-open" id="recentRisksSection">
-          <button class="w-collapsible-trigger" onclick="W.collapse('recentRisksSection')">
-            <span class="w-card-title">Recently identified risks</span>
-            <span class="w-card-count">47</span>
-            <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
-          </button>
-          <div class="w-collapsible-content">
-            <div class="w-card-flush">
-              <table class="w-table w-table--recent-risks">
-                <thead>
-                  <tr>
-                    <th scope="col">Risk</th>
-                    <th scope="col" class="w-table--recent-risks__col-source">Source</th>
-                    <th scope="col" class="w-table--recent-risks__col-identified">Identified</th>
-                    <th scope="col" class="w-table--recent-risks__col-status">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr class="is-hoverable">
-                    <td><span class="w-table--recent-risks__name">Third-party data breach exposure</span></td>
-                    <td class="w-table--recent-risks__col-source"><span class="w-badge is-neutral">Survey</span></td>
-                    <td class="w-table--recent-risks__col-identified">2 days ago</td>
-                    <td class="w-table--recent-risks__col-status"><span class="w-badge is-warning">Pending</span></td>
-                  </tr>
-                  <tr class="is-hoverable">
-                    <td><span class="w-table--recent-risks__name">Regulatory change — DORA compliance gap</span></td>
-                    <td class="w-table--recent-risks__col-source"><span class="w-badge is-neutral">Library</span></td>
-                    <td class="w-table--recent-risks__col-identified">4 days ago</td>
-                    <td class="w-table--recent-risks__col-status"><span class="w-badge is-success">In assessment</span></td>
-                  </tr>
-                  <tr class="is-hoverable">
-                    <td><span class="w-table--recent-risks__name">Insufficient backup testing frequency</span></td>
-                    <td class="w-table--recent-risks__col-source"><span class="w-badge is-neutral">Workshop</span></td>
-                    <td class="w-table--recent-risks__col-identified">1 week ago</td>
-                    <td class="w-table--recent-risks__col-status"><span class="w-badge is-warning">Pending</span></td>
-                  </tr>
-                  <tr class="is-hoverable">
-                    <td><span class="w-table--recent-risks__name">Key person dependency — IT architecture</span></td>
-                    <td class="w-table--recent-risks__col-source"><span class="w-badge is-neutral">Survey</span></td>
-                    <td class="w-table--recent-risks__col-identified">1 week ago</td>
-                    <td class="w-table--recent-risks__col-status"><span class="w-badge is-success">In assessment</span></td>
-                  </tr>
-                  <tr class="is-hoverable">
-                    <td><span class="w-table--recent-risks__name">Obsolete access control policies</span></td>
-                    <td class="w-table--recent-risks__col-source"><span class="w-badge is-neutral">Workshop</span></td>
-                    <td class="w-table--recent-risks__col-identified">2 weeks ago</td>
-                    <td class="w-table--recent-risks__col-status"><span class="w-badge is-neutral">Approved</span></td>
-                  </tr>
-                </tbody>
-              </table>
+          <div class="w-card-body wf-id-viz__body">
+            <div class="wf-id-viz__bar">
+              <span class="wf-id-viz__label">External</span>
+              <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill" style="width:56%"></div></div>
+              <span class="wf-id-viz__n">28</span>
+            </div>
+            <div class="wf-id-viz__bar">
+              <span class="wf-id-viz__label">Internal</span>
+              <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill wf-id-viz__fill--alt" style="width:44%"></div></div>
+              <span class="wf-id-viz__n">22</span>
             </div>
           </div>
         </div>
 
-        <div class="w-card">
+        <div class="w-stat-row wf-id-cards">
+          <button type="button" class="w-card w-stat wf-id-link" onclick="WorkflowViews.goToView('internal-identification')">
+            <span class="w-stat-value">9</span>
+            <span class="w-stat-label">Internal · awaiting approval</span>
+            <span class="w-stat-trend">Open internal identification</span>
+          </button>
+          <button type="button" class="w-card w-stat wf-id-link" onclick="WorkflowViews.goToView('external-suggestions')">
+            <span class="w-stat-value">14</span>
+            <span class="w-stat-label">External · awaiting approval</span>
+            <span class="w-stat-trend">Open external suggestions</span>
+          </button>
+          <button type="button" class="w-card w-stat wf-id-link" onclick="WorkflowViews.goToView('survey-manager')">
+            <span class="w-stat-value">62</span>
+            <span class="w-stat-label">Surveys · responses pending</span>
+            <span class="w-stat-trend">Open survey manager</span>
+          </button>
+        </div>
+
+        <div class="w-card wf-click-card" role="button" tabindex="0" onclick="WorkflowViews.openAllSuggestionsDrilldown()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openAllSuggestionsDrilldown();}">
           <div class="w-card-header">
-            <span class="w-card-title">Source breakdown</span>
+            <span class="w-card-title">All suggestions</span>
+            <span class="w-card-count">Open in right panel</span>
           </div>
           <div class="w-card-body">
-            <div style="display:flex;flex-direction:column;gap:var(--space-1-5)">
-              <div style="display:flex;align-items:center;gap:var(--space-1-5)">
-                <span style="flex:1;font-size:var(--type-text-md-size);color:var(--color-type-default)">Surveys</span>
-                <span style="font-size:var(--type-text-md-size);color:var(--color-type-muted)">21 risks</span>
-                <div style="width:120px;height:6px;border-radius:3px;background:var(--color-outline-static);overflow:hidden">
-                  <div style="width:45%;height:100%;background:var(--color-action-primary-default);border-radius:3px"></div>
-                </div>
-              </div>
-              <div style="display:flex;align-items:center;gap:var(--space-1-5)">
-                <span style="flex:1;font-size:var(--type-text-md-size);color:var(--color-type-default)">Workshops</span>
-                <span style="font-size:var(--type-text-md-size);color:var(--color-type-muted)">18 risks</span>
-                <div style="width:120px;height:6px;border-radius:3px;background:var(--color-outline-static);overflow:hidden">
-                  <div style="width:38%;height:100%;background:var(--color-action-primary-default);border-radius:3px"></div>
-                </div>
-              </div>
-              <div style="display:flex;align-items:center;gap:var(--space-1-5)">
-                <span style="flex:1;font-size:var(--type-text-md-size);color:var(--color-type-default)">Library suggestions</span>
-                <span style="font-size:var(--type-text-md-size);color:var(--color-type-muted)">8 risks</span>
-                <div style="width:120px;height:6px;border-radius:3px;background:var(--color-outline-static);overflow:hidden">
-                  <div style="width:17%;height:100%;background:var(--color-action-primary-default);border-radius:3px"></div>
-                </div>
-              </div>
-            </div>
+            <p class="wf-two-line">Consolidated triage: External, Internal, and Survey-derived suggestions in one drilldown (mock).</p>
           </div>
         </div>
 
       </div><!-- /view-identification-overview -->
 
-
       <!-- ═══════════════════════════════════════════════════
-           VIEW: Workshop Manager
+           VIEW: Internal identification
            ═══════════════════════════════════════════════════ -->
-      <div class="mp-body mp-view" id="view-workshop-manager" data-agent-context="workshop-manager">
+      <div class="mp-body mp-view" id="view-internal-identification" data-agent-context="internal-identification">
 
-        <div class="w-stat-row">
-          <div class="w-card w-stat">
-            <span class="w-stat-value">3</span>
-            <span class="w-stat-label">Upcoming</span>
-            <span class="w-stat-trend">Next: Jan 14</span>
-          </div>
-          <div class="w-card w-stat">
-            <span class="w-stat-value">8</span>
-            <span class="w-stat-label">Completed</span>
-            <span class="w-stat-trend is-up">+2 this quarter</span>
-          </div>
-          <div class="w-card w-stat">
-            <span class="w-stat-value">24</span>
-            <span class="w-stat-label">Participants</span>
-            <span class="w-stat-trend is-up">+6 vs last</span>
-          </div>
+        <div class="wf-dropzone" id="wfInternalDropzone" role="button" tabindex="0" onclick="WFInternalUpload.run(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WFInternalUpload.run(this);}">
+          <span class="wf-dropzone__title">Drop documents here or click to simulate upload</span>
+          <span class="wf-dropzone__hint">Past reports, risk register export, employee/org directory (mock)</span>
+        </div>
+        <div class="wf-progress" id="wfInternalProgress" hidden>
+          <div class="wf-progress__bar"><div class="wf-progress__fill" id="wfInternalProgressFill" style="width:0%"></div></div>
+          <span class="wf-progress__label">Processing documents…</span>
         </div>
 
-        <div class="w-card w-collapsible is-open" id="workshopListSection">
-          <button class="w-collapsible-trigger" onclick="W.collapse('workshopListSection')">
-            <span class="w-card-title">Workshops</span>
-            <span class="w-card-count">11</span>
-            <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
-          </button>
-          <div class="w-collapsible-content">
-            <div class="w-card-flush">
-              <div class="w-list" id="workshopList">
-
-                <div class="w-list-item is-selectable is-selected" onclick="W.select(this,{scope:'#workshopList'})">
-                  <div class="w-drag-handle" title="Drag to reorder">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="5" r="1.5" fill="currentColor"/><circle cx="13" cy="5" r="1.5" fill="currentColor"/><circle cx="7" cy="10" r="1.5" fill="currentColor"/><circle cx="13" cy="10" r="1.5" fill="currentColor"/><circle cx="7" cy="15" r="1.5" fill="currentColor"/><circle cx="13" cy="15" r="1.5" fill="currentColor"/></svg>
-                  </div>
-                  <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-identification"/></svg></div>
-                  <div class="w-list-content">
-                    <span class="w-list-title">Operational Risk Deep Dive</span>
-                    <span class="w-list-meta">Jan 14 · 12 invited · Conference room B</span>
-                  </div>
-                  <span class="w-badge is-success">Scheduled</span>
-                  <button class="w-ctx-trigger" title="More options" onclick="event.stopPropagation(); W.contextMenu(this,[{label:'View details',action:()=>{}},{label:'Edit',action:()=>{}},{label:'Cancel workshop',action:()=>{},danger:true}])">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3" r="1.5" fill="currentColor"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="8" cy="13" r="1.5" fill="currentColor"/></svg>
-                  </button>
-                </div>
-
-                <div class="w-list-item is-selectable" onclick="W.select(this,{scope:'#workshopList'})">
-                  <div class="w-drag-handle" title="Drag to reorder">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="5" r="1.5" fill="currentColor"/><circle cx="13" cy="5" r="1.5" fill="currentColor"/><circle cx="7" cy="10" r="1.5" fill="currentColor"/><circle cx="13" cy="10" r="1.5" fill="currentColor"/><circle cx="7" cy="15" r="1.5" fill="currentColor"/><circle cx="13" cy="15" r="1.5" fill="currentColor"/></svg>
-                  </div>
-                  <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-assessment"/></svg></div>
-                  <div class="w-list-content">
-                    <span class="w-list-title">IT Controls Review</span>
-                    <span class="w-list-meta">Feb 3 · 8 invited · Virtual</span>
-                  </div>
-                  <span class="w-badge is-warning">Draft</span>
-                  <button class="w-ctx-trigger" title="More options" onclick="event.stopPropagation(); W.contextMenu(this,[{label:'Edit',action:()=>{}},{label:'Invite participants',action:()=>{}},{label:'Delete',action:()=>{},danger:true}])">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3" r="1.5" fill="currentColor"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="8" cy="13" r="1.5" fill="currentColor"/></svg>
-                  </button>
-                </div>
-
-                <div class="w-list-item is-selectable" onclick="W.select(this,{scope:'#workshopList'})">
-                  <div class="w-drag-handle" title="Drag to reorder">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="5" r="1.5" fill="currentColor"/><circle cx="13" cy="5" r="1.5" fill="currentColor"/><circle cx="7" cy="10" r="1.5" fill="currentColor"/><circle cx="13" cy="10" r="1.5" fill="currentColor"/><circle cx="7" cy="15" r="1.5" fill="currentColor"/><circle cx="13" cy="15" r="1.5" fill="currentColor"/></svg>
-                  </div>
-                  <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-mitigation"/></svg></div>
-                  <div class="w-list-content">
-                    <span class="w-list-title">Vendor Risk Brainstorm</span>
-                    <span class="w-list-meta">Completed Dec 2 · 14 attended · 22 risks surfaced</span>
-                  </div>
-                  <span class="w-badge is-neutral">Complete</span>
-                  <button class="w-ctx-trigger" title="More options" onclick="event.stopPropagation(); W.contextMenu(this,[{label:'View outcomes',action:()=>{}},{label:'Export report',action:()=>{}},{label:'Archive',action:()=>{}}])">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3" r="1.5" fill="currentColor"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="8" cy="13" r="1.5" fill="currentColor"/></svg>
-                  </button>
-                </div>
-
-              </div>
+        <div id="wfInternalAfter" hidden>
+          <div class="w-section-title">Suggestions</div>
+          <div class="w-card wf-click-card" role="button" tabindex="0" onclick="WorkflowViews.openInternalSuggestionsDrilldown()">
+            <div class="w-card-header">
+              <span class="w-card-title">Awaiting your approval</span>
+              <span class="w-badge is-warning">9 suggestions</span>
+            </div>
+            <div class="w-card-body wf-suggestion-summary">
+              <span class="wf-sev"><span class="w-badge is-error">High 2</span></span>
+              <span class="wf-sev"><span class="w-badge is-warning">Medium 4</span></span>
+              <span class="wf-sev"><span class="w-badge is-success">Low 3</span></span>
             </div>
           </div>
-        </div>
 
-        <div class="w-card w-collapsible" id="newWorkshopSection">
-          <button class="w-collapsible-trigger" onclick="W.collapse('newWorkshopSection')">
-            <span class="w-card-title">New workshop</span>
-            <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
-          </button>
-          <div class="w-collapsible-content">
+          <div class="w-section-title" style="margin-top:var(--space-2)">Internal sources</div>
+          <div class="w-card">
+            <div class="w-card-header">
+              <span class="w-card-title">Uploaded documents</span>
+              <span class="w-card-count">4 types</span>
+            </div>
             <div class="w-card-body">
-              <form class="w-form" onsubmit="return false">
-                <div class="w-form-field">
-                  <label class="w-form-label" for="wsName">Workshop name</label>
-                  <input class="w-form-input" type="text" id="wsName" placeholder="e.g. Q2 Strategic Risk Review">
-                </div>
-                <div class="w-form-field">
-                  <label class="w-form-label" for="wsDate">Date</label>
-                  <input class="w-form-input" type="date" id="wsDate">
-                </div>
-                <div class="w-form-field">
-                  <label class="w-form-label" for="wsFormat">Format</label>
-                  <select class="w-form-select" id="wsFormat">
-                    <option>In-person</option>
-                    <option>Virtual</option>
-                    <option>Hybrid</option>
-                  </select>
-                </div>
-                <div class="w-form-actions">
-                  <button class="w-btn is-secondary" type="button" onclick="W.collapse('newWorkshopSection')">Cancel</button>
-                  <button class="w-btn is-primary" type="submit">Create workshop</button>
-                </div>
-              </form>
+              <ul class="wf-doc-list">
+                <li><span>Annual risk report 2025.pdf</span><button type="button" class="w-btn is-ghost">Remove</button></li>
+                <li><span>Risk register — enterprise.xlsx</span><button type="button" class="w-btn is-ghost">Remove</button></li>
+                <li><span>HR — role directory (anonymised).csv</span><button type="button" class="w-btn is-ghost">Remove</button></li>
+                <li><span>Org chart — narrative.docx</span><button type="button" class="w-btn is-ghost">Remove</button></li>
+              </ul>
             </div>
           </div>
         </div>
 
-      </div><!-- /view-workshop-manager -->
-
+      </div><!-- /view-internal-identification -->
 
       <!-- ═══════════════════════════════════════════════════
-           VIEW: Library Suggestions
+           VIEW: External suggestions
            ═══════════════════════════════════════════════════ -->
-      <div class="mp-body mp-view" id="view-library-suggestions" data-agent-context="library-suggestions">
+      <div class="mp-body mp-view" id="view-external-suggestions" data-agent-context="external-suggestions">
 
-        <div class="w-stat-row">
-          <div class="w-card w-stat">
-            <span class="w-stat-value">6</span>
-            <span class="w-stat-label">New suggestions</span>
-            <span class="w-stat-trend is-up">AI-generated</span>
+        <div class="wf-tabs" role="tablist" aria-label="External intake">
+          <button type="button" class="wf-tab is-active" role="tab" aria-selected="true" id="wfTabSug" onclick="WFExtTab.show('sug')">Suggestions <span class="w-badge is-neutral wf-tab-badge" id="wfBadgeExternal">14</span></button>
+          <button type="button" class="wf-tab" role="tab" aria-selected="false" id="wfTabSrc" onclick="WFExtTab.show('src')">External sources</button>
+        </div>
+
+        <div id="wfExtPanelSug">
+          <div class="wf-auto-banner">
+            <p><strong>6 suggestions</strong> were auto-approved based on confidence thresholds. <button type="button" class="w-btn is-ghost" onclick="WorkflowViews.toggleAutoApprovedTable()">Review auto-approved suggestions</button></p>
           </div>
-          <div class="w-card w-stat">
-            <span class="w-stat-value">4</span>
-            <span class="w-stat-label">Pending review</span>
-            <span class="w-stat-trend">Awaiting decision</span>
+          <div id="wfAutoApprovedBlock" class="wf-auto-table-wrap" hidden>
+            <table class="w-table w-table--fixed"><thead><tr><th>Name</th><th>Confidence</th></tr></thead>
+              <tbody><tr><td>Third-party concentration</td><td style="color:var(--color-success-default)">94%</td></tr></tbody></table>
           </div>
-          <div class="w-card w-stat">
-            <span class="w-stat-value">23</span>
-            <span class="w-stat-label">Approved</span>
-            <span class="w-stat-trend is-up">+5 this month</span>
+
+          <div class="wf-group-grid">
+            <button type="button" class="w-card wf-ext-group" onclick="WorkflowViews.openExternalGroupDrilldown('news')">
+              <span class="wf-ext-group__title">News</span>
+              <span class="wf-ext-group__n">5 awaiting</span>
+              <span class="wf-ext-group__sev">H 1 · M 3 · L 1</span>
+            </button>
+            <button type="button" class="w-card wf-ext-group" onclick="WorkflowViews.openExternalGroupDrilldown('competitors')">
+              <span class="wf-ext-group__title">Competitors</span>
+              <span class="wf-ext-group__n">3 awaiting</span>
+              <span class="wf-ext-group__sev">H 0 · M 2 · L 1</span>
+            </button>
+            <button type="button" class="w-card wf-ext-group" onclick="WorkflowViews.openExternalGroupDrilldown('laws')">
+              <span class="wf-ext-group__title">Laws and regulations</span>
+              <span class="wf-ext-group__n">6 awaiting</span>
+              <span class="wf-ext-group__sev">H 2 · M 3 · L 1</span>
+            </button>
           </div>
         </div>
 
-        <div class="w-card w-collapsible is-open" id="libSuggestionsSection">
-          <button class="w-collapsible-trigger" onclick="W.collapse('libSuggestionsSection')">
-            <span class="w-card-title">Suggested risks</span>
-            <span class="w-card-count">6 new</span>
-            <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
-          </button>
-          <div class="w-collapsible-content">
-            <div class="w-card-flush">
-              <div class="w-list" id="suggestionList">
-
-                <div class="w-list-item is-selectable" onclick="W.select(this,{scope:'#suggestionList'})">
-                  <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-ai-threads"/></svg></div>
-                  <div class="w-list-content">
-                    <span class="w-list-title">AI model hallucination in client-facing tools</span>
-                    <span class="w-list-meta">Emerging risk · Technology · Atlas Library v3</span>
-                  </div>
-                  <span class="w-badge is-warning">New</span>
-                  <button class="w-btn is-ghost" style="font-size:var(--type-text-sm-size);padding:0 var(--space-1)" onclick="event.stopPropagation()">Reject</button>
-                  <button class="w-btn is-primary" style="font-size:var(--type-text-sm-size);padding:0 var(--space-1-5)" onclick="event.stopPropagation()">Approve</button>
-                </div>
-
-                <div class="w-list-item is-selectable" onclick="W.select(this,{scope:'#suggestionList'})">
-                  <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-ai-threads"/></svg></div>
-                  <div class="w-list-content">
-                    <span class="w-list-title">Supply chain concentration — single cloud provider</span>
-                    <span class="w-list-meta">Operational risk · Infrastructure · Atlas Library v3</span>
-                  </div>
-                  <span class="w-badge is-warning">New</span>
-                  <button class="w-btn is-ghost" style="font-size:var(--type-text-sm-size);padding:0 var(--space-1)" onclick="event.stopPropagation()">Reject</button>
-                  <button class="w-btn is-primary" style="font-size:var(--type-text-sm-size);padding:0 var(--space-1-5)" onclick="event.stopPropagation()">Approve</button>
-                </div>
-
-                <div class="w-list-item is-selectable" onclick="W.select(this,{scope:'#suggestionList'})">
-                  <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-ai-threads"/></svg></div>
-                  <div class="w-list-content">
-                    <span class="w-list-title">Geopolitical instability — APAC operations</span>
-                    <span class="w-list-meta">Strategic risk · External · Atlas Library v3</span>
-                  </div>
-                  <span class="w-badge is-success">Approved</span>
-                  <button class="w-btn is-ghost is-disabled" style="font-size:var(--type-text-sm-size);padding:0 var(--space-1)" onclick="event.stopPropagation()">Reject</button>
-                  <button class="w-btn is-secondary is-disabled" style="font-size:var(--type-text-sm-size);padding:0 var(--space-1-5)" onclick="event.stopPropagation()">Approved</button>
-                </div>
-
-                <div class="w-list-item is-selectable" onclick="W.select(this,{scope:'#suggestionList'})">
-                  <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-ai-threads"/></svg></div>
-                  <div class="w-list-content">
-                    <span class="w-list-title">Insider threat — privileged access misuse</span>
-                    <span class="w-list-meta">Cyber risk · People · Atlas Library v3</span>
-                  </div>
-                  <span class="w-badge is-warning">New</span>
-                  <button class="w-btn is-ghost" style="font-size:var(--type-text-sm-size);padding:0 var(--space-1)" onclick="event.stopPropagation()">Reject</button>
-                  <button class="w-btn is-primary" style="font-size:var(--type-text-sm-size);padding:0 var(--space-1-5)" onclick="event.stopPropagation()">Approve</button>
-                </div>
-
+        <div id="wfExtPanelSrc" hidden>
+          <div class="wf-toolbar">
+            <input class="w-form-input wf-toolbar__search" type="search" placeholder="Search sources…" aria-label="Search sources"/>
+            <select class="w-form-select wf-toolbar__filter" aria-label="Filter"><option>All</option><option>Regulators</option><option>News</option></select>
+          </div>
+          <div class="w-list">
+            <div class="w-list-item is-selectable" onclick="WorkflowViews.openExternalSourceHistory()">
+              <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-identification"/></svg></div>
+              <div class="w-list-content">
+                <span class="w-list-title">FCA regulatory news</span>
+                <span class="w-list-meta">Feed · UK</span>
               </div>
+              <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation()">Open</button>
+              <button type="button" class="w-btn is-ghost" onclick="event.stopPropagation();if(confirm('Remove this source?'))alert('Removed (mock).');">Remove</button>
+            </div>
+            <div class="w-list-item is-selectable" onclick="WorkflowViews.openExternalSourceHistory()">
+              <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-identification"/></svg></div>
+              <div class="w-list-content">
+                <span class="w-list-title">Reuters — sector</span>
+                <span class="w-list-meta">News</span>
+              </div>
+              <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation()">Open</button>
+              <button type="button" class="w-btn is-ghost" onclick="event.stopPropagation();if(confirm('Remove this source?'))alert('Removed (mock).');">Remove</button>
             </div>
           </div>
         </div>
 
-      </div><!-- /view-library-suggestions -->
+      </div><!-- /view-external-suggestions -->
 
 
       <!-- ═══════════════════════════════════════════════════
@@ -723,21 +516,71 @@
            ═══════════════════════════════════════════════════ -->
       <div class="mp-body mp-view" id="view-assessment-overview" data-agent-context="assessment-overview">
 
-        <div class="w-stat-row">
+        <div class="w-stat-row wf-assess-row">
+          <div class="w-card w-stat">
+            <span class="w-stat-value">4</span>
+            <span class="w-stat-label">In setup</span>
+            <span class="w-stat-trend">Dispatch pending</span>
+          </div>
+          <div class="w-card w-stat">
+            <span class="w-stat-value">12</span>
+            <span class="w-stat-label">Awaiting responses</span>
+            <span class="w-stat-trend">In flight</span>
+          </div>
+          <div class="w-card w-stat">
+            <span class="w-stat-value">3</span>
+            <span class="w-stat-label">Ready for synthesis</span>
+            <span class="w-stat-trend">Quorum met</span>
+          </div>
+        </div>
+        <div class="w-stat-row wf-assess-row">
+          <div class="w-card w-stat">
+            <span class="w-stat-value">2</span>
+            <span class="w-stat-label">Awaiting approval</span>
+            <span class="w-stat-trend">Sign-off</span>
+          </div>
+          <div class="w-card w-stat">
+            <span class="w-stat-value">28</span>
+            <span class="w-stat-label">Completed this period</span>
+            <span class="w-stat-trend is-up">+6 vs last</span>
+          </div>
           <div class="w-card w-stat">
             <span class="w-stat-value">38</span>
-            <span class="w-stat-label">Risks assessed</span>
-            <span class="w-stat-trend is-up">+9 this quarter</span>
+            <span class="w-stat-label">Risks in register</span>
+            <span class="w-stat-trend">Cumulative</span>
           </div>
-          <div class="w-card w-stat">
-            <span class="w-stat-value">5</span>
-            <span class="w-stat-label">High risk</span>
-            <span class="w-stat-trend is-down">Needs attention</span>
+        </div>
+
+        <div class="w-card wf-assess-viz">
+          <div class="w-card-header">
+            <span class="w-card-title">Preliminary L × I (open assessments)</span>
           </div>
-          <div class="w-card w-stat">
-            <span class="w-stat-value">11</span>
-            <span class="w-stat-label">In progress</span>
-            <span class="w-stat-trend">Across 4 owners</span>
+          <div class="w-card-body wf-assess-viz__body">
+            <div class="wf-id-viz__bar">
+              <span class="wf-id-viz__label">Low L</span>
+              <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill" style="width:22%"></div></div>
+              <span class="wf-id-viz__n">8</span>
+            </div>
+            <div class="wf-id-viz__bar">
+              <span class="wf-id-viz__label">Med L</span>
+              <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill wf-id-viz__fill--alt" style="width:48%"></div></div>
+              <span class="wf-id-viz__n">17</span>
+            </div>
+            <div class="wf-id-viz__bar">
+              <span class="wf-id-viz__label">High L</span>
+              <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill" style="width:30%"></div></div>
+              <span class="wf-id-viz__n">11</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-card wf-click-card" role="button" tabindex="0" onclick="WorkflowViews.openAtRiskDrilldown()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openAtRiskDrilldown();}">
+          <div class="w-card-header">
+            <span class="w-card-title">All at-risk assessments</span>
+            <span class="w-card-count">Open in right panel</span>
+          </div>
+          <div class="w-card-body">
+            <p class="wf-two-line">Deadline, quorum, and owner — filterable table (mock).</p>
           </div>
         </div>
 
@@ -796,6 +639,52 @@
         </div>
 
       </div><!-- /view-assessment-overview -->
+
+
+      <!-- ═══════════════════════════════════════════════════
+           VIEW: Active assessments
+           ═══════════════════════════════════════════════════ -->
+      <div class="mp-body mp-view" id="view-assessment-active" data-agent-context="assessment-active">
+
+        <p class="right-drill-hint" style="margin:0 0 var(--space-2)">Select an assessment to load state-specific context in the right panel (setup → monitoring → synthesis → approval).</p>
+
+        <div class="w-list">
+          <div class="w-list-item is-selectable is-selected" onclick="WorkflowViews.openAssessmentCardDrilldown('a1')">
+            <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-assessment"/></svg></div>
+            <div class="w-list-content">
+              <span class="w-list-title">Q4 Vendor concentration risk</span>
+              <span class="w-list-meta">In flight · 4/6 submitted · Due Apr 12</span>
+            </div>
+            <span class="w-badge is-warning">Monitoring</span>
+          </div>
+          <div class="w-list-item is-selectable" onclick="WorkflowViews.openAssessmentCardDrilldown('a2')">
+            <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-assessment"/></svg></div>
+            <div class="w-list-content">
+              <span class="w-list-title">IT Controls — annual cycle</span>
+              <span class="w-list-meta">Setup &amp; dispatch · AI pre-fill ready</span>
+            </div>
+            <span class="w-badge is-neutral">Setup</span>
+          </div>
+          <div class="w-list-item is-selectable" onclick="WorkflowViews.openAssessmentCardDrilldown('a3')">
+            <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-assessment"/></svg></div>
+            <div class="w-list-content">
+              <span class="w-list-title">DORA ICT resilience — pilot</span>
+              <span class="w-list-meta">Awaiting approval · Score 3.4 ± 0.6</span>
+            </div>
+            <span class="w-badge is-success">Approval</span>
+          </div>
+        </div>
+
+        <div class="w-card" style="margin-top:var(--space-2)">
+          <div class="w-card-header">
+            <span class="w-card-title">State preview (mock)</span>
+          </div>
+          <div class="w-card-body">
+            <p class="wf-two-line" style="margin:0">States 1–4 from assessment.md: monitoring shows submission spread; synthesis shows aggregated score and divergence; approval shows audit trail and handoff to mitigation.</p>
+          </div>
+        </div>
+
+      </div><!-- /view-assessment-active -->
 
 
       <!-- ═══════════════════════════════════════════════════
@@ -1344,9 +1233,12 @@
                 <div class="w-form-field">
                   <label class="w-form-label" for="prefDefaultView">Default landing view</label>
                   <select class="w-form-select" id="prefDefaultView">
-                    <option>Identification overview</option>
-                    <option selected>Survey manager</option>
+                    <option selected>Identification overview</option>
+                    <option>Internal identification</option>
+                    <option>External suggestions</option>
+                    <option>Survey manager</option>
                     <option>Assessment overview</option>
+                    <option>Active assessments</option>
                     <option>Reporting</option>
                   </select>
                 </div>
@@ -1430,11 +1322,44 @@
     <div class="right-panel-inner">
       <div class="right-pane-header">
         <div class="right-pane-header-text">
-          <span class="right-pane-title" id="rightPaneTitle">Survey manager</span>
-          <span class="right-pane-subtitle" id="rightPaneSubtitle">Context drilldown</span>
+          <span class="right-pane-title" id="rightPaneTitle">Overview</span>
+          <span class="right-pane-subtitle" id="rightPaneSubtitle">Identification health</span>
         </div>
       </div>
       <div class="right-pane-body right-pane-drilldown" id="rightDrilldown"></div>
+    </div>
+  </div>
+
+  <!-- New survey modal (header CTA in Survey manager) -->
+  <div class="wf-modal" id="wfSurveyModal" hidden aria-hidden="true" role="dialog" aria-labelledby="wfSurveyModalTitle">
+    <div class="wf-modal__backdrop" onclick="WorkflowViews.closeSurveyModal()"></div>
+    <div class="wf-modal__panel" role="document">
+      <div class="wf-modal__head">
+        <h2 class="wf-modal__title" id="wfSurveyModalTitle">New survey</h2>
+        <button type="button" class="tb-btn" onclick="WorkflowViews.closeSurveyModal()" aria-label="Close">✕</button>
+      </div>
+      <div class="wf-modal__body">
+        <form class="w-form" onsubmit="return false">
+          <div class="w-form-field">
+            <label class="w-form-label" for="wfSurveyMsg">Survey message / body</label>
+            <textarea class="w-form-textarea" id="wfSurveyMsg" rows="4" placeholder="AI draft (mock)…"></textarea>
+          </div>
+          <div class="w-form-field">
+            <label class="w-form-label" for="wfSurveyRecipients">Recipients</label>
+            <select class="w-form-select" id="wfSurveyRecipients" multiple size="4">
+              <option>Risk committee</option>
+              <option>IT leadership</option>
+              <option>Business unit heads</option>
+              <option>Internal audit</option>
+            </select>
+            <span class="right-drill-hint">Agent suggestions for message and recipients (mock).</span>
+          </div>
+          <div class="w-form-actions">
+            <button type="button" class="w-btn is-secondary" onclick="WorkflowViews.closeSurveyModal()">Cancel</button>
+            <button type="submit" class="w-btn is-primary" onclick="alert('Created (mock)');WorkflowViews.closeSurveyModal();return false;">Create survey</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 

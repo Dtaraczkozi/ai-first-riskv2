@@ -50,9 +50,9 @@ const DRILLDOWN = {
       </div>`,
   },
   "identification-overview": {
-    subtitle: "Identification pipeline",
+    subtitle: "Identification health",
     html: `
-      <div class="right-drill-hint">Snapshot of risk intake across workflows tied to Identification.</div>
+      <div class="right-drill-hint">Open <strong>All suggestions</strong> in the overview to triage External / Internal / Survey-derived items.</div>
       <div class="right-drill-section"><h4>Pipeline</h4>
         <div class="w-card"><div class="w-card-body">
           <p class="right-drill-hint" style="margin:0">Draft 8 · In review 5 · Approved 14</p>
@@ -63,34 +63,42 @@ const DRILLDOWN = {
           <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Business units</span><span class="w-list-meta">Contributors</span></div></div>
         </div></div>`,
   },
-  "workshop-manager": {
-    subtitle: "Workshops",
+  "internal-identification": {
+    subtitle: "Internal intake",
     html: `
-      <div class="right-drill-hint">Sessions scheduled from the middle panel drive this drilldown.</div>
-      <div class="right-drill-section"><h4>Upcoming</h4>
+      <div class="right-drill-hint">Upload documents to generate suggestions; review the summary card then open the suggestion table.</div>
+      <div class="right-drill-section"><h4>Next</h4>
         <div class="w-list">
-          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Cross-functional workshop</span><span class="w-list-meta">Thu 14:00 · Room B</span></div></div>
-          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Control walkthrough</span><span class="w-list-meta">Next week</span></div></div>
+          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Deduplicate near-duplicates</span><span class="w-list-meta">2 pairs</span></div></div>
         </div></div>`,
   },
-  "library-suggestions": {
-    subtitle: "Library",
+  "external-suggestions": {
+    subtitle: "External signals",
     html: `
-      <div class="right-drill-hint">Suggested objects and templates aligned with Identification.</div>
-      <div class="right-drill-section"><h4>Suggestions</h4>
+      <div class="right-drill-hint">News, competitors, and laws — grouped suggestions with confidence and auto-approve ribbon (mock).</div>
+      <div class="right-drill-section"><h4>Feeds</h4>
         <div class="w-card"><div class="w-card-body">
-          <p class="right-drill-hint" style="margin:0">Apply a suggested risk template to accelerate drafting.</p>
+          <p class="right-drill-hint" style="margin:0">3 active feeds · 2 paused</p>
         </div></div></div>`,
   },
   "assessment-overview": {
-    subtitle: "Assessment",
+    subtitle: "Assessment posture",
     html: `
-      <div class="right-drill-hint">Ratings and control tests for the Assessment workflow.</div>
-      <div class="right-drill-section"><h4>Status</h4>
+      <div class="right-drill-hint">In setup, in flight, synthesis, and approval — counts mirror the overview cards.</div>
+      <div class="right-drill-section"><h4>Signals</h4>
         <div class="w-list">
-          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Inherent risk</span><span class="w-list-meta">Updated 2d ago</span></div></div>
-          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Residual risk</span><span class="w-list-meta">Awaiting sign-off</span></div></div>
+          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Quorum risk</span><span class="w-list-meta">2 assessments</span></div></div>
+          <div class="w-list-item"><div class="w-list-content"><span class="w-list-title">Deadline &lt; 7d</span><span class="w-list-meta">5 assessments</span></div></div>
         </div></div>`,
+  },
+  "assessment-active": {
+    subtitle: "Per-assessment work",
+    html: `
+      <div class="right-drill-hint">Select an assessment in the list to see state-specific details here.</div>
+      <div class="right-drill-section"><h4>Tip</h4>
+        <div class="w-card"><div class="w-card-body">
+          <p class="right-drill-hint" style="margin:0">Setup → monitoring → synthesis → approval follow the assessment.md contract.</p>
+        </div></div></div>`,
   },
   "mitigation-overview": {
     subtitle: "Mitigation",
@@ -366,19 +374,21 @@ function applySidebarState() {
 const STEP_ICON_SYMBOL = {
   "survey-manager": "icon-identification",
   "identification-overview": "icon-identification",
-  "workshop-manager": "icon-identification",
-  "library-suggestions": "icon-library",
+  "internal-identification": "icon-identification",
+  "external-suggestions": "icon-identification",
   "assessment-overview": "icon-assessment",
+  "assessment-active": "icon-assessment",
   "mitigation-overview": "icon-mitigation",
   reporting: "icon-reporting",
 };
 
 const STEP_LABELS = {
   "survey-manager": "Survey manager",
-  "identification-overview": "Identification overview",
-  "workshop-manager": "Workshop manager",
-  "library-suggestions": "Library suggestions",
-  "assessment-overview": "Assessment overview",
+  "identification-overview": "Overview",
+  "internal-identification": "Internal identification",
+  "external-suggestions": "External suggestions",
+  "assessment-overview": "Overview",
+  "assessment-active": "Active assessments",
   "mitigation-overview": "Mitigation overview",
   reporting: "Reporting",
 };
@@ -400,14 +410,14 @@ const AGENT_THREADS = [
     workflowView: "identification-overview",
   },
   {
-    id: "at-workshop-agenda",
-    title: "Workshop agenda",
-    workflowView: "workshop-manager",
+    id: "at-internal-docs",
+    title: "Internal document intake",
+    workflowView: "internal-identification",
   },
   {
-    id: "at-lib-templates",
-    title: "Library templates",
-    workflowView: "library-suggestions",
+    id: "at-external-feeds",
+    title: "External feed review",
+    workflowView: "external-suggestions",
   },
   {
     id: "at-assess-residual",
@@ -458,18 +468,18 @@ const AGENT_THREAD_MESSAGES = {
       text: "Eight drafts are past SLA; five are in review. I’d prioritize the two with cross-functional dependencies.",
     },
   ],
-  "at-workshop-agenda": [
-    { role: "user", text: "Session B is running long — what should we cut?" },
+  "at-internal-docs": [
+    { role: "user", text: "What should we upload next for internal identification?" },
     {
       role: "agent",
-      text: "Shorten the control walkthrough by one case study and move the deep dive to async handout.",
+      text: "Prioritise the latest risk register export and the HR role directory — they raise the most dedupe candidates with last quarter’s workshop notes.",
     },
   ],
-  "at-lib-templates": [
-    { role: "user", text: "Which template fits a first-pass operational risk?" },
+  "at-external-feeds": [
+    { role: "user", text: "Any regulatory items to fast-track?" },
     {
       role: "agent",
-      text: "Use the operational risk starter template; it includes inherent/residual placeholders and control mapping.",
+      text: "The outsourcing consultation piece has two high-confidence suggestions; queue them before the competitor news cluster.",
     },
   ],
   "at-assess-residual": [
@@ -511,8 +521,8 @@ const AGENT_THREAD_MESSAGES = {
 
 const AGENT_THREADS_BY_ID = Object.fromEntries(AGENT_THREADS.map((t) => [t.id, t]));
 
-let agentThreadReturnViewId = "survey-manager";
-let agentThreadReturnTitle = "Survey manager";
+let agentThreadReturnViewId = "identification-overview";
+let agentThreadReturnTitle = "Overview";
 /** Set while the agent thread view is open (for CTA + sidebar active state). */
 let agentThreadCurrentId = null;
 
@@ -738,6 +748,9 @@ function navigateTo(el) {
     const target = document.getElementById("view-" + viewId);
     if (target) target.classList.add("is-active");
     updateRightDrilldown(viewId, label);
+    if (typeof window.WorkflowViews !== "undefined" && window.WorkflowViews.onNavigate) {
+      window.WorkflowViews.onNavigate(viewId);
+    }
   }
 }
 
@@ -867,13 +880,13 @@ function bootProtoShell() {
     layoutMiddleRightPair(mw);
   });
   syncDrilldownFromActiveNav();
+  const initialView = document.querySelector(".sb-subitem.is-active[data-view]")?.dataset.view;
+  if (initialView && typeof window.WorkflowViews !== "undefined" && window.WorkflowViews.onNavigate) {
+    window.WorkflowViews.onNavigate(initialView);
+  }
   initAgentThreadsUI();
   syncMiddleToggleButtons();
 
-  if (typeof W !== "undefined" && W.dragReorder) {
-    W.dragReorder("surveyList");
-    W.dragReorder("workshopList");
-  }
 
   sidebarToggle.addEventListener("click", () => {
     sidebarCollapsed = !sidebarCollapsed;

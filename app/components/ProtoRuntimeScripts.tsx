@@ -6,7 +6,11 @@ import { useEffect } from "react";
  * Loads prototype behaviour after hydration. Raw <script> tags in RSC layout are
  * unreliable (can be dropped or reordered). Injecting here guarantees execution.
  */
-const SCRIPT_CHAIN = ["/js/widgets.js", "/js/app.js"] as const;
+const SCRIPT_CHAIN = [
+  "/js/widgets.js",
+  "/js/workflow-views.js",
+  "/js/app.js",
+] as const;
 
 let loadChainPromise: Promise<void> | null = null;
 
