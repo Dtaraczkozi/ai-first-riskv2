@@ -196,10 +196,20 @@
       <nav class="sb-nav sb-nav--threads is-hidden" id="sbNavThreads" aria-label="All agent threads">
         <div class="sb-section sb-section--thread-new">
           <div class="sb-new-thread">
-            <button type="button" class="w-btn is-secondary sb-new-thread__btn" id="sbNewThreadBtn" aria-haspopup="true" aria-expanded="false">
-              New thread
+            <button
+              type="button"
+              class="w-btn is-secondary sb-new-thread__btn sb-new-thread__btn--dropdown"
+              id="sbNewThreadBtn"
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-label="New thread, choose thread type"
+            >
+              <span class="sb-new-thread__btn-label">New thread</span>
+              <svg class="sb-new-thread__btn-chevron" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                <use href="#icon-chevron-down" />
+              </svg>
             </button>
-            <div class="sb-new-thread__menu" id="sbNewThreadMenu" hidden role="menu">
+            <div class="sb-new-thread__menu" id="sbNewThreadMenu" hidden role="menu" aria-labelledby="sbNewThreadBtn">
               <button type="button" class="sb-new-thread__menu-item" role="menuitem" data-sb-new="general">General thread</button>
               <button type="button" class="sb-new-thread__menu-item" role="menuitem" data-sb-new="topic">Topic-specific thread</button>
               <button type="button" class="sb-new-thread__menu-item" role="menuitem" data-sb-new="pick">Select element…</button>
@@ -225,10 +235,8 @@
     <div class="mp-inner">
 
       <div class="mp-header" id="mpHeader">
-        <div class="mp-header-text-row">
-          <h3 class="mp-title" id="mpTitle">Overview</h3>
-          <div class="mp-header-actions" id="mpHeaderActions" hidden></div>
-        </div>
+        <h3 class="mp-title" id="mpTitle">Overview</h3>
+        <div class="mp-header-actions" id="mpHeaderActions" hidden></div>
       </div>
 
       <div class="mp-body mp-view" id="view-survey-manager" data-agent-context="survey-manager">
@@ -368,23 +376,135 @@
            ═══════════════════════════════════════════════════ -->
       <div class="mp-body mp-view is-active" id="view-identification-overview" data-agent-context="identification-overview">
 
-        <div class="w-card wf-id-viz" aria-describedby="wfIdVizSummary">
-          <p id="wfIdVizSummary" class="visually-hidden">
-            Summary: External origin 28 newly surfaced risks, Internal 22. Relative share about 56 percent external and 44 percent internal.
-          </p>
-          <div class="w-card-header">
-            <span class="w-card-title">Newly surfaced risks by origin</span>
-          </div>
-          <div class="w-card-body wf-id-viz__body">
-            <div class="wf-id-viz__bar">
-              <span class="wf-id-viz__label">External</span>
-              <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill" style="width:56%"></div></div>
-              <span class="wf-id-viz__n">28</span>
+        <p id="wfIdVizA11y" class="visually-hidden">
+          Identification overview: origin split external 28, internal 22, survey 12; severity high 14, medium 30, low 18; monthly suggestions October 16 through March 20, peak January 28 (mock).
+        </p>
+        <div class="wf-id-dashboard" aria-describedby="wfIdVizSummary wfIdVizA11y">
+            <div class="w-card wf-id-viz">
+              <div class="w-card-header">
+                <span class="w-card-title">Newly surfaced risks by origin</span>
+                <span class="w-card-count">Last 90 days · 62 items</span>
+              </div>
+              <div class="w-card-body wf-id-viz__body">
+                <p class="wf-id-viz__intro" id="wfIdVizSummary">
+                  Mix is shifting toward external intake as news and regulator feeds widen; internal uploads remain steady (mock).
+                </p>
+                <div class="wf-id-viz__bar">
+                  <span class="wf-id-viz__label">External</span>
+                  <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill" style="width:45%"></div></div>
+                  <span class="wf-id-viz__n">28</span>
+                </div>
+                <div class="wf-id-viz__bar">
+                  <span class="wf-id-viz__label">Internal</span>
+                  <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill wf-id-viz__fill--alt" style="width:35%"></div></div>
+                  <span class="wf-id-viz__n">22</span>
+                </div>
+                <div class="wf-id-viz__bar">
+                  <span class="wf-id-viz__label">Survey</span>
+                  <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill wf-id-viz__fill--survey" style="width:20%"></div></div>
+                  <span class="wf-id-viz__n">12</span>
+                </div>
+                <div class="wf-id-viz__divider" role="presentation"></div>
+                <p class="wf-id-viz__section-label">By indicative severity (same period)</p>
+                <div class="wf-id-viz__bar">
+                  <span class="wf-id-viz__label">High</span>
+                  <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill wf-id-viz__fill--sev-h" style="width:22%"></div></div>
+                  <span class="wf-id-viz__n">14</span>
+                </div>
+                <div class="wf-id-viz__bar">
+                  <span class="wf-id-viz__label">Medium</span>
+                  <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill wf-id-viz__fill--sev-m" style="width:48%"></div></div>
+                  <span class="wf-id-viz__n">30</span>
+                </div>
+                <div class="wf-id-viz__bar">
+                  <span class="wf-id-viz__label">Low</span>
+                  <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill wf-id-viz__fill--sev-l" style="width:30%"></div></div>
+                  <span class="wf-id-viz__n">18</span>
+                </div>
+              </div>
             </div>
-            <div class="wf-id-viz__bar">
-              <span class="wf-id-viz__label">Internal</span>
-              <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill wf-id-viz__fill--alt" style="width:44%"></div></div>
-              <span class="wf-id-viz__n">22</span>
+
+            <div class="w-card wf-id-viz wf-id-viz--chart">
+              <div class="w-card-header">
+                <span class="w-card-title">Suggestions logged over time</span>
+                <span class="w-card-count">Monthly · identification queue</span>
+              </div>
+              <div class="w-card-body">
+                <p class="wf-id-viz__intro">
+                  Volume reflects items entering triage after automated de-duplication. Peak aligns with quarter-end reporting (mock).
+                </p>
+                <figure class="wf-id-barchart" aria-label="Vertical bar chart: suggestions per month from October through March. Values 16, 19, 24, 28, 22, and 20. Highest in January at 28.">
+                  <div class="wf-id-barchart__plot">
+                    <div class="wf-id-barchart__col">
+                      <span class="wf-id-barchart__value">16</span>
+                      <div class="wf-id-barchart__bar-hold">
+                        <div class="wf-id-barchart__bar" style="height: 57%"></div>
+                      </div>
+                      <span class="wf-id-barchart__mo">Oct</span>
+                    </div>
+                    <div class="wf-id-barchart__col">
+                      <span class="wf-id-barchart__value">19</span>
+                      <div class="wf-id-barchart__bar-hold">
+                        <div class="wf-id-barchart__bar" style="height: 68%"></div>
+                      </div>
+                      <span class="wf-id-barchart__mo">Nov</span>
+                    </div>
+                    <div class="wf-id-barchart__col">
+                      <span class="wf-id-barchart__value">24</span>
+                      <div class="wf-id-barchart__bar-hold">
+                        <div class="wf-id-barchart__bar" style="height: 86%"></div>
+                      </div>
+                      <span class="wf-id-barchart__mo">Dec</span>
+                    </div>
+                    <div class="wf-id-barchart__col">
+                      <span class="wf-id-barchart__value">28</span>
+                      <div class="wf-id-barchart__bar-hold">
+                        <div class="wf-id-barchart__bar wf-id-barchart__bar--peak" style="height: 100%"></div>
+                      </div>
+                      <span class="wf-id-barchart__mo">Jan</span>
+                    </div>
+                    <div class="wf-id-barchart__col">
+                      <span class="wf-id-barchart__value">22</span>
+                      <div class="wf-id-barchart__bar-hold">
+                        <div class="wf-id-barchart__bar" style="height: 79%"></div>
+                      </div>
+                      <span class="wf-id-barchart__mo">Feb</span>
+                    </div>
+                    <div class="wf-id-barchart__col">
+                      <span class="wf-id-barchart__value">20</span>
+                      <div class="wf-id-barchart__bar-hold">
+                        <div class="wf-id-barchart__bar" style="height: 71%"></div>
+                      </div>
+                      <span class="wf-id-barchart__mo">Mar</span>
+                    </div>
+                  </div>
+                  <figcaption class="wf-id-barchart__caption">Scale: 0–28 suggestions per month (mock).</figcaption>
+                </figure>
+              </div>
+            </div>
+
+          <div class="w-card wf-id-viz wf-id-viz--foot">
+            <div class="w-card-header">
+              <span class="w-card-title">Pipeline &amp; throughput</span>
+              <span class="w-card-count">Current snapshot</span>
+            </div>
+            <div class="w-card-body wf-id-throughput">
+              <div class="wf-id-throughput__item">
+                <span class="wf-id-throughput__n">23</span>
+                <span class="wf-id-throughput__lbl">Awaiting first review</span>
+              </div>
+              <div class="wf-id-throughput__item">
+                <span class="wf-id-throughput__n">14</span>
+                <span class="wf-id-throughput__lbl">Owner / control assignment</span>
+              </div>
+              <div class="wf-id-throughput__item">
+                <span class="wf-id-throughput__n">31</span>
+                <span class="wf-id-throughput__lbl">Accepted into assessment</span>
+              </div>
+              <div class="wf-id-throughput__item">
+                <span class="wf-id-throughput__n">8</span>
+                <span class="wf-id-throughput__lbl">Deferred or duplicate</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1319,22 +1439,18 @@
 
   <!-- Right workspace -->
   <div class="right-panel panel" id="rightPanel">
-    <div class="right-panel-inner">
-      <div class="right-pane-header">
-        <button class="tb-btn is-active" id="rightPanelToggle" type="button" title="Side panel: hide / show (or drag the handle)" aria-pressed="true">
-          <svg width="20" height="15" viewBox="0 0 20 15" fill="none" aria-hidden="true">
-            <rect x="0.75" y="0.75" width="18.5" height="13.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="13.25" y1="0.75" x2="13.25" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
-            <rect x="14" y="1.5" width="4.5" height="12" fill="currentColor" opacity="0.3" rx="1.5"/>
-          </svg>
-        </button>
-        <div class="right-pane-header-text">
-          <span class="right-pane-title" id="rightPaneTitle">Overview</span>
-          <span class="right-pane-subtitle" id="rightPaneSubtitle">Identification health</span>
-        </div>
-      </div>
-      <div class="right-pane-body right-pane-drilldown" id="rightDrilldown"></div>
+    <div class="right-pane-header">
+      <button class="tb-btn is-active" id="rightPanelToggle" type="button" title="Side panel: hide / show (or drag the handle)" aria-pressed="true">
+        <svg width="20" height="15" viewBox="0 0 20 15" fill="none" aria-hidden="true">
+          <rect x="0.75" y="0.75" width="18.5" height="13.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="13.25" y1="0.75" x2="13.25" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="14" y="1.5" width="4.5" height="12" fill="currentColor" opacity="0.3" rx="1.5"/>
+        </svg>
+      </button>
+      <span class="right-pane-title" id="rightPaneTitle">Overview</span>
+      <span class="right-pane-subtitle" id="rightPaneSubtitle">Identification health</span>
     </div>
+    <div class="right-pane-body right-pane-drilldown" id="rightDrilldown"></div>
   </div>
 
   <!-- New survey modal (header CTA in Survey manager) -->

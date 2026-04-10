@@ -255,8 +255,23 @@ const CHAT_UI_DOCKED = "docked";
 const CHAT_UI_OVERLAY = "overlay";
 
 const INLINE_AGENT_REPLY_MS = 950;
-const INLINE_AGENT_REPLY_TEXT =
-  "Thanks — I’m using the page snapshot you sent as context for this thread.";
+
+/** Prototype-only canned replies — cycles so demos don’t feel identical every send. */
+const INLINE_AGENT_REPLY_VARIANTS = [
+  "Got it — I’ve captured that for this thread.",
+  "Thanks — I’ll factor in what you shared when responding next.",
+  "Understood. Tell me if you want to go deeper on any part of this.",
+  "Noted. I’m keeping this conversation scoped to your current context.",
+  "Received. Here’s a quick acknowledgment while the full reply is mocked in this prototype.",
+];
+
+let inlineAgentReplyVariantIndex = 0;
+
+function nextInlineAgentReplyText() {
+  const i = inlineAgentReplyVariantIndex % INLINE_AGENT_REPLY_VARIANTS.length;
+  inlineAgentReplyVariantIndex += 1;
+  return INLINE_AGENT_REPLY_VARIANTS[i];
+}
 
 function stripIdsFromSubtree(root) {
   if (!root) return;
@@ -298,6 +313,29 @@ function syncInlineChatColumnWidths(ctx) {
   };
   run();
   requestAnimationFrame(run);
+}
+
+/** Re-sync every expanded overlay when the middle column width changes (drag, sidebar, window resize). */
+function syncExpandedInlineChatWidths() {
+  document.querySelectorAll(".mp-inline-chat--overlay[data-inline-ctx]").forEach((section) => {
+    const ctx = section.dataset.inlineCtx;
+    if (ctx) syncInlineChatColumnWidths(ctx);
+  });
+}
+
+let middlePanelInlineChatResizeObserver = null;
+let middlePanelInlineChatResizeRaf = 0;
+
+function initMiddlePanelInlineChatResizeObserver() {
+  if (!middlePanel || middlePanelInlineChatResizeObserver) return;
+  middlePanelInlineChatResizeObserver = new ResizeObserver(() => {
+    if (middlePanelInlineChatResizeRaf) return;
+    middlePanelInlineChatResizeRaf = requestAnimationFrame(() => {
+      middlePanelInlineChatResizeRaf = 0;
+      syncExpandedInlineChatWidths();
+    });
+  });
+  middlePanelInlineChatResizeObserver.observe(middlePanel);
 }
 
 const MP_INLINE_TOOLBAR_FLIP_MS = 420;
@@ -411,7 +449,13 @@ function fillInlineSnapshot(ctx) {
   const section = qsInlineChatSection(ctx);
   const snap = section?.querySelector("[data-inline-snapshot]");
   if (!main || !snap) return;
+  const thread = getThreadById(getSelectedThreadIdForContext(ctx));
   snap.innerHTML = "";
+  if (!threadShowsPageSnapshot(thread)) {
+    snap.setAttribute("aria-hidden", "true");
+    syncInlineChatColumnWidths(ctx);
+    return;
+  }
   const clone = main.cloneNode(true);
   stripIdsFromSubtree(clone);
   clone.classList.add("mp-inline-chat__snapshot-clone");
@@ -469,7 +513,7 @@ function appendInlineAgentBubble(ctx, text) {
 function updateInlineThreadTitle(ctx, threadId) {
   const section = qsInlineChatSection(ctx);
   const el = section?.querySelector("[data-inline-thread-title]");
-  const t = AGENT_THREADS_BY_ID[threadId];
+  const t = getThreadById(threadId);
   if (el && t) el.textContent = t.title;
 }
 
@@ -598,16 +642,32 @@ function syncResizeHandleVisibility() {
 
 function applyRightCollapsedLayout() {
   if (!middlePanel || !rightPanel) return;
+  rightPanel.classList.add("right-panel--collapse-content-hidden");
+  const wasRightCollapseAnimating =
+    rightPanel.classList.contains("right-panel--collapse-animating") ||
+    (mainRow && mainRow.classList.contains("main-row--right-collapse-animating"));
+
   rightPanel.classList.add("is-hidden");
-  rightPanel.classList.remove("right-panel--drag-reveal", "right-panel--collapse-animating");
+  rightPanel.classList.remove("right-panel--drag-reveal");
+  if (!wasRightCollapseAnimating) {
+    rightPanel.classList.remove("right-panel--collapse-animating");
+  }
   rightPanel.style.width = "";
-  clearMiddleInlineFlex();
+  /* Apply fill before clearing inline flex so !important wins while transition is still suppressed. */
   middlePanel.classList.add("middle-panel--fill");
+  clearMiddleInlineFlex();
   middlePanel.classList.remove("middle-panel--drag-reveal");
   if (mainRow) mainRow.classList.add("main-row--right-collapsed");
   if (mainRow) mainRow.classList.remove("main-row--right-expanding");
   syncRightToggleButtons();
   syncResizeHandleVisibility();
+
+  if (wasRightCollapseAnimating) {
+    requestAnimationFrame(() => {
+      if (rightPanel) rightPanel.classList.remove("right-panel--collapse-animating");
+      if (mainRow) mainRow.classList.remove("main-row--right-collapse-animating");
+    });
+  }
 }
 
 function applyRightWidthPx(w) {
@@ -619,6 +679,7 @@ function applyRightWidthPx(w) {
 
 function collapseRight() {
   if (rightCollapsed || rightCollapseAnimating) return;
+  rightPanel.classList.add("right-panel--collapse-content-hidden");
   rightCollapseAnimating = true;
   savedRightPanelWidth = rightPanelWidth;
   runRightCollapseAnimation(() => {
@@ -632,7 +693,12 @@ function collapseRight() {
 function commitExpandedFromDrag(middleWIntent) {
   if (!middlePanel || !rightPanel) return;
   rightCollapsed = false;
-  rightPanel.classList.remove("is-hidden", "right-panel--drag-reveal", "right-panel--collapse-animating");
+  rightPanel.classList.remove(
+    "is-hidden",
+    "right-panel--drag-reveal",
+    "right-panel--collapse-animating",
+    "right-panel--collapse-content-hidden"
+  );
   middlePanel.classList.remove("middle-panel--fill");
   if (mainRow) mainRow.classList.remove("main-row--right-collapsed", "main-row--right-expanding");
   layoutMiddleRightPair(middleWIntent);
@@ -662,11 +728,24 @@ function applySidebarState() {
   if (sidebarToggleHost && sidebarToggle.parentElement !== sidebarToggleHost) {
     sidebarToggleHost.appendChild(sidebarToggle);
   }
-  requestAnimationFrame(() => {
-    if (!rightCollapsed) {
-      applyRightWidthPx(rightPanelWidth);
-    }
+  /* Middle/right widths: `initSidebarLayoutResizeObserver` reapplies when sidebar width changes (transition). */
+}
+
+/** Re-apply middle/right pixel split from the current sidebar + rails + handle (call after sidebar width changes). */
+function syncMiddleRightToSidebarSlot() {
+  if (!middlePanel || !rightPanel) return;
+  if (rightCollapsed) return;
+  applyRightWidthPx(rightPanelWidth);
+}
+
+let sidebarLayoutResizeObserver = null;
+
+function initSidebarLayoutResizeObserver() {
+  if (!sidebar || sidebarLayoutResizeObserver) return;
+  sidebarLayoutResizeObserver = new ResizeObserver(() => {
+    syncMiddleRightToSidebarSlot();
   });
+  sidebarLayoutResizeObserver.observe(sidebar);
 }
 
 /** Sprite id for each workflow step (16×16 in thread lists). */
@@ -752,6 +831,22 @@ const AGENT_THREADS = [
 
 const AGENT_THREADS_BY_ID = Object.fromEntries(AGENT_THREADS.map((t) => [t.id, t]));
 
+/** Runtime threads (e.g. element pick) — merged into lookups and thread pickers */
+const dynamicAgentThreadsById = Object.create(null);
+
+function getThreadById(id) {
+  if (id == null || id === "") return undefined;
+  return AGENT_THREADS_BY_ID[id] || dynamicAgentThreadsById[id];
+}
+
+function registerElementPickThread(displayName) {
+  const id = `at-pick-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+  const title = String(displayName || "Selected element").trim().slice(0, 120) || "Selected element";
+  const thread = { id, title, workflowView: null, fromElementPick: true };
+  dynamicAgentThreadsById[id] = thread;
+  return thread;
+}
+
 /** Per–workflow-step selected thread for inline chat */
 const inlineThreadSelection = Object.create(null);
 /** Last workflow view with `data-agent-context` (for sidebar “New thread”). */
@@ -775,13 +870,13 @@ function setActiveThreadInSidebar(threadId) {
 function openAgentThreadRelevantPage() {
   let thread = null;
   if (agentThreadCurrentId) {
-    thread = AGENT_THREADS_BY_ID[agentThreadCurrentId];
+    thread = getThreadById(agentThreadCurrentId);
   } else {
     const active = document.querySelector(".mp-view.is-active[data-agent-context]");
     const ctx = active?.dataset.agentContext;
     if (ctx) {
       const tid = inlineThreadSelection[ctx];
-      thread = tid ? AGENT_THREADS_BY_ID[tid] : null;
+      thread = tid ? getThreadById(tid) : null;
     }
   }
   if (!thread?.workflowView) return;
@@ -795,9 +890,8 @@ function updateInlineOpenPageVisibility(ctx) {
   if (!section) return;
   const btn = section.querySelector("[data-inline-open-page]");
   if (!btn) return;
-  const pill = section.querySelector("[data-inline-pill]");
-  const tid = pill?.value || inlineThreadSelection[ctx];
-  const thread = tid ? AGENT_THREADS_BY_ID[tid] : null;
+  const tid = getSelectedThreadIdForContext(ctx);
+  const thread = getThreadById(tid);
   btn.hidden = !thread?.workflowView;
 }
 
@@ -841,7 +935,7 @@ function activateNavForView(viewId) {
 }
 
 function openAgentThreadView(threadId) {
-  const thread = AGENT_THREADS_BY_ID[threadId];
+  const thread = getThreadById(threadId);
   if (!thread) return;
 
   if (thread.workflowView) {
@@ -859,7 +953,7 @@ function openAgentThreadView(threadId) {
   if (!ctx) return;
 
   inlineThreadSelection[ctx] = threadId;
-  syncInlinePillForContext(ctx);
+  syncInlineThreadPickerForContext(ctx);
   clearInlineMessages(ctx);
   updateInlineThreadTitle(ctx, threadId);
   fillInlineSnapshot(ctx);
@@ -902,10 +996,13 @@ function setSidebarNavMode(mode) {
 function buildAllThreadsList() {
   const host = document.getElementById("sbAllThreadsList");
   if (!host) return;
-  host.innerHTML = AGENT_THREADS.filter((t) => t.id !== "at-page-element").map((t) => {
+  const staticRows = AGENT_THREADS.filter((t) => t.id !== "at-page-element");
+  const dynamicRows = Object.values(dynamicAgentThreadsById);
+  const rows = [...staticRows, ...dynamicRows].map((t) => {
     const icon = stepIconHtml(t.workflowView);
     return `<button type="button" class="sb-thread-item" data-thread-id="${escapeHtml(t.id)}" title="${escapeHtml(t.title)}">${icon}<span class="sb-thread-item__text">${escapeHtml(t.title)}</span></button>`;
-  }).join("");
+  });
+  host.innerHTML = rows.join("");
 }
 
 function topicThreadsFor(ctx) {
@@ -916,6 +1013,53 @@ function generalThreads() {
   return AGENT_THREADS.filter((t) => t.workflowView == null);
 }
 
+/** Topic threads, page snapshot, and element-pick threads use a live canvas snapshot; general-only threads do not. */
+function threadShowsPageSnapshot(thread) {
+  if (!thread) return false;
+  if (thread.workflowView) return true;
+  if (thread.fromElementPick) return true;
+  return thread.id === "at-page-element";
+}
+
+function threadsForInlinePicker(ctx) {
+  const topics = topicThreadsFor(ctx);
+  const gens = generalThreads().filter((t) => t.id !== "at-page-element");
+  const pageEl = AGENT_THREADS_BY_ID["at-page-element"];
+  const list = [...topics, ...gens];
+  if (pageEl) list.push(pageEl);
+  const dynamic = Object.values(dynamicAgentThreadsById);
+  if (dynamic.length) list.push(...dynamic);
+  return list;
+}
+
+function buildInlineThreadMenuItemsHtml(ctx) {
+  return threadsForInlinePicker(ctx)
+    .map((t) => {
+      const icon = stepIconHtml(t.workflowView);
+      return `<button type="button" class="mp-inline-chat__menu-item mp-inline-chat__menu-item--thread" role="menuitem" data-inline-thread-id="${escapeHtml(t.id)}" data-inline-ctx="${escapeHtml(ctx)}">${icon}<span class="mp-inline-chat__menu-item__text">${escapeHtml(t.title)}</span></button>`;
+    })
+    .join("");
+}
+
+function getSelectedThreadIdForContext(ctx) {
+  let tid = inlineThreadSelection[ctx];
+  if (!tid || !getThreadById(tid)) {
+    tid = defaultThreadIdForContext(ctx);
+    inlineThreadSelection[ctx] = tid;
+  }
+  return tid;
+}
+
+function updateInlineComposerHint(ctx) {
+  const section = qsInlineChatSection(ctx);
+  const hint = section?.querySelector(".mp-chat-composer__hint");
+  if (!hint) return;
+  const thread = getThreadById(getSelectedThreadIdForContext(ctx));
+  hint.textContent = threadShowsPageSnapshot(thread)
+    ? "Sending captures the page and opens the conversation panel."
+    : "This thread does not include a page snapshot.";
+}
+
 function defaultThreadIdForContext(ctx) {
   const topics = topicThreadsFor(ctx);
   if (topics.length) return topics[0].id;
@@ -923,51 +1067,38 @@ function defaultThreadIdForContext(ctx) {
   return gens[0]?.id || "";
 }
 
-function buildInlinePillOptionsHtml(ctx) {
-  const topics = topicThreadsFor(ctx);
-  const gens = generalThreads().filter((t) => t.id !== "at-page-element");
-  let html = "";
-  if (topics.length) {
-    html += `<optgroup label="This topic">`;
-    topics.forEach((t) => {
-      html += `<option value="${escapeHtml(t.id)}">${escapeHtml(t.title)}</option>`;
-    });
-    html += `</optgroup>`;
-  }
-  if (gens.length) {
-    html += `<optgroup label="General">`;
-    gens.forEach((t) => {
-      html += `<option value="${escapeHtml(t.id)}">${escapeHtml(t.title)}</option>`;
-    });
-    html += `</optgroup>`;
-  }
-  const pageEl = AGENT_THREADS_BY_ID["at-page-element"];
-  if (pageEl) {
-    html += `<optgroup label="Page">`;
-    html += `<option value="${escapeHtml(pageEl.id)}">${escapeHtml(pageEl.title)}</option>`;
-    html += `</optgroup>`;
-  }
-  return html;
-}
-
 function inlineFieldId(ctx) {
   return String(ctx).replace(/[^a-zA-Z0-9_-]/g, "-");
 }
 
 function buildInlineChatHtml(ctx) {
-  const opts = buildInlinePillOptionsHtml(ctx);
+  const menuItems = buildInlineThreadMenuItemsHtml(ctx);
   const fid = inlineFieldId(ctx);
+  let tid = inlineThreadSelection[ctx];
+  if (!tid || !getThreadById(tid)) {
+    tid = defaultThreadIdForContext(ctx);
+  }
+  const cur = getThreadById(tid);
+  const curIcon = cur ? stepIconHtml(cur.workflowView) : stepIconHtml(null);
+  const curTitle = cur ? escapeHtml(cur.title) : "";
+  const ariaThread = cur ? escapeHtml(cur.title) : "Thread";
   return `
 <section class="mp-inline-chat mp-inline-chat--docked mp-inline-chat--collapsed" data-inline-ctx="${escapeHtml(ctx)}" data-chat-ui="docked" aria-label="Agent conversation">
   <div class="mp-inline-chat__gradient" aria-hidden="true"></div>
   <div class="mp-inline-chat__toolbar-strip">
   <div class="mp-inline-chat__toolbar">
     <div class="mp-inline-chat__toolbar-start">
-      <label class="visually-hidden" for="inline-pill-${fid}">Thread</label>
-      <select id="inline-pill-${fid}" class="mp-inline-chat__pill" data-inline-pill data-inline-ctx="${escapeHtml(ctx)}">
-        ${opts}
-      </select>
       <span class="visually-hidden" data-inline-thread-title></span>
+      <div class="mp-inline-chat__thread-picker-wrap mp-agent-plus-wrap">
+        <button type="button" class="mp-inline-chat__thread-picker" id="inline-thread-picker-${fid}" data-inline-thread-picker data-inline-ctx="${escapeHtml(ctx)}" title="Choose thread" aria-haspopup="menu" aria-expanded="false" aria-label="Thread: ${ariaThread}">
+          <span class="mp-inline-chat__thread-picker-icon" data-inline-picker-icon aria-hidden="true">${curIcon}</span>
+          <span class="mp-inline-chat__thread-picker-label" data-inline-picker-label>${curTitle}</span>
+          <svg class="mp-inline-chat__thread-picker-chevron" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+        </button>
+        <div class="mp-inline-chat__menu mp-inline-chat__thread-menu" data-inline-thread-menu hidden role="menu" aria-labelledby="inline-thread-picker-${fid}">
+          ${menuItems}
+        </div>
+      </div>
       <div class="mp-inline-chat__plus-wrap mp-agent-plus-wrap">
         <button type="button" class="mp-inline-chat__plus mp-agent-chat__icon-btn" data-inline-plus data-inline-ctx="${escapeHtml(ctx)}" title="Add thread" aria-label="Add thread" aria-haspopup="true" aria-expanded="false">
           <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-add"/></svg>
@@ -984,8 +1115,8 @@ function buildInlineChatHtml(ctx) {
         <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-open-relevant-page"/></svg>
       </button>
       <button type="button" class="tb-btn mp-agent-chat__icon-btn mp-inline-chat__panel-toggle" data-inline-panel-toggle data-inline-ctx="${escapeHtml(ctx)}" title="Expand thread panel" aria-label="Expand thread to full panel">
-        <img class="mp-inline-chat__panel-ico mp-inline-chat__panel-ico--expand" src="/icons/fullscreen.png" width="18" height="18" alt="" decoding="async" />
-        <img class="mp-inline-chat__panel-ico mp-inline-chat__panel-ico--collapse" src="/icons/exit-fullscreen.png" width="18" height="18" alt="" decoding="async" />
+        <img class="mp-inline-chat__panel-ico mp-inline-chat__panel-ico--expand" src="/icons/fullscreen-gray.svg" width="18" height="18" alt="" decoding="async" />
+        <img class="mp-inline-chat__panel-ico mp-inline-chat__panel-ico--collapse" src="/icons/exit-fullscreen-gray.svg" width="18" height="18" alt="" decoding="async" />
       </button>
     </div>
   </div>
@@ -1006,23 +1137,40 @@ function buildInlineChatHtml(ctx) {
 </section>`;
 }
 
-function syncInlinePillForContext(ctx) {
+function syncInlineThreadPickerForContext(ctx) {
   const section = qsInlineChatSection(ctx);
   if (!section) return;
-  const pill = section.querySelector("[data-inline-pill]");
-  if (!pill) return;
-  let tid = inlineThreadSelection[ctx];
-  if (!tid || !AGENT_THREADS_BY_ID[tid]) {
-    tid = defaultThreadIdForContext(ctx);
-    inlineThreadSelection[ctx] = tid;
+  const threadMenu = section.querySelector("[data-inline-thread-menu]");
+  if (threadMenu) {
+    threadMenu.innerHTML = buildInlineThreadMenuItemsHtml(ctx);
   }
-  pill.value = tid;
-  if (pill.value !== tid) {
-    const fb = defaultThreadIdForContext(ctx);
-    inlineThreadSelection[ctx] = fb;
-    pill.value = fb;
+  const tid = getSelectedThreadIdForContext(ctx);
+  const thread = getThreadById(tid);
+  const labelEl = section.querySelector("[data-inline-picker-label]");
+  const iconEl = section.querySelector("[data-inline-picker-icon]");
+  const pickerBtn = section.querySelector("[data-inline-thread-picker]");
+  if (thread) {
+    if (labelEl) labelEl.textContent = thread.title;
+    if (iconEl) iconEl.innerHTML = stepIconHtml(thread.workflowView);
+    if (pickerBtn) {
+      pickerBtn.setAttribute("aria-label", `Thread: ${thread.title}`);
+    }
   }
+  section.querySelectorAll("[data-inline-thread-id]").forEach((btn) => {
+    const on = btn.getAttribute("data-inline-thread-id") === tid;
+    btn.classList.toggle("is-active", on);
+    if (on) btn.setAttribute("aria-current", "true");
+    else btn.removeAttribute("aria-current");
+  });
   updateInlineOpenPageVisibility(ctx);
+  updateInlineComposerHint(ctx);
+}
+
+function refreshAllInlineThreadMenus() {
+  document.querySelectorAll(".mp-inline-chat[data-inline-ctx]").forEach((sec) => {
+    const c = sec.dataset.inlineCtx;
+    if (c) syncInlineThreadPickerForContext(c);
+  });
 }
 
 function clearInlineMessages(ctx) {
@@ -1037,7 +1185,12 @@ function closeAllInlinePlusMenus() {
     m.hidden = true;
     m.classList.remove("mp-dropdown--above", "mp-dropdown--below");
   });
+  document.querySelectorAll("[data-inline-thread-menu]").forEach((m) => {
+    m.hidden = true;
+    m.classList.remove("mp-dropdown--above", "mp-dropdown--below");
+  });
   document.querySelectorAll("[data-inline-plus], [data-agent-plus]").forEach((b) => b.setAttribute("aria-expanded", "false"));
+  document.querySelectorAll("[data-inline-thread-picker]").forEach((b) => b.setAttribute("aria-expanded", "false"));
 }
 
 function closeSbNewThreadMenu() {
@@ -1060,7 +1213,7 @@ function handleInlineNewThread(kind, ctx) {
   } else {
     inlineThreadSelection[ctx] = defaultThreadIdForContext(ctx);
   }
-  syncInlinePillForContext(ctx);
+  syncInlineThreadPickerForContext(ctx);
   clearInlineMessages(ctx);
   setActiveThreadInSidebar(inlineThreadSelection[ctx]);
 }
@@ -1106,6 +1259,42 @@ function pickModeTargetFromEvent(e) {
   );
 }
 
+/** Name for an element-pick thread: prefer explicit component labels, then the card/region under the click, then the resolved hover target. */
+function pickDisplayNameForAgentSelection(clickTarget, resolvedEl, ctx) {
+  const ctxLabel = STEP_LABELS[ctx] || "";
+  const t = clickTarget instanceof Element ? clickTarget : clickTarget?.parentElement;
+  if (t?.closest) {
+    const labeled = t.closest("[data-agent-component-name], [data-agent-pick-label]");
+    if (labeled) {
+      const explicit =
+        labeled.getAttribute("data-agent-component-name") || labeled.getAttribute("data-agent-pick-label");
+      if (explicit?.trim()) return explicit.trim().slice(0, 120);
+    }
+    const card = t.closest(".w-card, .w-stat, .w-list-item, .w-collapsible, .w-table, [data-agent-pick]");
+    if (card) {
+      const explicit =
+        card.getAttribute("data-agent-component-name") || card.getAttribute("data-agent-pick-label");
+      if (explicit?.trim()) return explicit.trim().slice(0, 120);
+      const titleEl = card.querySelector(
+        ".w-card-header .w-card-title, .w-card-title, .w-list-title, .w-stat-label"
+      );
+      if (titleEl?.textContent?.trim()) return titleEl.textContent.trim().slice(0, 120);
+    }
+  }
+  if (resolvedEl) {
+    const explicit =
+      resolvedEl.getAttribute?.("data-agent-component-name") ||
+      resolvedEl.getAttribute?.("data-agent-pick-label");
+    if (explicit?.trim()) return explicit.trim().slice(0, 120);
+    const titleEl = resolvedEl.querySelector?.(
+      ".w-card-title, .w-list-title, .w-stat-label, h1, h2, h3"
+    );
+    if (titleEl?.textContent?.trim()) return titleEl.textContent.trim().slice(0, 120);
+  }
+  if (ctxLabel) return ctxLabel;
+  return "Selected element";
+}
+
 function initAgentPickModeListeners() {
   document.addEventListener(
     "mousemove",
@@ -1130,12 +1319,13 @@ function initAgentPickModeListeners() {
       e.preventDefault();
       e.stopPropagation();
       const el = pickModeTargetFromEvent(e);
-      const label =
-        el?.getAttribute?.("data-agent-pick-label") ||
-        el?.querySelector?.(".w-card-title, .w-list-title, h1, h2, h3")?.textContent?.trim() ||
-        "this area";
+      const ctx = document.body.dataset.agentPickCtx || lastWorkflowAgentContext;
+      const label = pickDisplayNameForAgentSelection(e.target, el, ctx);
+      const thread = registerElementPickThread(label);
       endAgentPickMode();
-      console.info("[prototype] Context selected:", label);
+      buildAllThreadsList();
+      refreshAllInlineThreadMenus();
+      openAgentThreadView(thread.id);
     },
     true
   );
@@ -1179,19 +1369,19 @@ function initSidebarNewThreadMenu() {
     const kind = item.getAttribute("data-sb-new");
     menu.hidden = true;
     btn.setAttribute("aria-expanded", "false");
-    setSidebarNavMode("workflow");
+    setSidebarNavMode("threads");
     if (kind === "pick") {
       navigateToAgentContextView(lastWorkflowAgentContext);
       setTimeout(() => startAgentPickMode(lastWorkflowAgentContext), 0);
       return;
     }
     if (kind === "general") {
-      inlineThreadSelection[lastWorkflowAgentContext] = "at-general-tips";
-      navigateToAgentContextView(lastWorkflowAgentContext);
-    } else {
-      inlineThreadSelection[lastWorkflowAgentContext] = defaultThreadIdForContext(lastWorkflowAgentContext);
-      navigateToAgentContextView(lastWorkflowAgentContext);
+      openAgentThreadView("at-general-tips");
+      return;
     }
+    openAgentThreadView(
+      defaultThreadIdForContext(lastWorkflowAgentContext) || "at-general-tips"
+    );
   });
 }
 
@@ -1205,26 +1395,43 @@ function initInlineChatMiddlePanelHandlers() {
     section?.querySelector("[data-inline-composer-send]")?.click();
   });
 
-  middlePanel?.addEventListener("change", (e) => {
-    const pill = e.target.closest("[data-inline-pill]");
-    if (!pill) return;
-    const ctx = pill.getAttribute("data-inline-ctx");
-    if (!ctx) return;
-    const tid = pill.value;
-    inlineThreadSelection[ctx] = tid;
-    setActiveThreadInSidebar(tid);
-    clearInlineMessages(ctx);
-    updateInlineOpenPageVisibility(ctx);
-    updateInlineThreadTitle(ctx, tid);
-    if (qsInlineChatSection(ctx)?.classList.contains("mp-inline-chat--overlay")) {
-      fillInlineSnapshot(ctx);
-    }
-  });
-
   middlePanel?.addEventListener("click", (e) => {
     const openRel = e.target.closest("[data-inline-open-page]");
     if (openRel) {
       openAgentThreadRelevantPage();
+      return;
+    }
+
+    const threadPick = e.target.closest("[data-inline-thread-picker]");
+    if (threadPick) {
+      const wrap = threadPick.closest(".mp-inline-chat__thread-picker-wrap");
+      const menu = wrap?.querySelector("[data-inline-thread-menu]");
+      const willOpen = menu?.hidden;
+      closeAllInlinePlusMenus();
+      if (menu && willOpen) {
+        menu.hidden = false;
+        threadPick.setAttribute("aria-expanded", "true");
+        requestAnimationFrame(() => positionDropdownToFitViewport(menu, wrap || threadPick));
+      }
+      e.stopPropagation();
+      return;
+    }
+
+    const threadItem = e.target.closest("[data-inline-thread-id]");
+    if (threadItem?.closest("[data-inline-thread-menu]")) {
+      const tid = threadItem.getAttribute("data-inline-thread-id");
+      const ctx = threadItem.getAttribute("data-inline-ctx");
+      if (!tid || !ctx) return;
+      closeAllInlinePlusMenus();
+      inlineThreadSelection[ctx] = tid;
+      syncInlineThreadPickerForContext(ctx);
+      setActiveThreadInSidebar(tid);
+      clearInlineMessages(ctx);
+      updateInlineThreadTitle(ctx, tid);
+      if (qsInlineChatSection(ctx)?.classList.contains("mp-inline-chat--overlay")) {
+        fillInlineSnapshot(ctx);
+      }
+      e.stopPropagation();
       return;
     }
 
@@ -1275,7 +1482,7 @@ function initInlineChatMiddlePanelHandlers() {
       window.setTimeout(() => {
         const sec = qsInlineChatSection(ctx);
         removeInlineTyping(sec);
-        appendInlineAgentBubble(ctx, INLINE_AGENT_REPLY_TEXT);
+        appendInlineAgentBubble(ctx, nextInlineAgentReplyText());
         scrollInlineThreadToBottom(ctx);
         if (sec) {
           sec.dataset.replyPending = "false";
@@ -1320,7 +1527,13 @@ function initInlineChatMiddlePanelHandlers() {
 }
 
 document.addEventListener("click", (e) => {
-  if (e.target.closest(".mp-agent-plus-wrap") || e.target.closest(".sb-new-thread")) return;
+  if (
+    e.target.closest(".mp-agent-plus-wrap") ||
+    e.target.closest(".mp-inline-chat__thread-picker-wrap") ||
+    e.target.closest(".sb-new-thread")
+  ) {
+    return;
+  }
   closeAllInlinePlusMenus();
   closeSbNewThreadMenu();
 });
@@ -1337,6 +1550,10 @@ function injectInlineChats() {
       main.appendChild(viewEl.firstChild);
     }
 
+    if (!inlineThreadSelection[ctx]) {
+      inlineThreadSelection[ctx] = defaultThreadIdForContext(ctx);
+    }
+
     const tpl = document.createElement("template");
     tpl.innerHTML = buildInlineChatHtml(ctx).trim();
     const inline = tpl.content.firstElementChild;
@@ -1345,10 +1562,7 @@ function injectInlineChats() {
     viewEl.appendChild(main);
     viewEl.appendChild(inline);
 
-    if (!inlineThreadSelection[ctx]) {
-      inlineThreadSelection[ctx] = defaultThreadIdForContext(ctx);
-    }
-    syncInlinePillForContext(ctx);
+    syncInlineThreadPickerForContext(ctx);
     clearInlineMessages(ctx);
     updateInlineOpenPageVisibility(ctx);
     syncInlinePanelToggleButton(inline);
@@ -1359,7 +1573,7 @@ function syncInlineChatForActiveView() {
   const view = document.querySelector(".mp-view.is-active[data-agent-context]");
   if (!view) return;
   const ctx = view.dataset.agentContext;
-  syncInlinePillForContext(ctx);
+  syncInlineThreadPickerForContext(ctx);
   const tid = inlineThreadSelection[ctx] || defaultThreadIdForContext(ctx);
   clearInlineMessages(ctx);
   updateInlineOpenPageVisibility(ctx);
@@ -1472,12 +1686,13 @@ function runRightCollapseAnimation(onComplete) {
   }
 
   rightPanel.classList.add("right-panel--collapse-animating");
+  if (mainRow) mainRow.classList.add("main-row--right-collapse-animating");
   const startRw = rightPanel.getBoundingClientRect().width;
   const t0 = performance.now();
 
   function done() {
-    rightPanel.classList.remove("right-panel--collapse-animating");
-    layoutMiddleRightPair(slot);
+    /* Last frame already committed rw=0; do not call layoutMiddleRightPair here — it would re-enable
+     * transitions (see done() previously removing collapse classes) and fight applyRightCollapsedLayout. */
     rightCollapseRafId = 0;
     onComplete();
   }
@@ -1486,7 +1701,8 @@ function runRightCollapseAnimation(onComplete) {
     const elapsed = now - t0;
     const u = Math.min(1, elapsed / RIGHT_COLLAPSE_MS);
     const rw = startRw * (1 - easeOutCubic(u));
-    layoutMiddleRightPair(slot - rw);
+    /* Bypass min-width clamp so width eases smoothly from current size to 0 (see layoutMiddleRightPair). */
+    layoutMiddleRightPair(slot - rw, { bypassRightClamp: true });
     if (u < 1) {
       rightCollapseRafId = requestAnimationFrame(frame);
     } else {
@@ -1502,7 +1718,10 @@ function cancelRightCollapseAnimation() {
     cancelAnimationFrame(rightCollapseRafId);
     rightCollapseRafId = 0;
   }
-  if (rightPanel) rightPanel.classList.remove("right-panel--collapse-animating");
+  if (rightPanel) {
+    rightPanel.classList.remove("right-panel--collapse-animating", "right-panel--collapse-content-hidden");
+  }
+  if (mainRow) mainRow.classList.remove("main-row--right-collapse-animating");
   rightCollapseAnimating = false;
 }
 
@@ -1513,14 +1732,20 @@ function endOuterDrag() {
   if (mainRow) mainRow.classList.remove("is-resizing-columns");
 }
 
-function layoutMiddleRightPair(middleW) {
+function layoutMiddleRightPair(middleW, opts) {
   if (!middlePanel || !rightPanel) return;
   const slot = pairSlotWidth();
   let mw = Math.max(0, Math.min(slot, middleW));
   let rw = slot - mw;
   if (rw > 0) {
-    rw = clampRightPanelWidth(rw);
-    mw = slot - rw;
+    if (opts?.bypassRightClamp) {
+      const maxR = maxRightWidth();
+      rw = Math.min(maxR, rw);
+      mw = slot - rw;
+    } else {
+      rw = clampRightPanelWidth(rw);
+      mw = slot - rw;
+    }
   } else {
     rw = 0;
     mw = slot;
@@ -1542,6 +1767,7 @@ function bootProtoShell() {
 
   resizeHandle.style.width = `${HANDLE_W}px`;
   applySidebarState();
+  initSidebarLayoutResizeObserver();
   requestAnimationFrame(() => {
     const { mw, rw } = defaultMiddleRightWidths();
     rightPanelWidth = rw;
@@ -1555,6 +1781,7 @@ function bootProtoShell() {
   initAgentThreadsUI();
   initAgentPickModeListeners();
   syncInlineChatForActiveView();
+  initMiddlePanelInlineChatResizeObserver();
   syncRightToggleButtons();
 
   sidebarToggle.addEventListener("click", () => {
@@ -1618,7 +1845,7 @@ function bootProtoShell() {
       expandDragStartX = e.clientX;
       expandDragStartRight = 0;
       rightPanelWidth = 0;
-      rightPanel.classList.remove("is-hidden");
+      rightPanel.classList.remove("is-hidden", "right-panel--collapse-content-hidden");
       rightPanel.classList.add("right-panel--drag-reveal");
       rightPanel.style.width = "0px";
       middlePanel.classList.remove("middle-panel--fill");

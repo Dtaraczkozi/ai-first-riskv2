@@ -76,6 +76,13 @@
   /* Typography: default max lines for flowing copy (nav uses 1 line — see #proto-root .sb-*) */
   --text-lines-default: 2;
   --text-lines-nav: 1;
+
+  /* Inline chat expanded overlay: WCAG 1.4.11 — ≥3:1 vs .w-card / --color-surface-variant (data vis containers) */
+  --mp-chat-overlay-panel-bg: color-mix(
+    in srgb,
+    var(--color-outline-default) 94%,
+    var(--color-outline-active) 6%
+  );
 }
 
 /* ── Reset ── */
@@ -135,6 +142,11 @@ body {
 .main-row.is-resizing-columns .right-icon-rail,
 .main-row.is-resizing-columns .right-panel,
 .main-row.is-resizing-columns .resize-handle {
+  transition: none !important;
+}
+/* Right panel collapse: JS drives width each frame — no CSS transition fighting rAF */
+.main-row.main-row--right-collapse-animating .middle-panel,
+.main-row.main-row--right-collapse-animating .right-panel {
   transition: none !important;
 }
 
@@ -760,21 +772,20 @@ body {
 .mp-inner:has(.mp-inline-chat--expand-swipe) {
   overflow: visible;
 }
-/* Same horizontal inset as `.sb-inner`; icon above title like sidebar + module stack. */
+/* Same horizontal inset as `.sb-inner`; title + optional header actions in one row */
 .mp-header {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: var(--space-1);
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
   padding: 10px var(--mp-main-pad-x) 12px;
   flex-shrink: 0;
   width: 100%;
   box-sizing: border-box;
 }
 .mp-title {
-  flex: none;
-  width: 100%;
+  flex: 1;
   min-width: 0;
   padding-top: 0;
   font-size: var(--type-title-h3-lg-size);
@@ -791,19 +802,6 @@ body {
 .mp-header .tb-btn {
   flex-shrink: 0;
   margin: 0;
-}
-.mp-header-text-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  width: 100%;
-  min-width: 0;
-}
-.mp-header-text-row .mp-title {
-  flex: 1;
-  width: auto;
-  min-width: 0;
 }
 .mp-header-actions:not(:empty) {
   flex-shrink: 0;
@@ -915,7 +913,9 @@ body {
   max-height: none !important;
   border-top: none;
   flex: 1 1 auto;
-  background: var(--color-background-base);
+  background: var(--mp-chat-overlay-panel-bg);
+  /* Separate overlay column from the workflow canvas (Atlas surface vs base) */
+  box-shadow: inset 1px 0 0 var(--color-ui-divider-default);
   min-height: 0;
   overflow: hidden;
   /* Without this, flex stretch ignores width on thread-scroll / composer (screencap stayed full-bleed) */
@@ -955,7 +955,7 @@ body {
   box-sizing: border-box;
   flex: 1 1 auto;
   min-height: 0;
-  background: var(--color-background-base);
+  background: var(--mp-chat-overlay-panel-bg);
 }
 .mp-inline-chat--overlay .mp-chat-composer.mp-inline-chat__composer-wrap {
   align-self: center;
@@ -964,6 +964,8 @@ body {
   max-width: var(--mp-chat-column-w, calc(100% - 2 * var(--mp-inner-pad-x)));
   min-width: 0;
   box-sizing: border-box;
+  background: var(--mp-chat-overlay-panel-bg);
+  border-top: 1px solid var(--color-ui-divider-default);
 }
 /* Expand: full-thread clip-path reveal + toolbar FLIP (collapse is instant — no swipe) */
 @keyframes mp-inline-chat-swipe-reveal-scroll {
@@ -1093,21 +1095,58 @@ body {
   flex: 1 1 auto;
   min-width: 0;
 }
-.mp-inline-chat__pill {
+/* Thread picker — same dropdown pattern as [data-inline-plus] (positioned menu, viewport flip) */
+.mp-inline-chat__thread-picker-wrap {
+  position: relative;
   flex: 1 1 auto;
   min-width: 0;
   max-width: min(100%, 22rem);
+}
+.mp-inline-chat__thread-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  width: 100%;
+  min-width: 0;
+  margin: 0;
   font: inherit;
   font-size: var(--type-text-sm-size);
-  padding: 6px 22px 6px 10px;
+  padding: 6px 10px;
   border-radius: 999px;
   border: 1px solid var(--color-action-primary-default);
   background: var(--color-background-base);
   color: var(--color-type-default);
+  cursor: pointer;
+  text-align: left;
   outline: none;
+  transition: background 0.12s ease;
 }
-.mp-inline-chat__pill:focus {
+.mp-inline-chat__thread-picker:hover {
+  background: var(--color-surface-variant-subtle);
+}
+.mp-inline-chat__thread-picker:focus-visible {
   box-shadow: 0 0 0 2px var(--color-selection-primary-default);
+}
+.mp-inline-chat__thread-picker-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mp-inline-chat__thread-picker-icon .sb-thread-item__icon {
+  margin-top: 0;
+}
+.mp-inline-chat__thread-picker-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mp-inline-chat__thread-picker-chevron {
+  flex-shrink: 0;
+  display: block;
+  color: var(--color-type-muted);
 }
 .mp-inline-chat__toolbar-actions {
   display: flex;
@@ -1174,6 +1213,32 @@ body {
 .mp-inline-chat__menu-item:hover {
   background: var(--color-surface-variant-subtle);
 }
+.mp-inline-chat__menu-item--thread {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-1-5);
+}
+.mp-inline-chat__menu-item__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.25;
+}
+.mp-inline-chat__menu-item--thread .sb-thread-item__icon {
+  margin-top: 2px;
+}
+.mp-inline-chat__menu-item--thread.is-active {
+  background: var(--color-selection-primary-default);
+  color: var(--color-selection-primary-on-selected);
+}
+.mp-inline-chat__menu-item--thread.is-active .sb-thread-item__icon {
+  color: var(--color-selection-primary-on-selected);
+}
+.mp-inline-chat__thread-menu {
+  min-width: min(100%, 280px);
+  max-height: min(60vh, 360px);
+  overflow-y: auto;
+}
 .mp-inline-chat__messages {
   flex: 1 1 auto;
   min-width: 0;
@@ -1196,14 +1261,17 @@ body {
 /* Toolbar + composer: same glyph size in collapsed + expanded */
 .mp-agent-chat__icon-btn svg,
 .mp-inline-chat__toolbar-actions .tb-btn svg,
-.mp-inline-chat__panel-toggle svg,
-.mp-inline-chat__panel-toggle img,
 .mp-chat-composer .tb-btn svg {
   width: 18px;
   height: 18px;
   display: block;
 }
+/* Panel expand/collapse — gray assets from /icons/*-gray.svg (fixed fill, matches toolbar icon size) */
 .mp-inline-chat__panel-toggle img {
+  width: 18px;
+  height: 18px;
+  display: block;
+  flex-shrink: 0;
   object-fit: contain;
 }
 .mp-inline-chat__plus svg {
@@ -1221,7 +1289,7 @@ body {
   justify-content: center;
   border-radius: 8px;
   box-sizing: content-box;
-  color: var(--color-type-default) !important;
+  color: var(--color-type-muted);
   background: unset !important;
   border: none !important;
   box-shadow: none;
@@ -1229,7 +1297,6 @@ body {
 .mp-inline-chat__panel-toggle:hover {
   background: var(--color-surface-variant-subtle) !important;
   border: none !important;
-  color: var(--color-action-primary-default) !important;
 }
 .mp-inline-chat__panel-toggle:focus,
 .mp-inline-chat__panel-toggle:focus-visible {
@@ -1287,6 +1354,23 @@ body {
 }
 .sb-new-thread__btn {
   width: 100%;
+}
+.sb-new-thread__btn--dropdown {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+  box-sizing: border-box;
+}
+.sb-new-thread__btn-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+}
+.sb-new-thread__btn-chevron {
+  flex-shrink: 0;
+  display: block;
+  color: var(--color-type-muted);
 }
 .sb-new-thread__menu {
   position: absolute;
@@ -1447,9 +1531,13 @@ body.is-agent-context-picking .mp-view__main {
 }
 .mp-thread-chat__bubble--agent {
   align-self: flex-start;
-  background: var(--color-surface-variant);
+  background: var(--color-surface-default);
   color: var(--color-type-default);
   border: 1px solid var(--color-ui-divider-default);
+  /* Visually distinct from user bubbles and from page snapshot: primary accent rail */
+  box-shadow:
+    inset 3px 0 0 0 var(--color-selection-primary-indicator),
+    0 1px 2px rgba(0, 0, 0, 0.05);
 }
 .mp-thread-chat__composer {
   flex-shrink: 0;
@@ -1504,6 +1592,7 @@ body.is-agent-context-picking .mp-view__main {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  background: var(--color-background-base);
   transition:
     width var(--middle-layout-duration) var(--middle-layout-ease),
     min-width var(--middle-layout-duration) var(--middle-layout-ease),
@@ -1525,16 +1614,14 @@ body.is-agent-context-picking .mp-view__main {
 }
 .right-panel.right-panel--collapse-animating {
   min-width: 0 !important;
+  transition: none !important;
 }
-.right-panel-inner {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-  min-width: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--color-background-base);
+/* Button / handle collapse: hide drilldown + chrome immediately while width animates */
+.right-panel.right-panel--collapse-content-hidden > * {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: none !important;
 }
 
 .middle-panel.middle-panel--drag-reveal {
@@ -1553,31 +1640,28 @@ body.is-agent-context-picking .mp-view__main {
 
 .right-pane-header {
   flex-shrink: 0;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: var(--space-1);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: var(--space-1);
+  row-gap: 2px;
+  align-items: start;
   padding: var(--space-1-5) var(--space-2);
   border-bottom: 1px solid var(--color-ui-divider-default);
   min-height: 52px;
 }
 .right-pane-header .tb-btn {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: start;
   flex-shrink: 0;
   margin: 2px 0 0 0;
 }
-.right-pane-header-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  flex: 1;
-  min-width: 0;
-  width: auto;
-  max-width: 100%;
-}
 /* Atlas: side sheet / panel header — title h3-lg emphasis, subtitle text-md */
 .right-pane-title {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
   font-size: var(--type-title-h3-lg-size);
   line-height: var(--type-title-h3-lg-line-height);
   letter-spacing: var(--type-title-h3-lg-letter-spacing);
@@ -1592,6 +1676,9 @@ body.is-agent-context-picking .mp-view__main {
   word-break: break-word;
 }
 .right-pane-subtitle {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 0;
   font-size: var(--type-text-md-size);
   line-height: var(--type-text-md-line-height);
   letter-spacing: var(--type-text-md-letter-spacing);
@@ -1677,6 +1764,58 @@ button.wf-id-link.w-stat:hover {
   outline: 2px solid var(--color-action-primary-default);
   outline-offset: 2px;
 }
+/* Identification overview — dashboard grid + full-width foot card */
+.wf-id-dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  align-items: stretch;
+  margin-bottom: var(--space-1);
+}
+.wf-id-dashboard > .wf-id-viz--foot {
+  grid-column: 1 / -1;
+}
+@media (max-width: 900px) {
+  .wf-id-dashboard {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Data viz cards: place subtitle (.w-card-count) below the title */
+.wf-id-viz > .w-card-header,
+.wf-assess-viz > .w-card-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-0-5);
+  min-height: 0;
+}
+.wf-id-viz > .w-card-header .w-card-title,
+.wf-assess-viz > .w-card-header .w-card-title {
+  flex: none;
+  width: 100%;
+}
+.wf-id-viz > .w-card-header .w-card-count,
+.wf-assess-viz > .w-card-header .w-card-count {
+  width: 100%;
+}
+
+.wf-id-viz__intro {
+  margin: 0 0 var(--space-2);
+  font-size: var(--type-text-sm-size);
+  line-height: 1.45;
+  color: var(--color-type-muted);
+}
+.wf-id-viz__section-label {
+  margin: 0 0 var(--space-1);
+  font-size: var(--type-text-sm-size);
+  font-weight: var(--type-text-body-emphasis-weight);
+  color: var(--color-type-default);
+}
+.wf-id-viz__divider {
+  height: 1px;
+  background: var(--color-ui-divider-default);
+  margin: var(--space-1) 0 var(--space-2);
+}
 .wf-id-viz__body {
   display: flex;
   flex-direction: column;
@@ -1704,12 +1843,127 @@ button.wf-id-link.w-stat:hover {
   border-radius: 4px;
 }
 .wf-id-viz__fill--alt {
-  background: var(--color-action-secondary-default);
+  background: var(--color-outline-default);
+}
+.wf-id-viz__fill--survey {
+  background: linear-gradient(
+    90deg,
+    var(--color-status-notification-default),
+    var(--indigo-60, #6b89ff)
+  );
+}
+.wf-id-viz__fill--sev-h {
+  background: var(--color-status-error-default);
+}
+.wf-id-viz__fill--sev-m {
+  background: var(--color-status-warning-default);
+}
+.wf-id-viz__fill--sev-l {
+  background: var(--color-status-success-default);
 }
 .wf-id-viz__n {
   font-size: var(--type-text-md-size);
   font-weight: var(--type-text-md-emphasis-weight);
   text-align: right;
+}
+
+/* Vertical bar chart — suggestions over time */
+.wf-id-barchart {
+  margin: 0;
+  padding: 0;
+}
+.wf-id-barchart__plot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-1);
+  min-height: 0;
+  padding: var(--space-1) 0 var(--space-0-5);
+}
+.wf-id-barchart__col {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-0-5);
+  min-width: 0;
+  max-width: 72px;
+  margin: 0 auto;
+}
+.wf-id-barchart__value {
+  font-size: var(--type-text-sm-size);
+  font-weight: var(--type-text-body-emphasis-weight);
+  color: var(--color-type-default);
+  line-height: 1.2;
+}
+.wf-id-barchart__bar-hold {
+  width: 100%;
+  height: 128px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.wf-id-barchart__bar {
+  width: 100%;
+  max-width: 36px;
+  min-height: 3px;
+  border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(
+    180deg,
+    var(--color-action-primary-default-grad-start),
+    var(--color-action-primary-default)
+  );
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+  transition: transform 0.15s ease;
+}
+.wf-id-barchart__bar--peak {
+  box-shadow:
+    0 0 0 1px var(--color-selection-primary-indicator),
+    0 2px 8px rgba(28, 78, 228, 0.2);
+}
+.wf-id-barchart__mo {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-type-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.wf-id-barchart__caption {
+  margin: var(--space-1-5) 0 0;
+  font-size: var(--type-text-sm-size);
+  color: var(--color-type-muted);
+}
+
+/* Pipeline throughput strip */
+.wf-id-throughput {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+@media (max-width: 720px) {
+  .wf-id-throughput {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.wf-id-throughput__item {
+  padding: var(--space-1-5);
+  border-radius: var(--panel-radius);
+  background: var(--color-surface-variant-subtle);
+  border: 1px solid var(--color-ui-divider-default);
+  text-align: center;
+}
+.wf-id-throughput__n {
+  display: block;
+  font-size: var(--type-title-h3-lg-size);
+  font-weight: var(--type-title-h3-lg-weight);
+  line-height: 1.15;
+  color: var(--color-type-default);
+  margin-bottom: var(--space-0-5);
+}
+.wf-id-throughput__lbl {
+  font-size: var(--type-text-sm-size);
+  color: var(--color-type-muted);
+  line-height: 1.3;
 }
 .wf-dropzone {
   border: 2px dashed var(--color-outline-static);
