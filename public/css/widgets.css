@@ -22,6 +22,14 @@
   box-sizing: border-box;
 }
 
+/* Workflow views: body padding moves to scrollable .mp-view__main; chat is full-bleed */
+.mp-view[data-agent-context].mp-body {
+  padding-left: 0;
+  padding-right: 0;
+  padding-bottom: 0;
+  gap: 0;
+}
+
 /* mp-view — view switching: only .is-active view is shown.
    Views also carry .mp-body to inherit padding/flex/gap. */
 .mp-view {

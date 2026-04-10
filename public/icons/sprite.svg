@@ -67,4 +67,31 @@
       stroke-linecap="round"
     />
   </symbol>
+  <symbol id="icon-select-context" viewBox="0 0 24 24" fill="none">
+    <path
+      d="M12 4v3M12 17v3M4 12h3M17 12h3"
+      stroke="currentColor"
+      stroke-width="1.75"
+      stroke-linecap="round"
+    />
+    <circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.75" />
+  </symbol>
+  <symbol id="icon-add" viewBox="0 0 24 24">
+    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+  </symbol>
+  <symbol id="icon-send" viewBox="0 0 24 24">
+    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor" />
+  </symbol>
+  <symbol id="icon-panel-expand" viewBox="0 0 24 24">
+    <path
+      d="M7 14H5v5h5v-2H7v-3zm12 3h-3v2h5v-5h-2v3zM5 10h2V7h3V5H5v5zm12-5v2h3v3h2V5h-5z"
+      fill="currentColor"
+    />
+  </symbol>
+  <symbol id="icon-panel-collapse" viewBox="0 0 24 24">
+    <path
+      d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm3-11V5h-2v5h5V8h-3z"
+      fill="currentColor"
+    />
+  </symbol>
 </svg>

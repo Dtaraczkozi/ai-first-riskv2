@@ -81,10 +81,16 @@
 /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body {
+html {
+  color-scheme: dark;
+}
+
+html,
+body {
   width: 100%;
   height: 100vh;
   overflow: hidden;
+  color: var(--color-type-default);
   /* Atlas Color.Background — base vertical gradient (app chrome) */
   background: linear-gradient(
     180deg,
@@ -126,7 +132,7 @@ html, body {
 }
 /* Smooth live resize: disable width/flex transitions while dragging the main splitter */
 .main-row.is-resizing-columns .middle-panel,
-.main-row.is-resizing-columns .middle-icon-rail,
+.main-row.is-resizing-columns .right-icon-rail,
 .main-row.is-resizing-columns .right-panel,
 .main-row.is-resizing-columns .resize-handle {
   transition: none !important;
@@ -205,6 +211,7 @@ html, body {
   /* Enables @container rules in widgets.css when the column is narrow (e.g. min width). */
   container-name: middle-panel;
   container-type: inline-size;
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -235,6 +242,14 @@ html, body {
   opacity: 0;
   pointer-events: none;
   overflow: hidden;
+}
+
+/* Middle column fills the pair when the side panel is collapsed */
+.middle-panel.middle-panel--fill {
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: min(280px, 100%) !important;
+  max-width: none !important;
 }
 
 /* Icon rail when main column is collapsed (matches collapsed sidebar width) */
@@ -287,6 +302,59 @@ html, body {
   width: 100%;
 }
 .mir-top-row .tb-btn {
+  margin: 0;
+}
+
+/* Icon rail when side (right) panel is collapsed */
+.right-icon-rail {
+  flex-shrink: 0;
+  width: 0;
+  min-width: 0;
+  max-width: 0;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transition:
+    width var(--middle-layout-duration) var(--middle-layout-ease),
+    min-width var(--middle-layout-duration) var(--middle-layout-ease),
+    max-width var(--middle-layout-duration) var(--middle-layout-ease),
+    opacity var(--middle-layout-duration) var(--middle-layout-ease),
+    margin var(--middle-layout-duration) var(--middle-layout-ease);
+}
+.main-row.main-row--right-collapsed .right-icon-rail {
+  width: var(--middle-rail-width);
+  min-width: var(--middle-rail-width);
+  max-width: var(--middle-rail-width);
+  margin-right: var(--panel-gap);
+  opacity: 1;
+  pointer-events: auto;
+  overflow: hidden;
+}
+.main-row.main-row--right-expanding .right-icon-rail {
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  margin-right: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.rir-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: 100%;
+  min-height: 0;
+}
+.rir-top-row {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0 8px;
+  width: 100%;
+}
+.rir-top-row .tb-btn {
   margin: 0;
 }
 
@@ -672,6 +740,8 @@ html, body {
 
 /* ── Middle panel content (fills panel width when resized) ── */
 .mp-inner {
+  --mp-inner-pad-x: 0;
+  --mp-main-pad-x: var(--space-2);
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -680,34 +750,24 @@ html, body {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: hidden;
   margin: 0;
-  padding: 0 12px;
+  padding: 0 var(--mp-inner-pad-x);
   box-sizing: border-box;
-  /* Match `.sb-nav` — same thin scrollbar at any panel width (incl. min width) */
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-ui-scrollbar-handle) transparent;
 }
-.mp-inner::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+/* Inline chat FLIP / swipe can paint outside .mp-view; .mp-inner overflow would clip it. */
+.mp-inner:has(.mp-inline-chat--overlay),
+.mp-inner:has(.mp-inline-chat--expand-swipe) {
+  overflow: visible;
 }
-.mp-inner::-webkit-scrollbar-track {
-  background: transparent;
-}
-.mp-inner::-webkit-scrollbar-thumb {
-  background: var(--color-ui-scrollbar-handle);
-  border-radius: 4px;
-}
-/* Same horizontal inset as `.sb-inner`; icon above title like sidebar + module stack.
-   Horizontal padding matches `.mp-body` so title aligns with cards below. */
+/* Same horizontal inset as `.sb-inner`; icon above title like sidebar + module stack. */
 .mp-header {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
   gap: var(--space-1);
-  padding: 10px var(--space-3) 12px;
+  padding: 10px var(--mp-main-pad-x) 12px;
   flex-shrink: 0;
   width: 100%;
   box-sizing: border-box;
@@ -749,98 +809,538 @@ html, body {
   flex-shrink: 0;
 }
 
-.middle-panel.middle-panel--thread-open .mp-header {
+.middle-panel.middle-panel--chat-overlay .mp-header {
   display: none;
 }
 
-/* Bottom strip: agent threads — one card containing all thread rows */
-.mp-agent-strip {
-  position: sticky;
-  bottom: 0;
-  margin-top: var(--space-2);
-  padding-top: var(--space-2);
-  padding-bottom: 2px;
-  background: var(--color-background-base);
-  border-top: 1px solid var(--color-ui-divider-default);
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+/* Workflow views: scroll main canvas; inline chat stays pinned to bottom of middle column */
+.mp-view[data-agent-context] {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
 }
-.mp-agent-strip__card {
-  background: var(--color-surface-variant);
-  border-radius: var(--panel-radius);
+.mp-view.is-active[data-agent-context] {
   overflow: hidden;
-  border: 1px solid var(--color-outline-static);
+  gap: 0;
 }
-.mp-agent-strip__card-head {
-  padding: var(--space-1-5) var(--space-2);
-  font-size: var(--type-text-sm-size);
-  font-weight: var(--type-text-md-emphasis-weight);
-  color: var(--color-type-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-bottom: 1px solid var(--color-ui-divider-default);
+/* FLIP / clip-path on the chat can extend past .mp-inline-chat; parent overflow:hidden would clip the
+   strip and it reads as “behind” the scroll layer. Allow overflow only while overlay / swipe / FLIP.
+   Must beat .mp-view.is-active[data-agent-context] { overflow:hidden } — include .is-active. */
+.mp-view.is-active[data-agent-context]:is(
+    :has(.mp-inline-chat--overlay),
+    :has(.mp-inline-chat--expand-swipe)
+  ) {
   overflow: visible;
-  word-break: break-word;
 }
-.mp-agent-strip__empty {
-  margin: 0;
-  padding: var(--space-2);
-  font-size: var(--type-text-body-size);
-  color: var(--color-type-muted);
+/* Full-screen views without inline dock (e.g. expanded agent thread): middle column scrolls here */
+.mp-view.is-active:not([data-agent-context]) {
+  overflow-y: auto;
+  min-height: 0;
 }
-.mp-agent-strip__list {
+.mp-view__main {
   display: flex;
   flex-direction: column;
+  gap: var(--space-2);
+  padding: 0 var(--mp-main-pad-x) var(--space-3);
+  flex: 1 1 0%;
+  min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ui-scrollbar-handle) transparent;
 }
-.mp-agent-strip__btn {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-1);
-  width: 100%;
-  padding: 10px var(--space-2);
-  margin: 0;
-  border: none;
-  border-radius: 0;
-  border-bottom: 1px solid var(--color-outline-static);
-  background: transparent;
-  color: var(--color-type-default);
-  font-family: inherit;
-  font-size: var(--type-text-body-size);
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.12s ease;
+.mp-view__main::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
 }
-.mp-agent-strip__btn:last-child {
-  border-bottom: none;
+.mp-view__main::-webkit-scrollbar-thumb {
+  background: var(--color-ui-scrollbar-handle);
+  border-radius: 4px;
 }
-.mp-agent-strip__btn:hover {
-  background: var(--color-action-secondary-hover);
+
+/* Scrollable canvas: one stacking layer; descendants’ z-index (e.g. menus) stay inside this subtree */
+.mp-view[data-agent-context] > .mp-view__main {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
 }
-.mp-agent-strip__icon {
-  width: 16px;
-  height: 16px;
+
+/* Mid panel inline chat — docked composer + full-panel overlay with scrollable snapshot + messages */
+.mp-inline-chat {
+  /* Match .mp-view__main horizontal inset for toolbar, composer, and message column */
+  --mp-chat-gutter-x: var(--mp-main-pad-x);
   flex-shrink: 0;
+  margin-top: auto;
+  width: calc(100% + 2 * var(--mp-inner-pad-x));
+  margin-left: calc(-1 * var(--mp-inner-pad-x));
+  margin-right: calc(-1 * var(--mp-inner-pad-x));
+  max-width: none;
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  margin-top: 2px;
-  color: var(--color-type-muted);
+  flex-direction: column;
+  background: var(--color-background-base);
+  /* Above .mp-view__main (scroll compositor); translateZ promotes a stable layer in WebKit */
+  z-index: 1000;
+  position: relative;
+  isolation: isolate;
+  transform: translateZ(0);
 }
-.mp-agent-strip__icon svg {
-  width: 16px;
-  height: 16px;
+.mp-inline-chat--docked {
+  min-height: 0;
+  max-height: none;
+}
+/* Collapsed (input-only): hide thread overlay; composer stays under toolbar */
+.mp-inline-chat--collapsed .mp-inline-chat__thread-scroll {
+  display: none !important;
+}
+.mp-inline-chat__panel-ico {
   display: block;
 }
-.mp-agent-strip__btn-text {
-  flex: 1;
-  min-width: 0;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: var(--text-lines-default);
+.mp-inline-chat[data-chat-ui="docked"] .mp-inline-chat__panel-ico--collapse {
+  display: none;
+}
+.mp-inline-chat[data-chat-ui="overlay"] .mp-inline-chat__panel-ico--expand {
+  display: none;
+}
+/* Same horizontal bleed as docked (full middle-column width), not the narrower mp-view content box */
+.mp-inline-chat--overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--mp-inner-pad-x));
+  right: calc(-1 * var(--mp-inner-pad-x));
+  width: auto !important;
+  z-index: 1000;
+  margin: 0 !important;
+  max-height: none !important;
+  border-top: none;
+  flex: 1 1 auto;
+  background: var(--color-background-base);
+  min-height: 0;
   overflow: hidden;
-  word-break: break-word;
+  /* Without this, flex stretch ignores width on thread-scroll / composer (screencap stayed full-bleed) */
+  align-items: center;
+}
+/* Expand swipe: FLIP + clip-path must not be clipped by overflow:hidden on overlay shell */
+.mp-inline-chat--expand-swipe {
+  overflow: visible;
+}
+/* Width from JS: --mp-chat-column-w = getBoundingClientRect().width of .mp-view__main (fallback matches old calc) */
+.mp-inline-chat--overlay .mp-inline-chat__toolbar-strip {
+  align-self: center;
+  width: var(--mp-chat-column-w, calc(100% - 2 * var(--mp-inner-pad-x)));
+  max-width: var(--mp-chat-column-w, calc(100% - 2 * var(--mp-inner-pad-x)));
+  box-sizing: border-box;
+}
+.mp-inline-chat--overlay .mp-inline-chat__toolbar {
+  width: 100%;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--color-ui-divider-default);
+}
+.mp-inline-chat__toolbar-strip {
+  flex-shrink: 0;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 3;
+  transform: translateZ(0);
+}
+/* Paint the scroll column edge-to-edge so flex gaps never show mp-view__main through during overlay layout */
+.mp-inline-chat--overlay .mp-inline-chat__thread-scroll {
+  align-self: center;
+  width: var(--mp-chat-column-w, calc(100% - 2 * var(--mp-inner-pad-x)));
+  max-width: var(--mp-chat-column-w, calc(100% - 2 * var(--mp-inner-pad-x)));
+  min-width: 0;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--color-background-base);
+}
+.mp-inline-chat--overlay .mp-chat-composer.mp-inline-chat__composer-wrap {
+  align-self: center;
+  flex-shrink: 0;
+  width: var(--mp-chat-column-w, calc(100% - 2 * var(--mp-inner-pad-x)));
+  max-width: var(--mp-chat-column-w, calc(100% - 2 * var(--mp-inner-pad-x)));
+  min-width: 0;
+  box-sizing: border-box;
+}
+/* Expand: full-thread clip-path reveal + toolbar FLIP (collapse is instant — no swipe) */
+@keyframes mp-inline-chat-swipe-reveal-scroll {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.mp-inline-chat--expand-swipe .mp-inline-chat__toolbar-strip,
+.mp-inline-chat--expand-swipe .mp-inline-chat__toolbar {
+  flex: 0 0 auto;
+  align-self: center;
+}
+.mp-inline-chat--expand-swipe .mp-inline-chat__thread-scroll {
+  overflow: hidden;
+  animation: mp-inline-chat-swipe-reveal-scroll 0.42s cubic-bezier(0.33, 1, 0.68, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mp-inline-chat--expand-swipe .mp-inline-chat__thread-scroll {
+    animation: none !important;
+    clip-path: none !important;
+  }
+}
+.mp-inline-chat__thread-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ui-scrollbar-handle) transparent;
+}
+.mp-inline-chat__thread-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.mp-inline-chat__thread-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-ui-scrollbar-handle);
+  border-radius: 4px;
+}
+/* Horizontal inset for snapshot strip (matches chat column breathing room) */
+.mp-inline-chat__snapshot {
+  flex-shrink: 0;
+  padding: 0 var(--space-2);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+.mp-inline-chat__snapshot:empty {
+  display: none;
+}
+/* Frozen canvas: match main column width; clip wide descendants */
+.mp-inline-chat__snapshot-clone {
+  pointer-events: none;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+.mp-inline-chat__gradient {
+  display: none;
+}
+.mp-inline-chat__typing {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) 0;
+  color: var(--color-type-muted);
+  font-size: var(--type-text-sm-size);
+}
+.mp-inline-chat__typing-dots {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+}
+.mp-inline-chat__typing-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-type-muted);
+  opacity: 0.35;
+  animation: mp-inline-chat-typing-dot 1.05s ease-in-out infinite;
+}
+.mp-inline-chat__typing-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.mp-inline-chat__typing-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes mp-inline-chat-typing-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+.mp-inline-chat__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  padding: var(--space-1) var(--mp-chat-gutter-x) var(--space-0-5);
+  flex-wrap: nowrap;
+  min-width: 0;
+  will-change: auto;
+}
+.mp-inline-chat__toolbar-start {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mp-inline-chat__pill {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: min(100%, 22rem);
+  font: inherit;
+  font-size: var(--type-text-sm-size);
+  padding: 6px 22px 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-action-primary-default);
+  background: var(--color-background-base);
+  color: var(--color-type-default);
+  outline: none;
+}
+.mp-inline-chat__pill:focus {
+  box-shadow: 0 0 0 2px var(--color-selection-primary-default);
+}
+.mp-inline-chat__toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+.mp-inline-chat__plus-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.mp-inline-chat__plus {
+  width: var(--space-4-5);
+  height: var(--space-4-5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-type-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.mp-inline-chat__plus:hover {
+  background: var(--color-surface-variant-subtle);
+  color: var(--color-outline-hover);
+}
+.mp-inline-chat__plus:focus-visible {
+  outline: 2px solid var(--color-action-primary-default);
+  outline-offset: 2px;
+}
+.mp-inline-chat__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  bottom: auto;
+  left: 0;
+  right: auto;
+  min-width: 200px;
+  padding: var(--space-0-5);
+  border-radius: var(--panel-radius);
+  border: 1px solid var(--color-ui-divider-default);
+  background: var(--color-background-base);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  z-index: 40;
+}
+.mp-inline-chat__menu.mp-dropdown--above {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+.mp-inline-chat__menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-1) var(--space-1-5);
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  font-size: var(--type-text-body-size);
+  color: var(--color-type-default);
+  cursor: pointer;
+}
+.mp-inline-chat__menu-item:hover {
+  background: var(--color-surface-variant-subtle);
+}
+.mp-inline-chat__messages {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0 var(--space-2) var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-5);
+}
+.mp-inline-chat .mp-thread-chat__bubble {
+  max-width: 100%;
+}
+
+.mp-inline-chat__pick {
+  border-radius: 7px;
+}
+.mp-inline-chat__dock {
+  border-radius: 7px;
+}
+
+/* Toolbar + composer: same glyph size in collapsed + expanded */
+.mp-agent-chat__icon-btn svg,
+.mp-inline-chat__toolbar-actions .tb-btn svg,
+.mp-inline-chat__panel-toggle svg,
+.mp-inline-chat__panel-toggle img,
+.mp-chat-composer .tb-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+.mp-inline-chat__panel-toggle img {
+  object-fit: contain;
+}
+.mp-inline-chat__plus svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+.mp-inline-chat__panel-toggle {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  box-sizing: content-box;
+  color: var(--color-type-default) !important;
+  background: unset !important;
+  border: none !important;
+  box-shadow: none;
+}
+.mp-inline-chat__panel-toggle:hover {
+  background: var(--color-surface-variant-subtle) !important;
+  border: none !important;
+  color: var(--color-action-primary-default) !important;
+}
+.mp-inline-chat__panel-toggle:focus,
+.mp-inline-chat__panel-toggle:focus-visible {
+  outline: none;
+}
+
+/* Shared composer (inline + patterns) — same horizontal inset as thread column */
+.mp-chat-composer {
+  flex-shrink: 0;
+  padding: var(--space-1-5) var(--mp-main-pad-x) var(--space-1-5);
+  box-sizing: border-box;
+}
+.mp-inline-chat .mp-chat-composer {
+  padding-left: var(--space-2);
+  padding-right: var(--space-2);
+}
+.mp-chat-composer__field {
+  position: relative;
+  --mp-chat-send-size: var(--space-4-5);
+  margin-bottom: var(--space-0-5);
+}
+.mp-chat-composer__input.w-form-textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  resize: none;
+  padding: 4px calc(var(--mp-chat-send-size) + 10px) 4px 10px;
+  min-height: calc(var(--mp-chat-send-size) + 8px + 2px);
+  max-height: 120px;
+  overflow-y: auto;
+  font-size: var(--type-text-body-size);
+  color: var(--color-type-default);
+  -webkit-text-fill-color: var(--color-type-default);
+}
+.mp-chat-composer__send {
+  position: absolute;
+  right: calc(4px + 1px);
+  bottom: calc(4px + 1px);
+}
+.mp-chat-composer__send:disabled {
+  opacity: 0.45;
+}
+.mp-chat-composer__hint {
+  margin: 0;
+  font-size: var(--type-text-sm-size);
+  color: var(--color-type-muted);
+  text-align: right;
+}
+
+/* Sidebar — New thread */
+.sb-new-thread {
+  position: relative;
+  width: 100%;
+}
+.sb-new-thread__btn {
+  width: 100%;
+}
+.sb-new-thread__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  bottom: auto;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  padding: var(--space-0-5);
+  border-radius: var(--panel-radius);
+  border: 1px solid var(--color-ui-divider-default);
+  background: var(--color-background-base);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+.sb-new-thread__menu.mp-dropdown--above {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+.sb-new-thread__menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-1) var(--space-1-5);
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  font-size: var(--type-text-body-size);
+  color: var(--color-type-default);
+  cursor: pointer;
+}
+.sb-new-thread__menu-item:hover {
+  background: var(--color-surface-variant-subtle);
+}
+.sb-section--thread-new {
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--color-ui-divider-default);
+  margin-bottom: var(--space-1);
+}
+
+/* Page context pick mode (prototype) */
+body.is-agent-context-picking {
+  cursor: crosshair;
+}
+body.is-agent-context-picking .mp-inline-chat,
+body.is-agent-context-picking .mp-inline-chat * {
+  cursor: default;
+}
+body.is-agent-context-picking .mp-view__main {
+  cursor: crosshair;
+}
+.is-agent-pick-hover {
+  outline: 2px solid var(--color-action-primary-default) !important;
+  outline-offset: 2px;
 }
 
 /* Middle panel: full-height agent thread chat */
@@ -957,10 +1457,32 @@ html, body {
   border-top: 1px solid var(--color-ui-divider-default);
   background: var(--color-background-base);
 }
-.mp-thread-chat__input {
-  width: 100%;
-  resize: none;
+.mp-thread-chat__field {
+  position: relative;
+  /* Match .tb-btn (send): --space-4-5 — input hugs send + 4px padding top and bottom */
+  --mp-thread-send-size: var(--space-4-5);
   margin-bottom: var(--space-1);
+}
+.mp-thread-chat__input.w-form-textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  resize: none;
+  padding: 4px calc(var(--mp-thread-send-size) + 10px) 4px 10px;
+  /* Border box: send + 4px pad top/bottom + 1px borders (so inner padding box = send + 8px) */
+  min-height: calc(var(--mp-thread-send-size) + 8px + 2px);
+  max-height: min(40vh, 220px);
+  overflow-y: auto;
+}
+.mp-thread-chat__send {
+  position: absolute;
+  /* 4px to textarea padding box; +1px for 1px border on the textarea */
+  right: calc(4px + 1px);
+  bottom: calc(4px + 1px);
+}
+.mp-thread-chat__send:disabled {
+  opacity: 0.45;
 }
 .mp-thread-chat__composer-actions {
   display: flex;
@@ -972,6 +1494,7 @@ html, body {
 }
 
 /* ── Right panel (single column) ── */
+/* Max width (50% of middle+right pair, RIGHT_MAX) is enforced in app.js — clampRightPanelWidth / maxRightWidth */
 .right-panel {
   flex-shrink: 0;
   align-self: stretch;
@@ -990,14 +1513,19 @@ html, body {
     flex-basis var(--middle-layout-duration) var(--middle-layout-ease),
     opacity var(--middle-layout-duration) var(--middle-layout-ease);
 }
-/* When main column is collapsed, right workspace absorbs remaining width */
-.right-panel.right-panel--fill {
-  flex: 1 1 auto !important;
-  width: auto !important;
-  min-width: min(360px, 100%);
-  max-width: none;
+.right-panel.is-hidden {
+  flex: 0 0 0 !important;
+  min-width: 0 !important;
+  width: 0 !important;
+  max-width: 0 !important;
+  margin: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
 }
-
+.right-panel.right-panel--collapse-animating {
+  min-width: 0 !important;
+}
 .right-panel-inner {
   display: flex;
   flex-direction: column;
@@ -1016,22 +1544,36 @@ html, body {
   overflow: hidden;
 }
 
+.right-panel.right-panel--drag-reveal {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  min-width: 0 !important;
+  overflow: hidden;
+}
+
 .right-pane-header {
   flex-shrink: 0;
   display: flex;
-  align-items: center;
+  flex-direction: row;
+  align-items: flex-start;
   justify-content: flex-start;
+  gap: var(--space-1);
   padding: var(--space-1-5) var(--space-2);
   border-bottom: 1px solid var(--color-ui-divider-default);
   min-height: 52px;
+}
+.right-pane-header .tb-btn {
+  flex-shrink: 0;
+  margin: 2px 0 0 0;
 }
 .right-pane-header-text {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
+  flex: 1;
   min-width: 0;
-  width: 100%;
+  width: auto;
   max-width: 100%;
 }
 /* Atlas: side sheet / panel header — title h3-lg emphasis, subtitle text-md */

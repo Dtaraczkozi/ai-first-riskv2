@@ -74,13 +74,28 @@
       stroke-linecap="round"
     />
   </symbol>
+  <symbol id="icon-select-context" viewBox="0 0 24 24" fill="none">
+    <path
+      d="M12 4v3M12 17v3M4 12h3M17 12h3"
+      stroke="currentColor"
+      stroke-width="1.75"
+      stroke-linecap="round"
+    />
+    <circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.75" />
+  </symbol>
+  <symbol id="icon-add" viewBox="0 0 24 24">
+    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+  </symbol>
+  <symbol id="icon-send" viewBox="0 0 24 24">
+    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor" />
+  </symbol>
 </svg>
 <!-- SPRITE-END -->
 
 <!-- ═══════════════════════════════════════════════════════════════
      Main layout
      ═══════════════════════════════════════════════════════════════ -->
-<div class="main-row" id="mainRow">
+<div class="main-row" id="mainRow" role="main" tabindex="-1" aria-label="Workspace">
 
   <!-- Sidebar -->
   <div class="sidebar panel" id="sidebar">
@@ -179,6 +194,18 @@
       </nav>
 
       <nav class="sb-nav sb-nav--threads is-hidden" id="sbNavThreads" aria-label="All agent threads">
+        <div class="sb-section sb-section--thread-new">
+          <div class="sb-new-thread">
+            <button type="button" class="w-btn is-secondary sb-new-thread__btn" id="sbNewThreadBtn" aria-haspopup="true" aria-expanded="false">
+              New thread
+            </button>
+            <div class="sb-new-thread__menu" id="sbNewThreadMenu" hidden role="menu">
+              <button type="button" class="sb-new-thread__menu-item" role="menuitem" data-sb-new="general">General thread</button>
+              <button type="button" class="sb-new-thread__menu-item" role="menuitem" data-sb-new="topic">Topic-specific thread</button>
+              <button type="button" class="sb-new-thread__menu-item" role="menuitem" data-sb-new="pick">Select element…</button>
+            </div>
+          </div>
+        </div>
         <div class="sb-section">
           <div class="sb-section-label">Agent threads</div>
           <div class="sb-thread-list" id="sbAllThreadsList"></div>
@@ -198,13 +225,6 @@
     <div class="mp-inner">
 
       <div class="mp-header" id="mpHeader">
-        <button class="tb-btn is-active" id="middlePanelToggle" type="button" title="Main column: click to hide / show (or drag the center handle)" aria-pressed="true">
-          <svg width="20" height="15" viewBox="0 0 20 15" fill="none" aria-hidden="true">
-            <rect x="0.75" y="0.75" width="18.5" height="13.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="6.75" y1="0.75" x2="6.75" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
-            <rect x="1.5" y="1.5" width="4.5" height="12" fill="currentColor" opacity="0.3" rx="1.5"/>
-          </svg>
-        </button>
         <div class="mp-header-text-row">
           <h3 class="mp-title" id="mpTitle">Overview</h3>
           <div class="mp-header-actions" id="mpHeaderActions" hidden></div>
@@ -348,7 +368,10 @@
            ═══════════════════════════════════════════════════ -->
       <div class="mp-body mp-view is-active" id="view-identification-overview" data-agent-context="identification-overview">
 
-        <div class="w-card wf-id-viz">
+        <div class="w-card wf-id-viz" aria-describedby="wfIdVizSummary">
+          <p id="wfIdVizSummary" class="visually-hidden">
+            Summary: External origin 28 newly surfaced risks, Internal 22. Relative share about 56 percent external and 44 percent internal.
+          </p>
           <div class="w-card-header">
             <span class="w-card-title">Newly surfaced risks by origin</span>
           </div>
@@ -384,7 +407,7 @@
           </button>
         </div>
 
-        <div class="w-card wf-click-card" role="button" tabindex="0" onclick="WorkflowViews.openAllSuggestionsDrilldown()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openAllSuggestionsDrilldown();}">
+        <button type="button" class="w-card wf-click-card wf-click-card--block" onclick="WorkflowViews.openAllSuggestionsDrilldown()">
           <div class="w-card-header">
             <span class="w-card-title">All suggestions</span>
             <span class="w-card-count">Open in right panel</span>
@@ -392,7 +415,7 @@
           <div class="w-card-body">
             <p class="wf-two-line">Consolidated triage: External, Internal, and Survey-derived suggestions in one drilldown (mock).</p>
           </div>
-        </div>
+        </button>
 
       </div><!-- /view-identification-overview -->
 
@@ -401,10 +424,10 @@
            ═══════════════════════════════════════════════════ -->
       <div class="mp-body mp-view" id="view-internal-identification" data-agent-context="internal-identification">
 
-        <div class="wf-dropzone" id="wfInternalDropzone" role="button" tabindex="0" onclick="WFInternalUpload.run(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WFInternalUpload.run(this);}">
+        <button type="button" class="wf-dropzone" id="wfInternalDropzone" onclick="WFInternalUpload.run(this)" aria-label="Upload documents: drop files here or activate to simulate processing past reports, risk register export, or directory data (mock).">
           <span class="wf-dropzone__title">Drop documents here or click to simulate upload</span>
           <span class="wf-dropzone__hint">Past reports, risk register export, employee/org directory (mock)</span>
-        </div>
+        </button>
         <div class="wf-progress" id="wfInternalProgress" hidden>
           <div class="wf-progress__bar"><div class="wf-progress__fill" id="wfInternalProgressFill" style="width:0%"></div></div>
           <span class="wf-progress__label">Processing documents…</span>
@@ -412,7 +435,7 @@
 
         <div id="wfInternalAfter" hidden>
           <div class="w-section-title">Suggestions</div>
-          <div class="w-card wf-click-card" role="button" tabindex="0" onclick="WorkflowViews.openInternalSuggestionsDrilldown()">
+          <button type="button" class="w-card wf-click-card wf-click-card--block" onclick="WorkflowViews.openInternalSuggestionsDrilldown()">
             <div class="w-card-header">
               <span class="w-card-title">Awaiting your approval</span>
               <span class="w-badge is-warning">9 suggestions</span>
@@ -422,7 +445,7 @@
               <span class="wf-sev"><span class="w-badge is-warning">Medium 4</span></span>
               <span class="wf-sev"><span class="w-badge is-success">Low 3</span></span>
             </div>
-          </div>
+          </button>
 
           <div class="w-section-title" style="margin-top:var(--space-2)">Internal sources</div>
           <div class="w-card">
@@ -432,10 +455,10 @@
             </div>
             <div class="w-card-body">
               <ul class="wf-doc-list">
-                <li><span>Annual risk report 2025.pdf</span><button type="button" class="w-btn is-ghost">Remove</button></li>
-                <li><span>Risk register — enterprise.xlsx</span><button type="button" class="w-btn is-ghost">Remove</button></li>
-                <li><span>HR — role directory (anonymised).csv</span><button type="button" class="w-btn is-ghost">Remove</button></li>
-                <li><span>Org chart — narrative.docx</span><button type="button" class="w-btn is-ghost">Remove</button></li>
+                <li><span>Annual risk report 2025.pdf</span><button type="button" class="w-btn is-ghost" aria-label="Remove Annual risk report 2025.pdf from uploaded documents">Remove</button></li>
+                <li><span>Risk register — enterprise.xlsx</span><button type="button" class="w-btn is-ghost" aria-label="Remove Risk register — enterprise.xlsx from uploaded documents">Remove</button></li>
+                <li><span>HR — role directory (anonymised).csv</span><button type="button" class="w-btn is-ghost" aria-label="Remove HR role directory from uploaded documents">Remove</button></li>
+                <li><span>Org chart — narrative.docx</span><button type="button" class="w-btn is-ghost" aria-label="Remove Org chart narrative from uploaded documents">Remove</button></li>
               </ul>
             </div>
           </div>
@@ -449,16 +472,18 @@
       <div class="mp-body mp-view" id="view-external-suggestions" data-agent-context="external-suggestions">
 
         <div class="wf-tabs" role="tablist" aria-label="External intake">
-          <button type="button" class="wf-tab is-active" role="tab" aria-selected="true" id="wfTabSug" onclick="WFExtTab.show('sug')">Suggestions <span class="w-badge is-neutral wf-tab-badge" id="wfBadgeExternal">14</span></button>
-          <button type="button" class="wf-tab" role="tab" aria-selected="false" id="wfTabSrc" onclick="WFExtTab.show('src')">External sources</button>
+          <button type="button" class="wf-tab is-active" role="tab" aria-selected="true" id="wfTabSug" aria-controls="wfExtPanelSug" tabindex="0" onclick="WFExtTab.show('sug')">Suggestions <span class="w-badge is-neutral wf-tab-badge" id="wfBadgeExternal">14</span></button>
+          <button type="button" class="wf-tab" role="tab" aria-selected="false" id="wfTabSrc" aria-controls="wfExtPanelSrc" tabindex="-1" onclick="WFExtTab.show('src')">External sources</button>
         </div>
 
-        <div id="wfExtPanelSug">
+        <div id="wfExtPanelSug" role="tabpanel" aria-labelledby="wfTabSug" aria-hidden="false" tabindex="0">
           <div class="wf-auto-banner">
-            <p><strong>6 suggestions</strong> were auto-approved based on confidence thresholds. <button type="button" class="w-btn is-ghost" onclick="WorkflowViews.toggleAutoApprovedTable()">Review auto-approved suggestions</button></p>
+            <p><strong>6 suggestions</strong> were auto-approved based on confidence thresholds. <button type="button" class="w-btn is-ghost" id="wfToggleAutoBtn" aria-expanded="false" aria-controls="wfAutoApprovedBlock" onclick="WorkflowViews.toggleAutoApprovedTable()">Review auto-approved suggestions</button></p>
           </div>
           <div id="wfAutoApprovedBlock" class="wf-auto-table-wrap" hidden>
-            <table class="w-table w-table--fixed"><thead><tr><th>Name</th><th>Confidence</th></tr></thead>
+            <table class="w-table w-table--fixed">
+              <caption class="visually-hidden">Auto-approved suggestions (mock)</caption>
+              <thead><tr><th scope="col">Name</th><th scope="col">Confidence</th></tr></thead>
               <tbody><tr><td>Third-party concentration</td><td style="color:var(--color-success-default)">94%</td></tr></tbody></table>
           </div>
 
@@ -481,29 +506,29 @@
           </div>
         </div>
 
-        <div id="wfExtPanelSrc" hidden>
+        <div id="wfExtPanelSrc" role="tabpanel" aria-labelledby="wfTabSrc" hidden aria-hidden="true" tabindex="-1">
           <div class="wf-toolbar">
             <input class="w-form-input wf-toolbar__search" type="search" placeholder="Search sources…" aria-label="Search sources"/>
             <select class="w-form-select wf-toolbar__filter" aria-label="Filter"><option>All</option><option>Regulators</option><option>News</option></select>
           </div>
           <div class="w-list">
-            <div class="w-list-item is-selectable" onclick="WorkflowViews.openExternalSourceHistory()">
+            <div class="w-list-item is-selectable">
               <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-identification"/></svg></div>
               <div class="w-list-content">
                 <span class="w-list-title">FCA regulatory news</span>
                 <span class="w-list-meta">Feed · UK</span>
               </div>
-              <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation()">Open</button>
-              <button type="button" class="w-btn is-ghost" onclick="event.stopPropagation();if(confirm('Remove this source?'))alert('Removed (mock).');">Remove</button>
+              <button type="button" class="w-btn is-secondary" onclick="WorkflowViews.openExternalSourceHistory()">Open</button>
+              <button type="button" class="w-btn is-ghost" aria-label="Remove FCA regulatory news source" onclick="event.stopPropagation();if(confirm('Remove this source?'))alert('Removed (mock).');">Remove</button>
             </div>
-            <div class="w-list-item is-selectable" onclick="WorkflowViews.openExternalSourceHistory()">
+            <div class="w-list-item is-selectable">
               <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-identification"/></svg></div>
               <div class="w-list-content">
                 <span class="w-list-title">Reuters — sector</span>
                 <span class="w-list-meta">News</span>
               </div>
-              <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation()">Open</button>
-              <button type="button" class="w-btn is-ghost" onclick="event.stopPropagation();if(confirm('Remove this source?'))alert('Removed (mock).');">Remove</button>
+              <button type="button" class="w-btn is-secondary" onclick="WorkflowViews.openExternalSourceHistory()">Open</button>
+              <button type="button" class="w-btn is-ghost" aria-label="Remove Reuters sector source" onclick="event.stopPropagation();if(confirm('Remove this source?'))alert('Removed (mock).');">Remove</button>
             </div>
           </div>
         </div>
@@ -551,7 +576,10 @@
           </div>
         </div>
 
-        <div class="w-card wf-assess-viz">
+        <div class="w-card wf-assess-viz" aria-describedby="wfAssessVizSummary">
+          <p id="wfAssessVizSummary" class="visually-hidden">
+            Summary of likelihood spread for open assessments: Low likelihood 8, Medium 17, High 11.
+          </p>
           <div class="w-card-header">
             <span class="w-card-title">Preliminary L × I (open assessments)</span>
           </div>
@@ -574,7 +602,7 @@
           </div>
         </div>
 
-        <div class="w-card wf-click-card" role="button" tabindex="0" onclick="WorkflowViews.openAtRiskDrilldown()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openAtRiskDrilldown();}">
+        <button type="button" class="w-card wf-click-card wf-click-card--block" onclick="WorkflowViews.openAtRiskDrilldown()">
           <div class="w-card-header">
             <span class="w-card-title">All at-risk assessments</span>
             <span class="w-card-count">Open in right panel</span>
@@ -582,7 +610,7 @@
           <div class="w-card-body">
             <p class="wf-two-line">Deadline, quorum, and owner — filterable table (mock).</p>
           </div>
-        </div>
+        </button>
 
         <div class="w-card w-collapsible is-open" id="riskRegisterSection">
           <button class="w-collapsible-trigger" onclick="W.collapse('riskRegisterSection')">
@@ -593,12 +621,13 @@
           <div class="w-collapsible-content">
             <div class="w-card-flush">
               <table class="w-table">
+                <caption class="visually-hidden">Risk register excerpt (mock)</caption>
                 <thead>
                   <tr>
-                    <th>Risk</th>
-                    <th>Likelihood</th>
-                    <th>Impact</th>
-                    <th>Rating</th>
+                    <th scope="col">Risk</th>
+                    <th scope="col">Likelihood</th>
+                    <th scope="col">Impact</th>
+                    <th scope="col">Rating</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1261,55 +1290,11 @@
       </div><!-- /view-settings -->
 
 
-      <!-- ═══════════════════════════════════════════════════
-           VIEW: Agent thread (conversation) — opened from strips or All threads
-           ═══════════════════════════════════════════════════ -->
-      <div class="mp-body mp-view mp-view--agent-thread" id="view-agent-thread">
-        <div class="mp-thread-chat">
-          <div class="mp-thread-chat__header">
-            <div class="mp-thread-chat__title-wrap">
-              <span class="mp-thread-chat__step" id="agentThreadStepBadge" hidden></span>
-              <h3 class="mp-thread-chat__title" id="agentThreadTitle">Thread</h3>
-            </div>
-            <div class="mp-thread-chat__actions">
-              <button type="button" class="tb-btn mp-thread-chat__open-page" id="agentThreadOpenPageBtn" hidden title="Open relevant page in side panel" aria-label="Open relevant page in side panel">
-                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-open-relevant-page"/></svg>
-              </button>
-              <button type="button" class="tb-btn mp-thread-chat__close" id="agentThreadCloseBtn" title="Close conversation" aria-label="Close conversation">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M6.4 6.4L12 12l5.6-5.6 1.4 1.4L13.4 12l5.6 5.6-1.4 1.4L12 13.4l-5.6 5.6-1.4-1.4 5.6-5.6-5.6-5.6 1.4-1.4z" fill="currentColor"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div class="mp-thread-chat__messages" id="agentThreadMessages" role="log" aria-live="polite"></div>
-          <div class="mp-thread-chat__composer">
-            <label class="visually-hidden" for="agentThreadInput">Message</label>
-            <textarea class="w-form-textarea mp-thread-chat__input" id="agentThreadInput" rows="2" placeholder="Reply in this thread…" readonly></textarea>
-            <div class="mp-thread-chat__composer-actions">
-              <span class="mp-thread-chat__hint">Prototype — sending disabled</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- Legacy slot: conversations use inline overlay on workflow views (see app.js) -->
+      <div class="mp-body mp-view mp-view--agent-thread" id="view-agent-thread" hidden aria-hidden="true"></div>
 
 
     </div><!-- /mp-inner -->
-  </div>
-
-  <!-- When main column is hidden: icon rail (same destinations as nav / right drilldown) -->
-  <div class="middle-icon-rail panel" id="middleIconRail" aria-label="Main column">
-    <div class="mir-inner">
-      <div class="mir-top-row">
-        <button class="tb-btn is-active" id="middlePanelExpandToggle" type="button" title="Main column: expand (or drag the center handle)" aria-pressed="true">
-          <svg width="20" height="15" viewBox="0 0 20 15" fill="none" aria-hidden="true">
-            <rect x="0.75" y="0.75" width="18.5" height="13.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="6.75" y1="0.75" x2="6.75" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
-            <rect x="1.5" y="1.5" width="4.5" height="12" fill="currentColor" opacity="0.3" rx="1.5"/>
-          </svg>
-        </button>
-      </div>
-    </div>
   </div>
 
   <!-- Drag resize handle (main column vs right workspace) -->
@@ -1317,10 +1302,32 @@
     <div class="resize-grip"></div>
   </div>
 
-  <!-- Right workspace (single column; grows when middle is collapsed) -->
+  <!-- When side panel is hidden: narrow rail to expand again -->
+  <div class="right-icon-rail panel" id="rightIconRail" aria-label="Side panel">
+    <div class="rir-inner">
+      <div class="rir-top-row">
+        <button class="tb-btn is-active" id="rightPanelExpandToggle" type="button" title="Side panel: expand (or drag the handle)" aria-pressed="true">
+          <svg width="20" height="15" viewBox="0 0 20 15" fill="none" aria-hidden="true">
+            <rect x="0.75" y="0.75" width="18.5" height="13.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="13.25" y1="0.75" x2="13.25" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="14" y="1.5" width="4.5" height="12" fill="currentColor" opacity="0.3" rx="1.5"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right workspace -->
   <div class="right-panel panel" id="rightPanel">
     <div class="right-panel-inner">
       <div class="right-pane-header">
+        <button class="tb-btn is-active" id="rightPanelToggle" type="button" title="Side panel: hide / show (or drag the handle)" aria-pressed="true">
+          <svg width="20" height="15" viewBox="0 0 20 15" fill="none" aria-hidden="true">
+            <rect x="0.75" y="0.75" width="18.5" height="13.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="13.25" y1="0.75" x2="13.25" y2="14.25" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="14" y="1.5" width="4.5" height="12" fill="currentColor" opacity="0.3" rx="1.5"/>
+          </svg>
+        </button>
         <div class="right-pane-header-text">
           <span class="right-pane-title" id="rightPaneTitle">Overview</span>
           <span class="right-pane-subtitle" id="rightPaneSubtitle">Identification health</span>
@@ -1331,9 +1338,9 @@
   </div>
 
   <!-- New survey modal (header CTA in Survey manager) -->
-  <div class="wf-modal" id="wfSurveyModal" hidden aria-hidden="true" role="dialog" aria-labelledby="wfSurveyModalTitle">
-    <div class="wf-modal__backdrop" onclick="WorkflowViews.closeSurveyModal()"></div>
-    <div class="wf-modal__panel" role="document">
+  <div class="wf-modal" id="wfSurveyModal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="wfSurveyModalTitle">
+    <button type="button" class="wf-modal__backdrop" aria-label="Close dialog" onclick="WorkflowViews.closeSurveyModal()"></button>
+    <div class="wf-modal__panel">
       <div class="wf-modal__head">
         <h2 class="wf-modal__title" id="wfSurveyModalTitle">New survey</h2>
         <button type="button" class="tb-btn" onclick="WorkflowViews.closeSurveyModal()" aria-label="Close">✕</button>

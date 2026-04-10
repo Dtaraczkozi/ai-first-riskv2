@@ -18,10 +18,27 @@ function isPlausibleProtoHtml(html: string): boolean {
   return hasMainRow && /\bmain-row\b/.test(t);
 }
 
-const protoBodyHtml: string =
-  typeof protoBodySource === "string" && isPlausibleProtoHtml(protoBodySource)
-    ? protoBodySource
-    : PROTO_FALLBACK;
+/**
+ * Webpack `asset/source` yields a string; Turbopack + raw-loader may yield `{ default: string }`.
+ * If we mis-detect, the shell is replaced by PROTO_FALLBACK and app.js exits early — looks like a "crash".
+ */
+function normalizeProtoHtmlImport(m: unknown): string {
+  if (typeof m === "string") return m;
+  if (
+    m !== null &&
+    typeof m === "object" &&
+    "default" in m &&
+    typeof (m as { default: unknown }).default === "string"
+  ) {
+    return (m as { default: string }).default;
+  }
+  return "";
+}
+
+const protoBodyHtml: string = (() => {
+  const raw = normalizeProtoHtmlImport(protoBodySource);
+  return isPlausibleProtoHtml(raw) ? raw : PROTO_FALLBACK;
+})();
 
 export default function Home() {
   return (
