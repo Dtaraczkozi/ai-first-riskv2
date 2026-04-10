@@ -1,9 +1,9 @@
 /* ============================================================
    Risk Management Prototype — styles.css
-   Atlas colors: public/css/atlas-dark.css (+ tokens JSON)
+   Atlas colors: public/css/atlas-light.css (switch to atlas-dark.css for dark theme)
    ============================================================ */
 
-@import "./atlas-dark.css";
+@import "./atlas-light.css";
 
 :root {
   /* ── Spacing scale ── */
@@ -82,7 +82,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html,

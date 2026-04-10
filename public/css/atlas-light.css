@@ -1,0 +1,185 @@
+/* ============================================================
+   Atlas Design System — Light theme (CSS)
+   Semantic values aligned with Atlas MCP theme "atlas-light" / Lens semantic layer.
+   Validate / extend: Atlas MCP — search_atlas_tokens_by_path (theme: atlas-light)
+   ============================================================ */
+
+:root {
+  /* ── Primitives: Storm (light UI neutrals, 5 = lightest) ── */
+  --storm-5:   #fcfcff;
+  --storm-10:  #f9f9fc;
+  --storm-15:  #f0f0f3;
+  --storm-20:  #e2e2e5;
+  --storm-25:  #d1d1d4;
+  --storm-30:  #b6b8b9;
+  --storm-35:  #a0a2a5;
+  --storm-40:  #8f9193;
+  --storm-50:  #76777a;
+  --storm-60:  #5d5e61;
+  --storm-70:  #454749;
+  --storm-80:  #2f3133;
+  --storm-90:  #242628;
+  --storm-95:  #1a1c1e;
+  --storm-98:  #12141a;
+  --storm-99:  #0f1113;
+
+  /* ── Primitives: Sky (cyan accent, for links / highlights) ── */
+  --sky-5:    #e4f3ff;
+  --sky-15:   #c6e7ff;
+  --sky-70:   #0086fa;
+  --sky-80:   #00b7fc;
+  --sky-90:   #006879;
+  --sky-95:   #004e5b;
+
+  /* ── Primitives: accents (referenced by semantic tokens) ── */
+  --color-white: #ffffff;
+  --red-60:   #ff5450;
+  --red-70:   #ff8981;
+  --moss-60:  #00a661;
+  --yellow-80: #dec800;
+  --flamingo-60: #f45695;
+  --indigo-60: #6b89ff;
+  --indigo-70: #92a6ff;
+
+  /* ── Atlas semantic: Color.Type ── */
+  --atlas-color-type-default:  #242628;
+  --atlas-color-type-muted:    #5d5e61;
+  --atlas-color-type-disabled: #8f9193;
+
+  /* ── Atlas semantic: Color.Action.Primary (indigo gradient — atlas-light) ── */
+  --atlas-color-action-primary-default: #1c4ee4;
+  --atlas-color-action-primary-default-grad-start: #4069fe;
+  --atlas-color-action-primary-default-grad-end: #1c4ee4;
+  --atlas-color-action-primary-hover-grad-start: #6b89ff;
+  --atlas-color-action-primary-hover-grad-end: #4069fe;
+  --atlas-color-action-primary-disabled: #e2e2e5;
+  --atlas-color-action-primary-on-primary: #ffffff;
+
+  /* ── Atlas semantic: Color.Action.Secondary ── */
+  --atlas-color-action-secondary-hover: #f0f0f3;
+  --atlas-color-action-secondary-active: #8f9193;
+  --atlas-color-action-secondary-on-secondary: #242628;
+  --atlas-color-action-secondary-outline: #8f9193;
+  --atlas-color-action-secondary-outline-disabled: #e2e2e5;
+
+  /* ── Atlas semantic: Color.Action.AI ── */
+  --atlas-color-action-ai-default-grad-start: #f45695;
+  --atlas-color-action-ai-default-grad-end: #1c4ee4;
+
+  /* ── Atlas semantic: Color.Selection.Primary ── */
+  --atlas-color-selection-primary-default: #ecf0ff;
+  --atlas-color-selection-primary-hover: #e2e2e5;
+  --atlas-color-selection-primary-active: #d1d1d4;
+  --atlas-color-selection-primary-on-selected: #0040d5;
+  --atlas-color-selection-primary-indicator: #0040d5;
+
+  /* ── Atlas semantic: Color.UI ── */
+  --atlas-color-ui-divider-default: #e2e2e5;
+  --atlas-color-ui-divider-secondary: #8f9193;
+  --atlas-color-ui-scrollbar-handle: #aaabae;
+  --atlas-color-ui-focus-main: #0b4cce;
+
+  /* ── Atlas semantic: Color.Background ── */
+  --atlas-color-background-base: #ffffff;
+  --atlas-color-background-base-gradient-start: #f9f9fc;
+  --atlas-color-background-base-gradient-end: #fcfcff;
+
+  /* ── Atlas semantic: Color.Surface ── */
+  --atlas-color-surface-default: #ffffff;
+  --atlas-color-surface-variant: #f0f0f3;
+  --atlas-color-surface-variant-subtle: #f9f9fc;
+
+  /* ── Atlas semantic: Color.Outline ── */
+  --atlas-color-outline-static: #dadada;
+  --atlas-color-outline-default: #8f9193;
+  --atlas-color-outline-hover: #5d5e61;
+  --atlas-color-outline-active: #242628;
+  --atlas-color-outline-disabled: #e2e2e5;
+
+  /* ── Atlas semantic: Color.Status (Lens atlas-light semantics) ── */
+  --atlas-color-status-success-default: #2ec377;
+  --atlas-color-status-success-background: #c2ffd2;
+  --atlas-color-status-success-content: #005f35;
+  --atlas-color-status-warning-default: #dec800;
+  --atlas-color-status-warning-background: #fff2aa;
+  --atlas-color-status-warning-content: #5c4d00;
+  --atlas-color-status-error-default: #be0c1e;
+  --atlas-color-status-error-background: #ffecef;
+  --atlas-color-status-error-content: #be0c1e;
+  --atlas-color-status-notification-default: #4069fe;
+  --atlas-color-status-notification-background: #ecf0ff;
+  --atlas-color-status-neutral-background-default: #8f9193;
+  --atlas-color-status-neutral-background-variant: #e2e2e5;
+  --atlas-color-status-neutral-content-variant: #242628;
+
+  /* ── Atlas semantic: Color.Accent (marketing / AI chrome) ── */
+  --atlas-color-accent-highlighted-background: #f0f0f3;
+  --atlas-color-accent-blue-background: #1c4ee4;
+  --atlas-color-ai-gradient-start: #be0c1e;
+  --atlas-color-ai-gradient-middle: #ab48da;
+  --atlas-color-ai-gradient-end: #4069fe;
+
+  /* ── App contract (existing components) — alias Atlas ── */
+  --color-type-default: var(--atlas-color-type-default);
+  --color-type-muted: var(--atlas-color-type-muted);
+  --color-type-disabled: var(--atlas-color-type-disabled);
+
+  --color-action-primary-default: var(--atlas-color-action-primary-default);
+  --color-action-primary-default-grad-start: var(--atlas-color-action-primary-default-grad-start);
+  --color-action-primary-hover-grad-start: var(--atlas-color-action-primary-hover-grad-start);
+  --color-action-primary-disabled: var(--atlas-color-action-primary-disabled);
+  --color-action-primary-on-primary: var(--atlas-color-action-primary-on-primary);
+  --color-action-secondary-hover: var(--atlas-color-action-secondary-hover);
+  --color-action-secondary-active: var(--atlas-color-action-secondary-active);
+  --color-action-secondary-on-secondary: var(--atlas-color-action-secondary-on-secondary);
+  --color-action-secondary-outline: var(--atlas-color-action-secondary-outline);
+  --color-action-secondary-outline-disabled: var(--atlas-color-action-secondary-outline-disabled);
+  --color-action-ai-default-grad-start: var(--atlas-color-action-ai-default-grad-start);
+  --color-action-ai-default-grad-end: var(--atlas-color-action-ai-default-grad-end);
+
+  --color-selection-primary-default: var(--atlas-color-selection-primary-default);
+  --color-selection-primary-hover: var(--atlas-color-selection-primary-hover);
+  --color-selection-primary-active: var(--atlas-color-selection-primary-active);
+  --color-selection-primary-on-selected: var(--atlas-color-selection-primary-on-selected);
+  --color-selection-primary-indicator: var(--atlas-color-selection-primary-indicator);
+
+  --color-ui-divider-default: var(--atlas-color-ui-divider-default);
+  --color-ui-divider-secondary: var(--atlas-color-ui-divider-secondary);
+  --color-ui-scrollbar-handle: var(--atlas-color-ui-scrollbar-handle);
+  --color-ui-focus-main: var(--atlas-color-ui-focus-main);
+
+  --color-background-base: var(--atlas-color-background-base);
+  --color-background-base-grad-start: var(--atlas-color-background-base-gradient-start);
+  --color-background-base-grad-end: var(--atlas-color-background-base-gradient-end);
+  --color-surface-default: var(--atlas-color-surface-default);
+  --color-surface-variant: var(--atlas-color-surface-variant);
+  --color-surface-variant-subtle: var(--atlas-color-surface-variant-subtle);
+
+  --color-outline-static: var(--atlas-color-outline-static);
+  --color-outline-default: var(--atlas-color-outline-default);
+  --color-outline-hover: var(--atlas-color-outline-hover);
+  --color-outline-active: var(--atlas-color-outline-active);
+  --color-outline-disabled: var(--atlas-color-outline-disabled);
+
+  --color-status-success-default: var(--atlas-color-status-success-default);
+  --color-status-success-background: var(--atlas-color-status-success-background);
+  --color-status-success-content: var(--atlas-color-status-success-content);
+  --color-status-warning-default: var(--atlas-color-status-warning-default);
+  --color-status-warning-background: var(--atlas-color-status-warning-background);
+  --color-status-warning-content: var(--atlas-color-status-warning-content);
+  --color-status-error-default: var(--atlas-color-status-error-default);
+  --color-status-error-background: var(--atlas-color-status-error-background);
+  --color-status-error-content: var(--atlas-color-status-error-content);
+  --color-status-error: var(--atlas-color-status-error-default);
+  --color-status-notification-default: var(--atlas-color-status-notification-default);
+  --color-status-notification-background: var(--atlas-color-status-notification-background);
+  --color-status-neutral-background-default: var(--atlas-color-status-neutral-background-default);
+  --color-status-neutral-background-variant: var(--atlas-color-status-neutral-background-variant);
+  --color-status-neutral-content-variant: var(--atlas-color-status-neutral-content-variant);
+
+  --color-accent-highlighted-background: var(--atlas-color-accent-highlighted-background);
+  --color-accent-blue-background: var(--atlas-color-accent-blue-background);
+  --color-ai-grad-start: var(--atlas-color-ai-gradient-start);
+  --color-ai-grad-middle: var(--atlas-color-ai-gradient-middle);
+  --color-ai-grad-end: var(--atlas-color-ai-gradient-end);
+}
