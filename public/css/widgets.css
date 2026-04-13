@@ -50,32 +50,60 @@
   gap: var(--space-1-5);
 }
 
+/* Section headings: use h2 for primary blocks, h3/h4 for nested subsections.
+   Space to following content ≈24px: margin-bottom + parent row-gap (.mp-body uses --space-2).
+   Use block layout — -webkit-box + line-clamp inside flex (.mp-view__main) can compute to 0 height. */
 .w-section-title {
-  font-size: var(--type-text-md-size);
-  font-weight: var(--type-text-md-emphasis-weight);
-  line-height: var(--type-text-md-line-height);
-  letter-spacing: var(--type-text-md-letter-spacing);
-  color: var(--color-type-muted);
-  text-transform: uppercase;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: var(--text-lines-default, 2);
-  overflow: hidden;
+  margin: 0 0 calc(var(--space-3) - var(--space-2)) 0;
+  padding: 0;
+  font-style: normal;
+  display: block;
+  overflow: visible;
   word-break: break-word;
+}
+
+h2.w-section-title {
+  font-size: var(--type-title-h2-size);
+  font-weight: var(--type-title-h2-weight);
+  line-height: var(--type-title-h2-line-height);
+  letter-spacing: var(--type-title-h2-letter-spacing);
+  color: var(--color-type-default);
+}
+
+h3.w-section-title {
+  font-size: var(--type-title-h3-lg-size);
+  font-weight: var(--type-title-h3-lg-weight);
+  line-height: var(--type-title-h3-lg-line-height);
+  letter-spacing: var(--type-title-h3-lg-letter-spacing);
+  color: var(--color-type-muted);
+}
+
+h4.w-section-title {
+  font-size: var(--type-text-body-size);
+  font-weight: var(--type-text-body-emphasis-weight);
+  line-height: var(--type-text-body-line-height);
+  letter-spacing: var(--type-text-body-letter-spacing);
+  color: var(--color-type-muted);
+}
+
+.w-section-title.w-section-title--section-gap {
+  margin-top: var(--mp-section-gap);
 }
 
 
 /* ── Card: the universal widget shell ───────────────── */
 .w-card {
-  background: var(--color-surface-variant);
+  background: var(--color-background-base);
+  border: 1px solid var(--color-outline-default);
   border-radius: var(--panel-radius);
+  box-sizing: border-box;
   overflow: hidden;
   position: relative;
 }
 
-/* Optional border variant */
+/* Optional softer edge (e.g. low-emphasis cards) — base uses outline-default */
 .w-card.is-outlined {
-  border: 1px solid var(--color-outline-static);
+  border-color: var(--color-outline-static);
 }
 
 /* Flush variant — no internal padding (widget body provides its own) */
@@ -87,7 +115,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  padding: var(--space-1-5) var(--space-2);
+  padding: var(--mp-section-pad, var(--space-2)) var(--space-2);
   min-height: 44px;
 }
 
@@ -130,7 +158,7 @@
 
 /* ── Card body: padded content area ─────────────────── */
 .w-card-body {
-  padding: var(--space-2);
+  padding: var(--mp-section-pad, var(--space-2));
 }
 
 /* Flush content — no padding (tables, lists manage their own) */
@@ -232,13 +260,180 @@
   gap: var(--space-1);
   width: 100%;
   min-width: 0;
-  padding: var(--space-1-5) var(--space-2);
+  padding: var(--mp-section-pad, var(--space-2)) var(--space-2);
   background: none;
   border: none;
   cursor: pointer;
   font-family: inherit;
   color: var(--color-type-default);
   text-align: left;
+}
+
+/* Stat-style summary: prominent figure + label + muted meta (matches .w-stat cards) */
+.w-collapsible-trigger--summary {
+  align-items: stretch;
+}
+.w-collapsible-trigger--summary > .w-badge {
+  flex-shrink: 0;
+  align-self: center;
+}
+.w-collapsible-trigger--summary > .w-collapsible-chevron {
+  align-self: center;
+}
+/* Default summary stack (no --row). --row must not inherit column or severity stacks tall. */
+.w-collapsible-trigger--summary .w-collapsible-summary:not(.w-collapsible-summary--row) {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  text-align: left;
+}
+.w-collapsible-trigger--summary .w-collapsible-summary.w-collapsible-summary--row {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  align-content: center;
+  gap: var(--space-1-5);
+  row-gap: var(--space-1);
+  text-align: left;
+}
+/* One horizontal band: count + title | divider | meta or severity; optional subtitle row below */
+.w-collapsible-summary--row {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1-5);
+  row-gap: var(--space-1);
+}
+.w-collapsible-summary__lead {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.w-collapsible-summary__lead .w-collapsible-summary__value {
+  flex-shrink: 0;
+}
+.w-collapsible-summary__divider {
+  flex-shrink: 0;
+  width: 1px;
+  align-self: stretch;
+  min-height: 1.25rem;
+  background: var(--color-ui-divider-default);
+}
+/* Vertical rule between lead and meta/severity — short bar, not stretched band */
+.w-collapsible-summary--row > .w-collapsible-summary__divider {
+  align-self: center;
+  min-height: 0;
+  height: 1.375em;
+}
+.w-collapsible-summary__value {
+  font-size: var(--type-title-h2-size);
+  font-weight: var(--type-title-h2-weight);
+  line-height: 1.12;
+  letter-spacing: var(--type-title-h2-letter-spacing);
+  color: var(--color-type-default);
+}
+.w-collapsible-summary__label {
+  font-size: var(--type-text-md-size);
+  font-weight: var(--type-text-md-weight);
+  line-height: var(--type-text-md-line-height);
+  letter-spacing: var(--type-text-md-letter-spacing);
+  color: var(--color-type-default);
+}
+/* Short single-line hint (due dates, totals, etc.) — sits after divider on same row when --row */
+.w-collapsible-summary--row > .w-collapsible-summary__meta {
+  flex: 1 1 auto;
+  min-width: 8rem;
+}
+.w-collapsible-summary__meta {
+  font-size: var(--type-text-sm-size);
+  font-weight: var(--type-text-sm-weight);
+  line-height: var(--type-text-sm-line-height);
+  color: var(--color-type-muted);
+}
+.w-collapsible-summary__context {
+  font-size: var(--type-text-md-size);
+  font-weight: var(--type-text-md-weight);
+  line-height: var(--type-text-md-line-height);
+  color: var(--color-type-muted);
+}
+.w-collapsible-summary__context--inline {
+  font-size: var(--type-text-sm-size);
+  font-weight: var(--type-text-sm-weight);
+  line-height: var(--type-text-sm-line-height);
+}
+.w-collapsible-summary__context--inline::before {
+  content: "·";
+  margin: 0 var(--space-0-5);
+  color: var(--color-type-muted);
+}
+/* Second line under the main band (e.g. status) — full width below lead | divider | severity */
+.w-collapsible-summary--row > .w-collapsible-summary__context--sub {
+  flex: 1 0 100%;
+  width: 100%;
+  margin-top: 0;
+  padding-top: 0;
+  order: 5;
+}
+.w-collapsible-summary__context--sub {
+  font-size: var(--type-text-sm-size);
+  font-weight: var(--type-text-sm-weight);
+  line-height: var(--type-text-sm-line-height);
+  color: var(--color-type-muted);
+}
+/* Severity: one horizontal row of buckets; vertical bars between buckets only */
+.w-collapsible-severity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-1-5);
+  width: 100%;
+}
+.w-collapsible-summary--row .w-collapsible-severity--inline {
+  width: auto;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  align-self: center;
+}
+.w-collapsible-severity--inline {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  row-gap: var(--space-1);
+}
+.w-collapsible-severity__item {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: var(--space-0-5);
+  min-width: 0;
+  white-space: nowrap;
+}
+.w-collapsible-severity--inline .w-collapsible-severity__item + .w-collapsible-severity__item {
+  border-left: 1px solid var(--color-ui-divider-default);
+  padding-left: var(--space-1-5);
+  margin-left: var(--space-1);
+}
+.w-collapsible-severity__label {
+  font-size: var(--type-text-sm-size);
+  font-weight: var(--type-text-sm-emphasis-weight);
+  line-height: var(--type-text-sm-line-height);
+  color: var(--color-type-muted);
+}
+.w-collapsible-severity__value {
+  font-size: var(--type-title-h3-lg-size);
+  font-weight: var(--type-title-h3-lg-emphasis-weight);
+  line-height: 1.15;
+  letter-spacing: var(--type-title-h3-lg-letter-spacing);
+  color: var(--color-type-default);
 }
 
 .w-collapsible-trigger .w-card-title {
@@ -262,8 +457,29 @@
   flex-shrink: 0;
   transition: transform var(--layout-motion-duration, 0.42s) var(--layout-motion-ease, cubic-bezier(0.22, 1, 0.36, 1));
 }
-.w-collapsible.is-open > .w-collapsible-trigger .w-collapsible-chevron {
+.w-collapsible.is-open .w-collapsible-trigger .w-collapsible-chevron {
   transform: rotate(180deg);
+}
+
+/* Optional: trigger + header actions (e.g. Approve all) on one row */
+.w-collapsible-header-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  padding-right: var(--space-2);
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--color-ui-divider-default);
+}
+.w-collapsible-header-row .w-collapsible-trigger {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.w-collapsible-header-row .w-btn {
+  flex-shrink: 0;
+  margin-left: auto;
+  align-self: center;
 }
 
 /* Grid row animation — smooth open/close (avoids arbitrary max-height).
@@ -603,11 +819,11 @@
 .w-stat-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: var(--space-1);
+  gap: var(--mp-section-pad, var(--space-2));
 }
 
 .w-stat {
-  padding: var(--space-2);
+  padding: var(--mp-section-pad, var(--space-2));
   display: flex;
   flex-direction: column;
   gap: var(--space-0-5);
@@ -659,7 +875,7 @@
 
 .w-table th {
   text-align: left;
-  padding: var(--space-1-5) var(--space-2);
+  padding: var(--mp-section-pad, var(--space-2)) var(--space-2);
   font-size: var(--type-text-md-size);
   font-weight: var(--type-text-md-emphasis-weight);
   line-height: var(--type-text-md-line-height);
@@ -670,20 +886,28 @@
 }
 
 .w-table td {
-  padding: var(--space-1-5) var(--space-2);
+  padding: var(--mp-section-pad, var(--space-2)) var(--space-2);
   color: var(--color-type-default);
   border-bottom: 1px solid var(--color-outline-static);
   vertical-align: top;
 }
 
 /* table-cell cannot use -webkit-line-clamp reliably — cap ~2 lines by height */
-.w-table td:not(.w-table-cell--truncate) {
+.w-table td:not(.w-table-cell--truncate):not(.wf-suggestion-td) {
   max-height: calc(var(--type-text-body-line-height) * 2 + 6px);
   overflow: hidden;
   word-break: break-word;
 }
 
 /* Long LLM-style labels — one line with ellipsis (use with .w-table--fixed on the table) */
+.w-table.wf-suggestion-table {
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+}
 .w-table.w-table--fixed {
   table-layout: fixed;
 }
@@ -1023,6 +1247,14 @@
     -webkit-box-orient: unset;
   }
 
+  .middle-panel .w-collapsible-header-row {
+    flex-wrap: wrap;
+  }
+  .middle-panel .w-collapsible-header-row .w-btn {
+    margin-left: 0;
+    width: 100%;
+  }
+
   .middle-panel .w-form-actions {
     flex-wrap: wrap;
     justify-content: flex-start;
@@ -1034,15 +1266,27 @@
     justify-content: center;
   }
 
-  .middle-panel .w-table {
+  .middle-panel .w-table:not(.wf-suggestion-table) {
     width: 100%;
     max-width: 100%;
+  }
+
+  .middle-panel .w-table.wf-suggestion-table {
+    width: max-content;
+    min-width: 100%;
+    max-width: none;
   }
 
   .middle-panel .w-table th,
   .middle-panel .w-table td {
     word-break: break-word;
     overflow-wrap: anywhere;
+  }
+
+  .middle-panel .wf-suggestion-table th,
+  .middle-panel .wf-suggestion-table td {
+    word-break: normal;
+    overflow-wrap: normal;
   }
 
   /* Recent responses: Status column single-line + ellipsis */
@@ -1180,4 +1424,49 @@
   -webkit-line-clamp: unset;
   -webkit-box-orient: unset;
   overflow: revert;
+}
+
+/* Toast — top-right: 24px below app header, 24px from right edge */
+.wf-toast-host {
+  position: fixed;
+  top: calc(var(--app-header-height, 52px) + 24px);
+  right: 24px;
+  z-index: 10050;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+  max-width: min(420px, calc(100vw - 48px));
+  pointer-events: none;
+}
+.wf-toast {
+  pointer-events: auto;
+  max-width: min(380px, 100%);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--type-text-sm-size);
+  line-height: var(--type-text-sm-line-height);
+  color: var(--color-type-default);
+  background: var(--color-background-base);
+  border: 1px solid var(--color-outline-static);
+  border-radius: var(--panel-radius-sm, 8px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.14);
+  cursor: default;
+  transform: translate3d(120%, 0, 0);
+  opacity: 0;
+  transition:
+    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.28s ease;
+}
+.wf-toast.wf-toast--visible {
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+}
+.wf-toast.wf-toast--leaving {
+  transform: translate3d(120%, 0, 0);
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .wf-toast {
+    transition-duration: 0.01ms;
+  }
 }

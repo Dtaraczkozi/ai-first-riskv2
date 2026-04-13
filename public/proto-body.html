@@ -89,6 +89,18 @@
   <symbol id="icon-send" viewBox="0 0 24 24">
     <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor" />
   </symbol>
+  <symbol id="icon-check" viewBox="0 0 24 24">
+    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor" />
+  </symbol>
+  <symbol id="icon-close" viewBox="0 0 24 24">
+    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="currentColor" />
+  </symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24">
+    <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="currentColor" />
+  </symbol>
+  <symbol id="icon-filter" viewBox="0 0 24 24">
+    <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" fill="currentColor" />
+  </symbol>
 </svg>
 <!-- SPRITE-END -->
 
@@ -121,7 +133,7 @@
       <!-- Module switcher -->
       <button class="sb-module" type="button">
         <svg width="24" height="24" aria-hidden="true"><use href="#icon-mitigation"/></svg>
-        <span class="sb-module-name">Risk Management</span>
+        <span class="sb-module-name">Risk Agent</span>
       </button>
 
       <nav class="sb-nav sb-nav--workflow" id="sbNavWorkflow">
@@ -235,12 +247,13 @@
     <div class="mp-inner">
 
       <div class="mp-header" id="mpHeader">
-        <h3 class="mp-title" id="mpTitle">Overview</h3>
+        <h1 class="mp-title" id="mpTitle">Overview</h1>
         <div class="mp-header-actions" id="mpHeaderActions" hidden></div>
       </div>
 
       <div class="mp-body mp-view" id="view-survey-manager" data-agent-context="survey-manager">
 
+        <p class="right-drill-hint" style="margin:0 0 var(--space-2)">12 survey-sourced items are in the identification queue (see Identification overview).</p>
         <!-- ── Stat cards ───────────────────────────────────────── -->
         <div class="w-stat-row">
           <div class="w-card w-stat">
@@ -260,46 +273,99 @@
           </div>
         </div>
 
-        <div class="w-section-title">Surveys</div>
+        <h3 class="w-section-title">Surveys</h3>
         <div class="wf-survey-cards">
 
-          <div class="w-card w-collapsible is-open" id="surveyCard1">
-            <button class="w-collapsible-trigger" onclick="W.collapse('surveyCard1')">
-              <span class="w-card-title">Q4 Risk Assessment Survey</span>
+          <div class="w-card w-collapsible" id="surveyCard1">
+            <button type="button" class="w-collapsible-trigger w-collapsible-trigger--summary" onclick="W.collapse('surveyCard1')">
+              <span class="w-collapsible-summary w-collapsible-summary--row">
+                <span class="w-collapsible-summary__lead">
+                  <span class="w-collapsible-summary__value">48</span>
+                  <span class="w-collapsible-summary__label">Q4 Risk Assessment Survey</span>
+                </span>
+                <span class="w-collapsible-summary__divider" aria-hidden="true"></span>
+                <span class="w-collapsible-summary__meta">2 AI suggestions · Due Dec 15</span>
+              </span>
               <span class="w-badge is-success">Active</span>
               <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
             </button>
             <div class="w-collapsible-content">
               <div class="w-card-body">
-                <p class="wf-two-line" style="margin:0 0 var(--space-2)">48 responses · Due Dec 15 · Risk office owner. Expanded: results and AI suggestions from responses (mock).</p>
+                <p class="wf-two-line" style="margin:0 0 var(--space-2)">Due Dec 15 · Risk office owner. Open the card for the suggestion table.</p>
+                <p class="right-drill-hint" style="margin:0 0 var(--space-1)">Click a row for details in the side panel.</p>
+                <div class="wf-table-block" data-wf-table-block>
+                  <div class="wf-table-toolbar wf-toolbar" role="toolbar" aria-label="Survey suggestion table tools">
+                    <div class="wf-table-toolbar__search-wrap">
+                      <svg class="wf-table-toolbar__search-icon" width="18" height="18" aria-hidden="true"><use href="#icon-search"/></svg>
+                      <input type="search" class="w-form-input wf-table-toolbar__search" data-wf-table-search placeholder="Search suggestions…" aria-label="Search suggestions"/>
+                    </div>
+                    <div class="wf-filter-dropdown">
+                      <button type="button" class="w-btn is-secondary wf-filter-dropdown__trigger" aria-expanded="false" aria-haspopup="true" id="wf-tb-survey-card1-filter-btn" aria-controls="wf-tb-survey-card1-filter-panel">
+                        <svg width="18" height="18" aria-hidden="true"><use href="#icon-filter"/></svg>
+                        <span class="wf-filter-dropdown__trigger-text">Filter</span>
+                      </button>
+                      <div class="wf-filter-dropdown__panel" id="wf-tb-survey-card1-filter-panel" role="group" aria-labelledby="wf-tb-survey-card1-filter-btn" hidden>
+                        <div class="wf-filter-dropdown__options" role="radiogroup" aria-label="Filter by severity">
+                          <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-survey-card1" value="all" checked> All</label>
+                          <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-survey-card1" value="High"> High</label>
+                          <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-survey-card1" value="Medium"> Medium</label>
+                          <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-survey-card1" value="Low"> Low</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="w-card-flush">
                 <table class="w-table w-table--fixed">
-                  <thead><tr><th>Suggestion</th><th>From</th><th>Severity</th></tr></thead>
+                  <caption class="visually-hidden">AI suggestions from responses</caption>
+                  <thead><tr><th scope="col">Suggestion</th><th scope="col">From</th><th scope="col">Severity</th></tr></thead>
                   <tbody>
-                    <tr><td>Latency in control testing evidence</td><td>Sarah Kim</td><td><span class="w-badge is-warning">Medium</span></td></tr>
-                    <tr><td>Policy exception — privileged access</td><td>Tom Reeves</td><td><span class="w-badge is-error">High</span></td></tr>
+                    <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-drill-id="ss1" data-filter-value="Medium"
+                      onclick="WorkflowViews.openSurveySuggestionDrilldown('ss1')"
+                      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openSurveySuggestionDrilldown('ss1');}">
+                      <td>Latency in control testing evidence</td><td>Sarah Kim</td><td><span class="w-badge is-warning">Medium</span></td></tr>
+                    <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-drill-id="ss2" data-filter-value="High"
+                      onclick="WorkflowViews.openSurveySuggestionDrilldown('ss2')"
+                      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openSurveySuggestionDrilldown('ss2');}">
+                      <td>Policy exception — privileged access</td><td>Tom Reeves</td><td><span class="w-badge is-error">High</span></td></tr>
                   </tbody>
                 </table>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           <div class="w-card w-collapsible" id="surveyCard2">
-            <button class="w-collapsible-trigger" onclick="W.collapse('surveyCard2')">
-              <span class="w-card-title">Vendor Risk Questionnaire</span>
+            <button type="button" class="w-collapsible-trigger w-collapsible-trigger--summary" onclick="W.collapse('surveyCard2')">
+              <span class="w-collapsible-summary w-collapsible-summary--row">
+                <span class="w-collapsible-summary__lead">
+                  <span class="w-collapsible-summary__value">12</span>
+                  <span class="w-collapsible-summary__label">Vendor Risk Questionnaire</span>
+                </span>
+                <span class="w-collapsible-summary__divider" aria-hidden="true"></span>
+                <span class="w-collapsible-summary__meta">Draft · Due Jan 30</span>
+              </span>
               <span class="w-badge is-warning">Draft</span>
               <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
             </button>
             <div class="w-collapsible-content">
               <div class="w-card-body">
                 <p class="wf-two-line" style="margin:0 0 var(--space-2)">12 responses · Due Jan 30 · Draft message and recipients not finalised.</p>
-                <p class="right-drill-hint" style="margin:0">No suggestions until publish (mock).</p>
+                <p class="right-drill-hint" style="margin:0">No suggestions until the survey is published.</p>
               </div>
             </div>
           </div>
 
           <div class="w-card w-collapsible" id="surveyCard3">
-            <button class="w-collapsible-trigger" onclick="W.collapse('surveyCard3')">
-              <span class="w-card-title">Annual IT Controls Assessment</span>
+            <button type="button" class="w-collapsible-trigger w-collapsible-trigger--summary" onclick="W.collapse('surveyCard3')">
+              <span class="w-collapsible-summary w-collapsible-summary--row">
+                <span class="w-collapsible-summary__lead">
+                  <span class="w-collapsible-summary__value">0</span>
+                  <span class="w-collapsible-summary__label">Annual IT Controls Assessment</span>
+                </span>
+                <span class="w-collapsible-summary__divider" aria-hidden="true"></span>
+                <span class="w-collapsible-summary__meta">Responses · Overdue since Nov 1</span>
+              </span>
               <span class="w-badge is-error">Overdue</span>
               <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
             </button>
@@ -313,43 +379,81 @@
         </div>
 
         <!-- ── Table: Recent responses ──────────────────────────── -->
-        <div class="w-card">
-          <div class="w-card-header">
-            <span class="w-card-title">Recent responses</span>
-            <span class="w-card-count">48 total</span>
-          </div>
-          <div class="w-card-flush">
-            <table class="w-table w-table--name-first w-table--recent-responses">
-              <thead>
-                <tr>
-                  <th>Respondent</th>
-                  <th>Survey</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="is-hoverable">
-                  <td>Sarah Kim</td>
-                  <td>Q4 Risk Assessment</td>
-                  <td><span class="w-badge is-success">Complete</span></td>
-                </tr>
-                <tr class="is-hoverable">
-                  <td>Tom Reeves</td>
-                  <td>Q4 Risk Assessment</td>
-                  <td><span class="w-badge is-success">Complete</span></td>
-                </tr>
-                <tr class="is-hoverable">
-                  <td>Priya Nair</td>
-                  <td>Vendor Risk Q.</td>
-                  <td><span class="w-badge is-warning">Partial</span></td>
-                </tr>
-                <tr class="is-hoverable">
-                  <td>Marcus Lee</td>
-                  <td>Q4 Risk Assessment</td>
-                  <td><span class="w-badge is-neutral">In progress</span></td>
-                </tr>
-              </tbody>
-            </table>
+        <div class="w-card w-collapsible is-open" id="surveyRecentResponsesSection">
+          <button type="button" class="w-collapsible-trigger w-collapsible-trigger--summary" onclick="W.collapse('surveyRecentResponsesSection')">
+            <span class="w-collapsible-summary w-collapsible-summary--row">
+              <span class="w-collapsible-summary__lead">
+                <span class="w-collapsible-summary__value">4</span>
+                <span class="w-collapsible-summary__label">Recent responses</span>
+              </span>
+              <span class="w-collapsible-summary__divider" aria-hidden="true"></span>
+              <span class="w-collapsible-summary__meta">248 total responses</span>
+            </span>
+            <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+          </button>
+          <div class="w-collapsible-content">
+            <div class="w-card-flush wf-table-block" data-wf-table-block>
+              <div class="wf-table-toolbar wf-toolbar" role="toolbar" aria-label="Recent responses table tools">
+                <div class="wf-table-toolbar__search-wrap">
+                  <svg class="wf-table-toolbar__search-icon" width="18" height="18" aria-hidden="true"><use href="#icon-search"/></svg>
+                  <input type="search" class="w-form-input wf-table-toolbar__search" data-wf-table-search placeholder="Search responses…" aria-label="Search responses"/>
+                </div>
+                <div class="wf-filter-dropdown">
+                  <button type="button" class="w-btn is-secondary wf-filter-dropdown__trigger" aria-expanded="false" aria-haspopup="true" id="wf-tb-survey-recent-filter-btn" aria-controls="wf-tb-survey-recent-filter-panel">
+                    <svg width="18" height="18" aria-hidden="true"><use href="#icon-filter"/></svg>
+                    <span class="wf-filter-dropdown__trigger-text">Filter</span>
+                  </button>
+                  <div class="wf-filter-dropdown__panel" id="wf-tb-survey-recent-filter-panel" role="group" aria-labelledby="wf-tb-survey-recent-filter-btn" hidden>
+                    <div class="wf-filter-dropdown__options" role="radiogroup" aria-label="Filter by status">
+                      <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-survey-recent" value="all" checked> All</label>
+                      <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-survey-recent" value="Complete"> Complete</label>
+                      <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-survey-recent" value="Partial"> Partial</label>
+                      <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-survey-recent" value="In progress"> In progress</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <table class="w-table w-table--name-first w-table--recent-responses">
+                <caption class="visually-hidden">Recent survey responses</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Respondent</th>
+                    <th scope="col">Survey</th>
+                    <th scope="col">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-filter-value="Complete"
+                    onclick="WorkflowViews.openSurveyResponseDrilldown('sr1')"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openSurveyResponseDrilldown('sr1');}">
+                    <td>Sarah Kim</td>
+                    <td>Q4 Risk Assessment</td>
+                    <td><span class="w-badge is-success">Complete</span></td>
+                  </tr>
+                  <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-filter-value="Complete"
+                    onclick="WorkflowViews.openSurveyResponseDrilldown('sr2')"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openSurveyResponseDrilldown('sr2');}">
+                    <td>Tom Reeves</td>
+                    <td>Q4 Risk Assessment</td>
+                    <td><span class="w-badge is-success">Complete</span></td>
+                  </tr>
+                  <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-filter-value="Partial"
+                    onclick="WorkflowViews.openSurveyResponseDrilldown('sr3')"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openSurveyResponseDrilldown('sr3');}">
+                    <td>Priya Nair</td>
+                    <td>Vendor Risk Q.</td>
+                    <td><span class="w-badge is-warning">Partial</span></td>
+                  </tr>
+                  <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-filter-value="In progress"
+                    onclick="WorkflowViews.openSurveyResponseDrilldown('sr4')"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openSurveyResponseDrilldown('sr4');}">
+                    <td>Marcus Lee</td>
+                    <td>Q4 Risk Assessment</td>
+                    <td><span class="w-badge is-neutral">In progress</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -377,6 +481,48 @@
       <div class="mp-body mp-view is-active" id="view-identification-overview" data-agent-context="identification-overview">
 
         <div class="wf-id-dashboard" aria-describedby="wfIdVizSummary">
+        <div class="w-stat-row wf-id-cards">
+          <button type="button" class="w-card w-stat wf-id-link" onclick="WorkflowViews.goToView('internal-identification')">
+            <span class="w-stat-value">9</span>
+            <span class="w-stat-label">Internal · awaiting approval</span>
+            <span class="w-stat-trend">Open internal identification</span>
+          </button>
+          <button type="button" class="w-card w-stat wf-id-link" onclick="WorkflowViews.goToView('external-suggestions')">
+            <span class="w-stat-value">14</span>
+            <span class="w-stat-label">External · awaiting approval</span>
+            <span class="w-stat-trend">Open external suggestions</span>
+          </button>
+          <button type="button" class="w-card w-stat wf-id-link" onclick="WorkflowViews.goToView('survey-manager')">
+            <span class="w-stat-value">12</span>
+            <span class="w-stat-label">Survey-sourced · in identification queue</span>
+            <span class="w-stat-trend">Open survey manager</span>
+          </button>
+        </div>
+            <div class="w-card wf-id-viz wf-id-viz--foot">
+            <div class="w-card-header">
+              <span class="w-card-title">Pipeline &amp; throughput</span>
+              <span class="w-card-count">Current snapshot</span>
+            </div>
+            <div class="w-card-body wf-id-throughput">
+              <div class="wf-id-throughput__item">
+                <span class="wf-id-throughput__n">35</span>
+                <span class="wf-id-throughput__lbl">Awaiting first review</span>
+              </div>
+              <div class="wf-id-throughput__item">
+                <span class="wf-id-throughput__n">14</span>
+                <span class="wf-id-throughput__lbl">Owner / control assignment</span>
+              </div>
+              <div class="wf-id-throughput__item">
+                <span class="wf-id-throughput__n">31</span>
+                <span class="wf-id-throughput__lbl">Accepted into assessment</span>
+              </div>
+              <div class="wf-id-throughput__item">
+                <span class="wf-id-throughput__n">8</span>
+                <span class="wf-id-throughput__lbl">Deferred or duplicate</span>
+              </div>
+            </div>
+          </div>
+
             <div class="w-card wf-id-viz">
               <div class="w-card-header">
                 <span class="w-card-title">Newly surfaced risks by origin</span>
@@ -384,7 +530,7 @@
               </div>
               <div class="w-card-body wf-id-viz__body">
                 <p class="wf-id-viz__intro" id="wfIdVizSummary">
-                  Mix is shifting toward external intake as news and regulator feeds widen; internal uploads remain steady (mock).
+                  Mix is shifting toward external intake as news and regulator feeds widen; internal uploads remain steady.
                 </p>
                 <div class="wf-id-viz__bar">
                   <span class="wf-id-viz__label">External</span>
@@ -428,7 +574,7 @@
               </div>
               <div class="w-card-body">
                 <p class="wf-id-viz__intro">
-                  Volume reflects items entering triage after automated de-duplication. Peak aligns with quarter-end reporting (mock).
+                  Volume reflects items entering triage after automated de-duplication. Peak aligns with quarter-end reporting.
                 </p>
                 <figure class="wf-id-barchart" aria-label="Vertical bar chart: suggestions per month from October through March. Values 16, 19, 24, 28, 22, and 20. Highest in January at 28.">
                   <div class="wf-id-barchart__plot">
@@ -475,63 +621,11 @@
                       <span class="wf-id-barchart__mo">Mar</span>
                     </div>
                   </div>
-                  <figcaption class="wf-id-barchart__caption">Scale: 0–28 suggestions per month (mock).</figcaption>
+                  <figcaption class="wf-id-barchart__caption">Scale: 0–28 suggestions per month.</figcaption>
                 </figure>
               </div>
             </div>
 
-          <div class="w-card wf-id-viz wf-id-viz--foot">
-            <div class="w-card-header">
-              <span class="w-card-title">Pipeline &amp; throughput</span>
-              <span class="w-card-count">Current snapshot</span>
-            </div>
-            <div class="w-card-body wf-id-throughput">
-              <div class="wf-id-throughput__item">
-                <span class="wf-id-throughput__n">23</span>
-                <span class="wf-id-throughput__lbl">Awaiting first review</span>
-              </div>
-              <div class="wf-id-throughput__item">
-                <span class="wf-id-throughput__n">14</span>
-                <span class="wf-id-throughput__lbl">Owner / control assignment</span>
-              </div>
-              <div class="wf-id-throughput__item">
-                <span class="wf-id-throughput__n">31</span>
-                <span class="wf-id-throughput__lbl">Accepted into assessment</span>
-              </div>
-              <div class="wf-id-throughput__item">
-                <span class="wf-id-throughput__n">8</span>
-                <span class="wf-id-throughput__lbl">Deferred or duplicate</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="w-stat-row wf-id-cards">
-          <button type="button" class="w-card w-stat wf-id-link" onclick="WorkflowViews.goToView('internal-identification')">
-            <span class="w-stat-value">9</span>
-            <span class="w-stat-label">Internal · awaiting approval</span>
-            <span class="w-stat-trend">Open internal identification</span>
-          </button>
-          <button type="button" class="w-card w-stat wf-id-link" onclick="WorkflowViews.goToView('external-suggestions')">
-            <span class="w-stat-value">14</span>
-            <span class="w-stat-label">External · awaiting approval</span>
-            <span class="w-stat-trend">Open external suggestions</span>
-          </button>
-          <button type="button" class="w-card w-stat wf-id-link" onclick="WorkflowViews.goToView('survey-manager')">
-            <span class="w-stat-value">62</span>
-            <span class="w-stat-label">Surveys · responses pending</span>
-            <span class="w-stat-trend">Open survey manager</span>
-          </button>
-        </div>
-
-        <div class="w-card wf-click-card" role="button" tabindex="0" onclick="WorkflowViews.openAllSuggestionsDrilldown()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openAllSuggestionsDrilldown();}">
-          <div class="w-card-header">
-            <span class="w-card-title">All suggestions</span>
-            <span class="w-card-count">Open in right panel</span>
-          </div>
-          <div class="w-card-body">
-            <p class="wf-two-line">Consolidated triage: External, Internal, and Survey-derived suggestions in one drilldown (mock).</p>
-          </div>
         </div>
 
       </div><!-- /view-identification-overview -->
@@ -542,8 +636,8 @@
       <div class="mp-body mp-view" id="view-internal-identification" data-agent-context="internal-identification">
 
         <div class="wf-dropzone" id="wfInternalDropzone" role="button" tabindex="0" onclick="WFInternalUpload.run(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WFInternalUpload.run(this);}">
-          <span class="wf-dropzone__title">Drop documents here or click to simulate upload</span>
-          <span class="wf-dropzone__hint">Past reports, risk register export, employee/org directory (mock)</span>
+          <span class="wf-dropzone__title">Drop documents here or click to upload</span>
+          <span class="wf-dropzone__hint">Past reports, risk register export, employee or org directory</span>
         </div>
         <div class="wf-progress" id="wfInternalProgress" hidden>
           <div class="wf-progress__bar"><div class="wf-progress__fill" id="wfInternalProgressFill" style="width:0%"></div></div>
@@ -551,32 +645,85 @@
         </div>
 
         <div id="wfInternalAfter" hidden>
-          <div class="w-section-title">Suggestions</div>
-          <div class="w-card wf-click-card" role="button" tabindex="0" onclick="WorkflowViews.openInternalSuggestionsDrilldown()">
-            <div class="w-card-header">
-              <span class="w-card-title">Awaiting your approval</span>
-              <span class="w-badge is-warning">9 suggestions</span>
+          <h3 class="w-section-title">Suggestions</h3>
+          <div class="w-card w-collapsible" id="idInternalSugAccordion">
+            <div class="w-collapsible-header-row">
+              <button type="button" class="w-collapsible-trigger w-collapsible-trigger--summary" onclick="W.collapse('idInternalSugAccordion')">
+                <span class="w-collapsible-summary w-collapsible-summary--row">
+                  <span class="w-collapsible-summary__lead">
+                    <span class="w-collapsible-summary__value">9</span>
+                    <span class="w-collapsible-summary__label">Awaiting your approval</span>
+                  </span>
+                  <span class="w-collapsible-summary__divider" aria-hidden="true"></span>
+                  <div class="w-collapsible-severity w-collapsible-severity--inline" role="group" aria-label="Suggestions by severity">
+                    <div class="w-collapsible-severity__item">
+                      <span class="w-collapsible-severity__label">High</span>
+                      <span class="w-collapsible-severity__value">2</span>
+                    </div>
+                    <div class="w-collapsible-severity__item">
+                      <span class="w-collapsible-severity__label">Medium</span>
+                      <span class="w-collapsible-severity__value">4</span>
+                    </div>
+                    <div class="w-collapsible-severity__item">
+                      <span class="w-collapsible-severity__label">Low</span>
+                      <span class="w-collapsible-severity__value">3</span>
+                    </div>
+                  </div>
+                </span>
+                <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+              </button>
+              <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation(); WorkflowViews.approveAllInPool('internal')">Approve all</button>
             </div>
-            <div class="w-card-body wf-suggestion-summary">
-              <span class="wf-sev"><span class="w-badge is-error">High 2</span></span>
-              <span class="wf-sev"><span class="w-badge is-warning">Medium 4</span></span>
-              <span class="wf-sev"><span class="w-badge is-success">Low 3</span></span>
+            <div class="w-collapsible-content">
+              <div id="idInternalSugTableMount"></div>
             </div>
           </div>
 
-          <div class="w-section-title" style="margin-top:var(--space-2)">Internal sources</div>
-          <div class="w-card">
-            <div class="w-card-header">
-              <span class="w-card-title">Uploaded documents</span>
-              <span class="w-card-count">4 types</span>
-            </div>
-            <div class="w-card-body">
-              <ul class="wf-doc-list">
-                <li><span>Annual risk report 2025.pdf</span><button type="button" class="w-btn is-ghost">Remove</button></li>
-                <li><span>Risk register — enterprise.xlsx</span><button type="button" class="w-btn is-ghost">Remove</button></li>
-                <li><span>HR — role directory (anonymised).csv</span><button type="button" class="w-btn is-ghost">Remove</button></li>
-                <li><span>Org chart — narrative.docx</span><button type="button" class="w-btn is-ghost">Remove</button></li>
-              </ul>
+          <h3 class="w-section-title w-section-title--section-gap">Internal sources</h3>
+          <div class="w-card w-collapsible is-open" id="wfInternalDocSourcesSection">
+            <button type="button" class="w-collapsible-trigger w-collapsible-trigger--summary" onclick="W.collapse('wfInternalDocSourcesSection')">
+              <span class="w-collapsible-summary w-collapsible-summary--row">
+                <span class="w-collapsible-summary__lead">
+                  <span class="w-collapsible-summary__value">4</span>
+                  <span class="w-collapsible-summary__label">Uploaded documents</span>
+                </span>
+                <span class="w-collapsible-summary__divider" aria-hidden="true"></span>
+                <span class="w-collapsible-summary__meta">Past reports, register, directory</span>
+              </span>
+              <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+            </button>
+            <div class="w-collapsible-content">
+              <div class="w-card-body" style="padding-top:0">
+                <div class="wf-table-block" data-wf-table-block>
+                  <div class="wf-table-toolbar wf-toolbar" role="toolbar" aria-label="Document list tools">
+                    <div class="wf-table-toolbar__search-wrap">
+                      <svg class="wf-table-toolbar__search-icon" width="18" height="18" aria-hidden="true"><use href="#icon-search"/></svg>
+                      <input type="search" class="w-form-input wf-table-toolbar__search" data-wf-table-search placeholder="Search files…" aria-label="Search documents"/>
+                    </div>
+                    <div class="wf-filter-dropdown">
+                      <button type="button" class="w-btn is-secondary wf-filter-dropdown__trigger" aria-expanded="false" aria-haspopup="true" id="wf-tb-internal-docs-filter-btn" aria-controls="wf-tb-internal-docs-filter-panel">
+                        <svg width="18" height="18" aria-hidden="true"><use href="#icon-filter"/></svg>
+                        <span class="wf-filter-dropdown__trigger-text">Filter</span>
+                      </button>
+                      <div class="wf-filter-dropdown__panel" id="wf-tb-internal-docs-filter-panel" role="group" aria-labelledby="wf-tb-internal-docs-filter-btn" hidden>
+                        <div class="wf-filter-dropdown__options" role="radiogroup" aria-label="Filter by file type">
+                          <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-internal-docs" value="all" checked> All types</label>
+                          <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-internal-docs" value="pdf"> PDF</label>
+                          <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-internal-docs" value="xlsx"> Spreadsheet</label>
+                          <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-internal-docs" value="csv"> CSV</label>
+                          <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-internal-docs" value="docx"> Word</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <ul class="wf-doc-list">
+                    <li data-filter-value="pdf"><span>Annual risk report 2025.pdf</span><button type="button" class="w-btn is-ghost">Remove</button></li>
+                    <li data-filter-value="xlsx"><span>Risk register — enterprise.xlsx</span><button type="button" class="w-btn is-ghost">Remove</button></li>
+                    <li data-filter-value="csv"><span>HR — role directory (anonymised).csv</span><button type="button" class="w-btn is-ghost">Remove</button></li>
+                    <li data-filter-value="docx"><span>Org chart — narrative.docx</span><button type="button" class="w-btn is-ghost">Remove</button></li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -588,62 +735,219 @@
            ═══════════════════════════════════════════════════ -->
       <div class="mp-body mp-view" id="view-external-suggestions" data-agent-context="external-suggestions">
 
-        <div class="wf-tabs" role="tablist" aria-label="External intake">
-          <button type="button" class="wf-tab is-active" role="tab" aria-selected="true" id="wfTabSug" onclick="WFExtTab.show('sug')">Suggestions <span class="w-badge is-neutral wf-tab-badge" id="wfBadgeExternal">14</span></button>
-          <button type="button" class="wf-tab" role="tab" aria-selected="false" id="wfTabSrc" onclick="WFExtTab.show('src')">External sources</button>
-        </div>
-
         <div id="wfExtPanelSug">
           <div class="wf-auto-banner">
-            <p><strong>6 suggestions</strong> were auto-approved based on confidence thresholds. <button type="button" class="w-btn is-ghost" onclick="WorkflowViews.toggleAutoApprovedTable()">Review auto-approved suggestions</button></p>
+            <p><strong>1 suggestion</strong> was auto-approved based on confidence thresholds. <button type="button" class="w-btn is-ghost" onclick="WorkflowViews.expandAutoApprovedSection()">Review auto-approved suggestions</button></p>
           </div>
-          <div id="wfAutoApprovedBlock" class="wf-auto-table-wrap" hidden>
-            <table class="w-table w-table--fixed"><thead><tr><th>Name</th><th>Confidence</th></tr></thead>
-              <tbody><tr><td>Third-party concentration</td><td style="color:var(--color-success-default)">94%</td></tr></tbody></table>
+          <div class="w-card w-collapsible" id="wfAutoApprovedSection">
+            <button type="button" class="w-collapsible-trigger w-collapsible-trigger--summary" onclick="W.collapse('wfAutoApprovedSection')">
+              <span class="w-collapsible-summary w-collapsible-summary--row">
+                <span class="w-collapsible-summary__lead">
+                  <span class="w-collapsible-summary__value">1</span>
+                  <span class="w-collapsible-summary__label">Auto-approved</span>
+                </span>
+                <span class="w-collapsible-summary__divider" aria-hidden="true"></span>
+                <span class="w-collapsible-summary__meta">Open for details</span>
+              </span>
+              <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+            </button>
+            <div class="w-collapsible-content">
+              <div class="w-card-flush wf-auto-table-wrap wf-table-block" data-wf-table-block>
+                <div class="wf-table-toolbar wf-toolbar" role="toolbar" aria-label="Auto-approved table tools">
+                  <div class="wf-table-toolbar__search-wrap">
+                    <svg class="wf-table-toolbar__search-icon" width="18" height="18" aria-hidden="true"><use href="#icon-search"/></svg>
+                    <input type="search" class="w-form-input wf-table-toolbar__search" data-wf-table-search placeholder="Search…" aria-label="Search auto-approved rows"/>
+                  </div>
+                  <div class="wf-filter-dropdown">
+                    <button type="button" class="w-btn is-secondary wf-filter-dropdown__trigger" aria-expanded="false" aria-haspopup="true" id="wf-tb-auto-approved-filter-btn" aria-controls="wf-tb-auto-approved-filter-panel">
+                      <svg width="18" height="18" aria-hidden="true"><use href="#icon-filter"/></svg>
+                      <span class="wf-filter-dropdown__trigger-text">Filter</span>
+                    </button>
+                    <div class="wf-filter-dropdown__panel" id="wf-tb-auto-approved-filter-panel" role="group" aria-labelledby="wf-tb-auto-approved-filter-btn" hidden>
+                      <div class="wf-filter-dropdown__options" role="radiogroup" aria-label="Filter by confidence">
+                        <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-auto-approved" value="all" checked> All</label>
+                        <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-auto-approved" value="high"> High (≥90%)</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <table class="w-table w-table--fixed">
+                  <caption class="visually-hidden">Auto-approved suggestions</caption>
+                  <thead><tr><th scope="col">Name</th><th scope="col">Confidence</th></tr></thead>
+                  <tbody>
+                    <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-filter-value="high"
+                      onclick="WorkflowViews.openAutoApprovedRowDrilldown('aa1')"
+                      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openAutoApprovedRowDrilldown('aa1');}">
+                      <td>Third-party concentration</td>
+                      <td style="color:var(--color-success-default)">94%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
-          <div class="wf-group-grid">
-            <button type="button" class="w-card wf-ext-group" onclick="WorkflowViews.openExternalGroupDrilldown('news')">
-              <span class="wf-ext-group__title">News</span>
-              <span class="wf-ext-group__n">5 awaiting</span>
-              <span class="wf-ext-group__sev">H 1 · M 3 · L 1</span>
-            </button>
-            <button type="button" class="w-card wf-ext-group" onclick="WorkflowViews.openExternalGroupDrilldown('competitors')">
-              <span class="wf-ext-group__title">Competitors</span>
-              <span class="wf-ext-group__n">3 awaiting</span>
-              <span class="wf-ext-group__sev">H 0 · M 2 · L 1</span>
-            </button>
-            <button type="button" class="w-card wf-ext-group" onclick="WorkflowViews.openExternalGroupDrilldown('laws')">
-              <span class="wf-ext-group__title">Laws and regulations</span>
-              <span class="wf-ext-group__n">6 awaiting</span>
-              <span class="wf-ext-group__sev">H 2 · M 3 · L 1</span>
-            </button>
+          <div class="wf-ext-sug-stack">
+            <div class="w-card w-collapsible" id="idExtSugNews">
+              <div class="w-collapsible-header-row">
+                <button type="button" class="w-collapsible-trigger w-collapsible-trigger--summary" onclick="W.collapse('idExtSugNews')">
+                  <span class="w-collapsible-summary w-collapsible-summary--row">
+                    <span class="w-collapsible-summary__lead">
+                      <span class="w-collapsible-summary__value">5</span>
+                      <span class="w-collapsible-summary__label">News</span>
+                    </span>
+                    <span class="w-collapsible-summary__divider" aria-hidden="true"></span>
+                    <div class="w-collapsible-severity w-collapsible-severity--inline" role="group" aria-label="Suggestions by severity">
+                      <div class="w-collapsible-severity__item">
+                        <span class="w-collapsible-severity__label">High</span>
+                        <span class="w-collapsible-severity__value">1</span>
+                      </div>
+                      <div class="w-collapsible-severity__item">
+                        <span class="w-collapsible-severity__label">Medium</span>
+                        <span class="w-collapsible-severity__value">3</span>
+                      </div>
+                      <div class="w-collapsible-severity__item">
+                        <span class="w-collapsible-severity__label">Low</span>
+                        <span class="w-collapsible-severity__value">1</span>
+                      </div>
+                    </div>
+                    <span class="w-collapsible-summary__context w-collapsible-summary__context--sub">Awaiting review</span>
+                  </span>
+                  <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+                </button>
+                <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation(); WorkflowViews.approveAllInPool('external-news')">Approve all</button>
+              </div>
+              <div class="w-collapsible-content">
+                <div id="idExtSugNewsMount"></div>
+              </div>
+            </div>
+            <div class="w-card w-collapsible" id="idExtSugCompetitors">
+              <div class="w-collapsible-header-row">
+                <button type="button" class="w-collapsible-trigger w-collapsible-trigger--summary" onclick="W.collapse('idExtSugCompetitors')">
+                  <span class="w-collapsible-summary w-collapsible-summary--row">
+                    <span class="w-collapsible-summary__lead">
+                      <span class="w-collapsible-summary__value">3</span>
+                      <span class="w-collapsible-summary__label">Competitors</span>
+                    </span>
+                    <span class="w-collapsible-summary__divider" aria-hidden="true"></span>
+                    <div class="w-collapsible-severity w-collapsible-severity--inline" role="group" aria-label="Suggestions by severity">
+                      <div class="w-collapsible-severity__item">
+                        <span class="w-collapsible-severity__label">High</span>
+                        <span class="w-collapsible-severity__value">0</span>
+                      </div>
+                      <div class="w-collapsible-severity__item">
+                        <span class="w-collapsible-severity__label">Medium</span>
+                        <span class="w-collapsible-severity__value">2</span>
+                      </div>
+                      <div class="w-collapsible-severity__item">
+                        <span class="w-collapsible-severity__label">Low</span>
+                        <span class="w-collapsible-severity__value">1</span>
+                      </div>
+                    </div>
+                    <span class="w-collapsible-summary__context w-collapsible-summary__context--sub">Awaiting review</span>
+                  </span>
+                  <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+                </button>
+                <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation(); WorkflowViews.approveAllInPool('external-competitors')">Approve all</button>
+              </div>
+              <div class="w-collapsible-content">
+                <div id="idExtSugCompetitorsMount"></div>
+              </div>
+            </div>
+            <div class="w-card w-collapsible" id="idExtSugLaws">
+              <div class="w-collapsible-header-row">
+                <button type="button" class="w-collapsible-trigger w-collapsible-trigger--summary" onclick="W.collapse('idExtSugLaws')">
+                  <span class="w-collapsible-summary w-collapsible-summary--row">
+                    <span class="w-collapsible-summary__lead">
+                      <span class="w-collapsible-summary__value">6</span>
+                      <span class="w-collapsible-summary__label">Laws and regulations</span>
+                    </span>
+                    <span class="w-collapsible-summary__divider" aria-hidden="true"></span>
+                    <div class="w-collapsible-severity w-collapsible-severity--inline" role="group" aria-label="Suggestions by severity">
+                      <div class="w-collapsible-severity__item">
+                        <span class="w-collapsible-severity__label">High</span>
+                        <span class="w-collapsible-severity__value">2</span>
+                      </div>
+                      <div class="w-collapsible-severity__item">
+                        <span class="w-collapsible-severity__label">Medium</span>
+                        <span class="w-collapsible-severity__value">3</span>
+                      </div>
+                      <div class="w-collapsible-severity__item">
+                        <span class="w-collapsible-severity__label">Low</span>
+                        <span class="w-collapsible-severity__value">1</span>
+                      </div>
+                    </div>
+                    <span class="w-collapsible-summary__context w-collapsible-summary__context--sub">Awaiting review</span>
+                  </span>
+                  <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+                </button>
+                <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation(); WorkflowViews.approveAllInPool('external-laws')">Approve all</button>
+              </div>
+              <div class="w-collapsible-content">
+                <div id="idExtSugLawsMount"></div>
+              </div>
+            </div>
           </div>
         </div>
 
         <div id="wfExtPanelSrc" hidden>
-          <div class="wf-toolbar">
-            <input class="w-form-input wf-toolbar__search" type="search" placeholder="Search sources…" aria-label="Search sources"/>
-            <select class="w-form-select wf-toolbar__filter" aria-label="Filter"><option>All</option><option>Regulators</option><option>News</option></select>
-          </div>
-          <div class="w-list">
-            <div class="w-list-item is-selectable" onclick="WorkflowViews.openExternalSourceHistory()">
-              <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-identification"/></svg></div>
-              <div class="w-list-content">
-                <span class="w-list-title">FCA regulatory news</span>
-                <span class="w-list-meta">Feed · UK</span>
+          <h3 class="w-section-title">Document sources</h3>
+          <div class="w-card w-collapsible is-open" id="wfExternalDocSourcesSection">
+            <button type="button" class="w-collapsible-trigger w-collapsible-trigger--summary" onclick="W.collapse('wfExternalDocSourcesSection')">
+              <span class="w-collapsible-summary w-collapsible-summary--row">
+                <span class="w-collapsible-summary__lead">
+                  <span class="w-collapsible-summary__value">2</span>
+                  <span class="w-collapsible-summary__label">Connected sources</span>
+                </span>
+                <span class="w-collapsible-summary__divider" aria-hidden="true"></span>
+                <span class="w-collapsible-summary__meta">Feeds and APIs</span>
+              </span>
+              <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+            </button>
+            <div class="w-collapsible-content">
+              <div class="w-card-body" style="padding-top:0">
+                <div class="wf-table-block" data-wf-table-block>
+                  <div class="wf-table-toolbar wf-toolbar" role="toolbar" aria-label="External sources tools">
+                    <div class="wf-table-toolbar__search-wrap">
+                      <svg class="wf-table-toolbar__search-icon" width="18" height="18" aria-hidden="true"><use href="#icon-search"/></svg>
+                      <input type="search" class="w-form-input wf-table-toolbar__search" data-wf-table-search placeholder="Search sources…" aria-label="Search sources"/>
+                    </div>
+                    <div class="wf-filter-dropdown">
+                      <button type="button" class="w-btn is-secondary wf-filter-dropdown__trigger" aria-expanded="false" aria-haspopup="true" id="wf-tb-ext-sources-filter-btn" aria-controls="wf-tb-ext-sources-filter-panel">
+                        <svg width="18" height="18" aria-hidden="true"><use href="#icon-filter"/></svg>
+                        <span class="wf-filter-dropdown__trigger-text">Filter</span>
+                      </button>
+                      <div class="wf-filter-dropdown__panel" id="wf-tb-ext-sources-filter-panel" role="group" aria-labelledby="wf-tb-ext-sources-filter-btn" hidden>
+                        <div class="wf-filter-dropdown__options" role="radiogroup" aria-label="Filter by source type">
+                          <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-ext-sources" value="all" checked> All</label>
+                          <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-ext-sources" value="Regulators"> Regulators</label>
+                          <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-ext-sources" value="News"> News</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="w-list">
+                    <div class="w-list-item is-selectable" data-filter-value="Regulators" onclick="WorkflowViews.openExternalSourceHistory()">
+                      <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-identification"/></svg></div>
+                      <div class="w-list-content">
+                        <span class="w-list-title">FCA regulatory news</span>
+                        <span class="w-list-meta">Feed · UK</span>
+                      </div>
+                      <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation()">Open</button>
+                      <button type="button" class="w-btn is-ghost" onclick="event.stopPropagation();if(confirm('Remove this source?'))alert('Removed.');">Remove</button>
+                    </div>
+                    <div class="w-list-item is-selectable" data-filter-value="News" onclick="WorkflowViews.openExternalSourceHistory()">
+                      <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-identification"/></svg></div>
+                      <div class="w-list-content">
+                        <span class="w-list-title">Reuters — sector</span>
+                        <span class="w-list-meta">News</span>
+                      </div>
+                      <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation()">Open</button>
+                      <button type="button" class="w-btn is-ghost" onclick="event.stopPropagation();if(confirm('Remove this source?'))alert('Removed.');">Remove</button>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation()">Open</button>
-              <button type="button" class="w-btn is-ghost" onclick="event.stopPropagation();if(confirm('Remove this source?'))alert('Removed (mock).');">Remove</button>
-            </div>
-            <div class="w-list-item is-selectable" onclick="WorkflowViews.openExternalSourceHistory()">
-              <div class="w-list-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-identification"/></svg></div>
-              <div class="w-list-content">
-                <span class="w-list-title">Reuters — sector</span>
-                <span class="w-list-meta">News</span>
-              </div>
-              <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation()">Open</button>
-              <button type="button" class="w-btn is-ghost" onclick="event.stopPropagation();if(confirm('Remove this source?'))alert('Removed (mock).');">Remove</button>
             </div>
           </div>
         </div>
@@ -691,82 +995,112 @@
           </div>
         </div>
 
-        <div class="w-card wf-assess-viz">
-          <div class="w-card-header">
-            <span class="w-card-title">Preliminary L × I (open assessments)</span>
-          </div>
-          <div class="w-card-body wf-assess-viz__body">
-            <div class="wf-id-viz__bar">
-              <span class="wf-id-viz__label">Low L</span>
-              <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill" style="width:22%"></div></div>
-              <span class="wf-id-viz__n">8</span>
-            </div>
-            <div class="wf-id-viz__bar">
-              <span class="wf-id-viz__label">Med L</span>
-              <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill wf-id-viz__fill--alt" style="width:48%"></div></div>
-              <span class="wf-id-viz__n">17</span>
-            </div>
-            <div class="wf-id-viz__bar">
-              <span class="wf-id-viz__label">High L</span>
-              <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill" style="width:30%"></div></div>
-              <span class="wf-id-viz__n">11</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="w-card wf-click-card" role="button" tabindex="0" onclick="WorkflowViews.openAtRiskDrilldown()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openAtRiskDrilldown();}">
-          <div class="w-card-header">
-            <span class="w-card-title">All at-risk assessments</span>
-            <span class="w-card-count">Open in right panel</span>
-          </div>
-          <div class="w-card-body">
-            <p class="wf-two-line">Deadline, quorum, and owner — filterable table (mock).</p>
-          </div>
-        </div>
-
-        <div class="w-card w-collapsible is-open" id="riskRegisterSection">
-          <button class="w-collapsible-trigger" onclick="W.collapse('riskRegisterSection')">
-            <span class="w-card-title">Risk register</span>
-            <span class="w-card-count">38</span>
+        <h2 class="w-section-title">Risk register</h2>
+        <div class="w-card w-collapsible is-open" id="assessmentRiskRegisterAccordion" aria-describedby="wfAssessVizSummary">
+          <button type="button" class="w-collapsible-trigger w-collapsible-trigger--summary" onclick="W.collapse('assessmentRiskRegisterAccordion')">
+            <span class="w-collapsible-summary w-collapsible-summary--row">
+              <span class="w-collapsible-summary__lead">
+                <span class="w-collapsible-summary__value">5</span>
+                <span class="w-collapsible-summary__label">Likelihood × impact</span>
+              </span>
+              <span class="w-collapsible-summary__divider" aria-hidden="true"></span>
+              <span class="w-collapsible-summary__meta">Listed below · 38 in full register</span>
+            </span>
             <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
           </button>
           <div class="w-collapsible-content">
-            <div class="w-card-flush">
+            <p id="wfAssessVizSummary" class="visually-hidden">
+              Summary of likelihood spread for open assessments: Low likelihood 8, Medium 17, High 11.
+            </p>
+            <div class="w-card-body wf-assess-viz__body wf-assess-viz__body--accordion">
+              <div class="wf-id-viz__bar">
+                <span class="wf-id-viz__label">Low L</span>
+                <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill" style="width:22%"></div></div>
+                <span class="wf-id-viz__n">8</span>
+              </div>
+              <div class="wf-id-viz__bar">
+                <span class="wf-id-viz__label">Med L</span>
+                <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill wf-id-viz__fill--alt" style="width:48%"></div></div>
+                <span class="wf-id-viz__n">17</span>
+              </div>
+              <div class="wf-id-viz__bar">
+                <span class="wf-id-viz__label">High L</span>
+                <div class="wf-id-viz__track" aria-hidden="true"><div class="wf-id-viz__fill" style="width:30%"></div></div>
+                <span class="wf-id-viz__n">11</span>
+              </div>
+            </div>
+            <div class="w-card-body wf-assess-risks-hint">
+              <p class="wf-two-line" style="margin:0">Click a risk row for details in the side panel. <button type="button" class="w-btn is-ghost wf-assess-atrisk-link" onclick="WorkflowViews.openAtRiskDrilldown()">All at-risk assessments</button></p>
+            </div>
+            <div class="w-card-flush wf-table-block" data-wf-table-block>
+              <div class="wf-table-toolbar wf-toolbar" role="toolbar" aria-label="Risk register table tools">
+                <div class="wf-table-toolbar__search-wrap">
+                  <svg class="wf-table-toolbar__search-icon" width="18" height="18" aria-hidden="true"><use href="#icon-search"/></svg>
+                  <input type="search" class="w-form-input wf-table-toolbar__search" data-wf-table-search placeholder="Search risks…" aria-label="Search risk register"/>
+                </div>
+                <div class="wf-filter-dropdown">
+                  <button type="button" class="w-btn is-secondary wf-filter-dropdown__trigger" aria-expanded="false" aria-haspopup="true" id="wf-tb-assess-register-filter-btn" aria-controls="wf-tb-assess-register-filter-panel">
+                    <svg width="18" height="18" aria-hidden="true"><use href="#icon-filter"/></svg>
+                    <span class="wf-filter-dropdown__trigger-text">Filter</span>
+                  </button>
+                  <div class="wf-filter-dropdown__panel" id="wf-tb-assess-register-filter-panel" role="group" aria-labelledby="wf-tb-assess-register-filter-btn" hidden>
+                    <div class="wf-filter-dropdown__options" role="radiogroup" aria-label="Filter by rating">
+                      <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-assess-register" value="all" checked> All</label>
+                      <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-assess-register" value="Critical"> Critical</label>
+                      <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-assess-register" value="High"> High</label>
+                      <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-assess-register" value="Medium"> Medium</label>
+                      <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-assess-register" value="Low-Med"> Low–Med</label>
+                      <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-assess-register" value="Low"> Low</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <table class="w-table">
+                <caption class="visually-hidden">Risk register excerpt</caption>
                 <thead>
                   <tr>
-                    <th>Risk</th>
-                    <th>Likelihood</th>
-                    <th>Impact</th>
-                    <th>Rating</th>
+                    <th scope="col">Risk</th>
+                    <th scope="col">Likelihood</th>
+                    <th scope="col">Impact</th>
+                    <th scope="col">Rating</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr class="is-hoverable">
+                  <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-risk-id="ar1" data-filter-value="Critical"
+                    onclick="WorkflowViews.openAssessmentRiskDetail('ar1')"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openAssessmentRiskDetail('ar1');}">
                     <td>Third-party data breach exposure</td>
                     <td><span class="w-badge is-error">High</span></td>
                     <td><span class="w-badge is-error">High</span></td>
                     <td><span class="w-badge is-error">Critical</span></td>
                   </tr>
-                  <tr class="is-hoverable">
+                  <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-risk-id="ar2" data-filter-value="High"
+                    onclick="WorkflowViews.openAssessmentRiskDetail('ar2')"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openAssessmentRiskDetail('ar2');}">
                     <td>DORA compliance gap</td>
                     <td><span class="w-badge is-warning">Medium</span></td>
                     <td><span class="w-badge is-error">High</span></td>
                     <td><span class="w-badge is-error">High</span></td>
                   </tr>
-                  <tr class="is-hoverable">
+                  <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-risk-id="ar3" data-filter-value="Medium"
+                    onclick="WorkflowViews.openAssessmentRiskDetail('ar3')"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openAssessmentRiskDetail('ar3');}">
                     <td>Key person dependency — IT architecture</td>
                     <td><span class="w-badge is-warning">Medium</span></td>
                     <td><span class="w-badge is-warning">Medium</span></td>
                     <td><span class="w-badge is-warning">Medium</span></td>
                   </tr>
-                  <tr class="is-hoverable">
+                  <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-risk-id="ar4" data-filter-value="Low-Med"
+                    onclick="WorkflowViews.openAssessmentRiskDetail('ar4')"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openAssessmentRiskDetail('ar4');}">
                     <td>Insufficient backup testing frequency</td>
                     <td><span class="w-badge is-success">Low</span></td>
                     <td><span class="w-badge is-warning">Medium</span></td>
                     <td><span class="w-badge is-neutral">Low-Med</span></td>
                   </tr>
-                  <tr class="is-hoverable">
+                  <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-risk-id="ar5" data-filter-value="Low"
+                    onclick="WorkflowViews.openAssessmentRiskDetail('ar5')"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openAssessmentRiskDetail('ar5');}">
                     <td>Obsolete access control policies</td>
                     <td><span class="w-badge is-success">Low</span></td>
                     <td><span class="w-badge is-success">Low</span></td>
@@ -815,12 +1149,14 @@
           </div>
         </div>
 
-        <div class="w-card" style="margin-top:var(--space-2)">
+        <h3 class="w-section-title">Workflow</h3>
+        <div class="w-card" style="margin-top:0">
           <div class="w-card-header">
-            <span class="w-card-title">State preview (mock)</span>
+            <span class="w-card-title">State preview</span>
+            <span class="w-card-count">Setup · monitoring · synthesis · approval</span>
           </div>
           <div class="w-card-body">
-            <p class="wf-two-line" style="margin:0">States 1–4 from assessment.md: monitoring shows submission spread; synthesis shows aggregated score and divergence; approval shows audit trail and handoff to mitigation.</p>
+            <p class="wf-two-line" style="margin:0">Monitoring shows submission spread; synthesis shows aggregated score and divergence; approval shows audit trail and handoff to mitigation.</p>
           </div>
         </div>
 
@@ -834,12 +1170,12 @@
 
         <div class="w-stat-row">
           <div class="w-card w-stat">
-            <span class="w-stat-value">18</span>
-            <span class="w-stat-label">Open actions</span>
-            <span class="w-stat-trend">Across 3 risks</span>
+            <span class="w-stat-value">5</span>
+            <span class="w-stat-label">Actions in this view</span>
+            <span class="w-stat-trend">Same rows as table below</span>
           </div>
           <div class="w-card w-stat">
-            <span class="w-stat-value">3</span>
+            <span class="w-stat-value">1</span>
             <span class="w-stat-label">Overdue</span>
             <span class="w-stat-trend is-down">Action needed</span>
           </div>
@@ -851,48 +1187,86 @@
         </div>
 
         <div class="w-card w-collapsible is-open" id="mitigationActionsSection">
-          <button class="w-collapsible-trigger" onclick="W.collapse('mitigationActionsSection')">
-            <span class="w-card-title">Mitigation actions</span>
-            <span class="w-card-count">18 open</span>
+          <button type="button" class="w-collapsible-trigger w-collapsible-trigger--summary" onclick="W.collapse('mitigationActionsSection')">
+            <span class="w-collapsible-summary w-collapsible-summary--row">
+              <span class="w-collapsible-summary__lead">
+                <span class="w-collapsible-summary__value">5</span>
+                <span class="w-collapsible-summary__label">Mitigation actions</span>
+              </span>
+              <span class="w-collapsible-summary__divider" aria-hidden="true"></span>
+              <span class="w-collapsible-summary__meta">1 overdue in table</span>
+            </span>
             <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
           </button>
           <div class="w-collapsible-content">
-            <div class="w-card-flush">
+            <div class="w-card-flush wf-table-block" data-wf-table-block>
+              <div class="wf-table-toolbar wf-toolbar" role="toolbar" aria-label="Mitigation actions table tools">
+                <div class="wf-table-toolbar__search-wrap">
+                  <svg class="wf-table-toolbar__search-icon" width="18" height="18" aria-hidden="true"><use href="#icon-search"/></svg>
+                  <input type="search" class="w-form-input wf-table-toolbar__search" data-wf-table-search placeholder="Search actions…" aria-label="Search mitigation actions"/>
+                </div>
+                <div class="wf-filter-dropdown">
+                  <button type="button" class="w-btn is-secondary wf-filter-dropdown__trigger" aria-expanded="false" aria-haspopup="true" id="wf-tb-mitigation-filter-btn" aria-controls="wf-tb-mitigation-filter-panel">
+                    <svg width="18" height="18" aria-hidden="true"><use href="#icon-filter"/></svg>
+                    <span class="wf-filter-dropdown__trigger-text">Filter</span>
+                  </button>
+                  <div class="wf-filter-dropdown__panel" id="wf-tb-mitigation-filter-panel" role="group" aria-labelledby="wf-tb-mitigation-filter-btn" hidden>
+                    <div class="wf-filter-dropdown__options" role="radiogroup" aria-label="Filter by status">
+                      <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-mitigation" value="all" checked> All</label>
+                      <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-mitigation" value="Overdue"> Overdue</label>
+                      <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-mitigation" value="In progress"> In progress</label>
+                      <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-mitigation" value="Scheduled"> Scheduled</label>
+                      <label class="wf-filter-option"><input type="radio" data-wf-table-filter-radio name="wf-filter-wf-tb-mitigation" value="Complete"> Complete</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <table class="w-table w-table--fixed">
+                <caption class="visually-hidden">Open mitigation actions</caption>
                 <thead>
                   <tr>
-                    <th>Action</th>
-                    <th>Owner</th>
-                    <th>Due</th>
-                    <th>Status</th>
+                    <th scope="col">Action</th>
+                    <th scope="col">Owner</th>
+                    <th scope="col">Due</th>
+                    <th scope="col">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr class="is-hoverable">
+                  <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-filter-value="Overdue"
+                    onclick="WorkflowViews.openMitigationActionDrilldown('ma1')"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openMitigationActionDrilldown('ma1');}">
                     <td class="w-table-cell--truncate">Implement a recurring vendor security attestation workflow with evidence collection, scoring rubric aligned to SOC 2, and executive-ready exception reporting for third-party access to customer data</td>
                     <td>Sarah Kim</td>
                     <td><span style="color:var(--color-status-error)">Nov 30 ↑</span></td>
                     <td><span class="w-badge is-error">Overdue</span></td>
                   </tr>
-                  <tr class="is-hoverable">
+                  <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-filter-value="In progress"
+                    onclick="WorkflowViews.openMitigationActionDrilldown('ma2')"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openMitigationActionDrilldown('ma2');}">
                     <td class="w-table-cell--truncate">Draft a phased DORA compliance roadmap that maps ICT risk management, incident reporting, and resilience testing milestones to board checkpoints and regulator expectations</td>
                     <td>Tom Reeves</td>
                     <td>Jan 15</td>
                     <td><span class="w-badge is-warning">In progress</span></td>
                   </tr>
-                  <tr class="is-hoverable">
+                  <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-filter-value="In progress"
+                    onclick="WorkflowViews.openMitigationActionDrilldown('ma3')"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openMitigationActionDrilldown('ma3');}">
                     <td class="w-table-cell--truncate">Succession and knowledge-transfer plan for the enterprise IT architecture lead role, including shadowing, decision log continuity, and critical system ownership handover</td>
                     <td>HR / Priya Nair</td>
                     <td>Feb 1</td>
                     <td><span class="w-badge is-warning">In progress</span></td>
                   </tr>
-                  <tr class="is-hoverable">
+                  <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-filter-value="Scheduled"
+                    onclick="WorkflowViews.openMitigationActionDrilldown('ma4')"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openMitigationActionDrilldown('ma4');}">
                     <td class="w-table-cell--truncate">Monthly backup and disaster-recovery testing program with randomized restore drills, RTO/RPO verification, and documented remediation for any failed recovery objectives</td>
                     <td>Marcus Lee</td>
                     <td>Recurring</td>
                     <td><span class="w-badge is-neutral">Scheduled</span></td>
                   </tr>
-                  <tr class="is-hoverable">
+                  <tr class="wf-risk-row is-hoverable" tabindex="0" role="button" data-filter-value="Complete"
+                    onclick="WorkflowViews.openMitigationActionDrilldown('ma5')"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openMitigationActionDrilldown('ma5');}">
                     <td class="w-table-cell--truncate">Update the enterprise access control policy to reflect zero-trust principles, privileged access reviews, and joiner–mover–leaver automation tied to the identity provider</td>
                     <td>Security team</td>
                     <td>Dec 20</td>
@@ -905,7 +1279,7 @@
         </div>
 
         <div class="w-card w-collapsible" id="newActionSection">
-          <button class="w-collapsible-trigger" onclick="W.collapse('newActionSection')">
+          <button type="button" class="w-collapsible-trigger" onclick="W.collapse('newActionSection')">
             <span class="w-card-title">Add action</span>
             <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
           </button>
@@ -943,26 +1317,32 @@
 
         <div class="w-stat-row">
           <div class="w-card w-stat">
-            <span class="w-stat-value">12</span>
+            <span class="w-stat-value">3</span>
             <span class="w-stat-label">Reports</span>
-            <span class="w-stat-trend">This quarter</span>
+            <span class="w-stat-trend">Listed below</span>
+          </div>
+          <div class="w-card w-stat">
+            <span class="w-stat-value">1</span>
+            <span class="w-stat-label">Pending</span>
+            <span class="w-stat-trend">Draft in list</span>
           </div>
           <div class="w-card w-stat">
             <span class="w-stat-value">2</span>
-            <span class="w-stat-label">Pending</span>
-            <span class="w-stat-trend">Due this week</span>
-          </div>
-          <div class="w-card w-stat">
-            <span class="w-stat-value">8</span>
             <span class="w-stat-label">Shared</span>
-            <span class="w-stat-trend is-up">+3 vs last quarter</span>
+            <span class="w-stat-trend is-up">Published items below</span>
           </div>
         </div>
 
         <div class="w-card w-collapsible is-open" id="reportListSection">
-          <button class="w-collapsible-trigger" onclick="W.collapse('reportListSection')">
-            <span class="w-card-title">Recent reports</span>
-            <span class="w-card-count">12</span>
+          <button class="w-collapsible-trigger w-collapsible-trigger--summary" onclick="W.collapse('reportListSection')">
+            <span class="w-collapsible-summary w-collapsible-summary--row">
+              <span class="w-collapsible-summary__lead">
+                <span class="w-collapsible-summary__value">3</span>
+                <span class="w-collapsible-summary__label">Recent reports</span>
+              </span>
+              <span class="w-collapsible-summary__divider" aria-hidden="true"></span>
+              <span class="w-collapsible-summary__meta">Published and draft below</span>
+            </span>
             <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
           </button>
           <div class="w-collapsible-content">
@@ -1438,7 +1818,7 @@
           <rect x="14" y="1.5" width="4.5" height="12" fill="currentColor" opacity="0.3" rx="1.5"/>
         </svg>
       </button>
-      <span class="right-pane-title" id="rightPaneTitle">Overview</span>
+      <h1 class="right-pane-title" id="rightPaneTitle">Overview</h1>
       <span class="right-pane-subtitle" id="rightPaneSubtitle">Identification health</span>
     </div>
     <div class="right-pane-body right-pane-drilldown" id="rightDrilldown"></div>
@@ -1456,7 +1836,7 @@
         <form class="w-form" onsubmit="return false">
           <div class="w-form-field">
             <label class="w-form-label" for="wfSurveyMsg">Survey message / body</label>
-            <textarea class="w-form-textarea" id="wfSurveyMsg" rows="4" placeholder="AI draft (mock)…"></textarea>
+            <textarea class="w-form-textarea" id="wfSurveyMsg" rows="4" placeholder="Draft survey message…"></textarea>
           </div>
           <div class="w-form-field">
             <label class="w-form-label" for="wfSurveyRecipients">Recipients</label>
@@ -1466,15 +1846,17 @@
               <option>Business unit heads</option>
               <option>Internal audit</option>
             </select>
-            <span class="right-drill-hint">Agent suggestions for message and recipients (mock).</span>
+            <span class="right-drill-hint">Agent suggestions for message and recipients.</span>
           </div>
           <div class="w-form-actions">
             <button type="button" class="w-btn is-secondary" onclick="WorkflowViews.closeSurveyModal()">Cancel</button>
-            <button type="submit" class="w-btn is-primary" onclick="alert('Created (mock)');WorkflowViews.closeSurveyModal();return false;">Create survey</button>
+            <button type="submit" class="w-btn is-primary" onclick="alert('Survey created.');WorkflowViews.closeSurveyModal();return false;">Create survey</button>
           </div>
         </form>
       </div>
     </div>
   </div>
+
+  <div id="wfToastHost" class="wf-toast-host" aria-live="polite" aria-relevant="additions"></div>
 
 </div>

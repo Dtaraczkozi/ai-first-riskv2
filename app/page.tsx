@@ -63,7 +63,7 @@ export default function Home() {
               aria-label="Workspace menu"
             >
               <span className="app-top-header__workspace-label">
-                Risk Management
+                Risk Agent
               </span>
               <svg
                 className="app-top-header__workspace-chevron"

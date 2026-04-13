@@ -5,6 +5,7 @@
      W.select      — single / multi selection
      W.contextMenu — overflow menus
      W.dragReorder — drag-to-reorder items
+     W.toast       — top-right toast (auto-dismiss, slide)
    ============================================================ */
 
 const W = (() => {
@@ -15,12 +16,14 @@ const W = (() => {
    * Toggle a collapsible section.
    * HTML structure:
    *   <div class="w-collapsible" id="mySection">
-   *     <button class="w-collapsible-trigger" onclick="W.collapse('mySection')">
-   *       <span class="w-card-title">Title</span>
-   *       <svg class="w-collapsible-chevron" …><use href="#icon-chevron-down"/></svg>
-   *     </button>
+   *     <button class="w-collapsible-trigger" onclick="W.collapse('mySection')">…</button>
    *     <div class="w-collapsible-content">…</div>
    *   </div>
+   * Optional header actions:
+   *     <div class="w-collapsible-header-row">
+   *       <button class="w-collapsible-trigger" …>…</button>
+   *       <button type="button" class="w-btn is-secondary">…</button>
+   *     </div>
    */
   function collapse(id) {
     const el = document.getElementById(id);
@@ -331,9 +334,65 @@ const W = (() => {
     );
   }
 
+  /* ── Toast (top-right, slides in; auto-dismiss) ───────────────────────────── */
+
+  /**
+   * Show a short message in the top-right corner. Slides out after `duration` ms (default 5000).
+   */
+  function toast(message, options = {}) {
+    const duration = typeof options.duration === "number" ? options.duration : 5000;
+    let host = document.getElementById("wfToastHost");
+    if (!host) {
+      host = document.createElement("div");
+      host.id = "wfToastHost";
+      host.className = "wf-toast-host";
+      host.setAttribute("aria-live", "polite");
+      host.setAttribute("aria-relevant", "additions");
+      document.body.appendChild(host);
+    }
+
+    const el = document.createElement("div");
+    el.className = "wf-toast";
+    el.setAttribute("role", "status");
+    el.textContent = message;
+    host.appendChild(el);
+
+    requestAnimationFrame(() => {
+      el.classList.add("wf-toast--visible");
+    });
+
+    let removed = false;
+    const removeEl = () => {
+      if (removed) return;
+      removed = true;
+      el.remove();
+    };
+
+    const hide = () => {
+      el.classList.remove("wf-toast--visible");
+      el.classList.add("wf-toast--leaving");
+      const done = () => removeEl();
+      el.addEventListener(
+        "transitionend",
+        (e) => {
+          if (e.propertyName === "transform") done();
+        },
+        { once: true }
+      );
+      setTimeout(done, 450);
+    };
+
+    const hideTimer = setTimeout(hide, duration);
+
+    el.addEventListener("click", () => {
+      clearTimeout(hideTimer);
+      hide();
+    });
+  }
+
 
   /* ── Public API ───────────────────────────────────────────────────────────── */
-  return { collapse, select, contextMenu, closeMenu, dragReorder };
+  return { collapse, select, contextMenu, closeMenu, dragReorder, toast };
 })();
 
 /** Inline handlers and app.js use the global `W`. */

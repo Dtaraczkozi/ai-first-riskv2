@@ -21,6 +21,38 @@ const rightPanelToggle = document.getElementById("rightPanelToggle");
 const rightPanelExpandToggle = document.getElementById("rightPanelExpandToggle");
 const resizeHandle = document.getElementById("resizeHandle");
 const rightPanel = document.getElementById("rightPanel");
+
+function getRightRailTargetWidthPx() {
+  const raw = getComputedStyle(document.documentElement).getPropertyValue("--middle-rail-width").trim();
+  const n = parseFloat(raw);
+  return Number.isFinite(n) ? n : 56;
+}
+
+function clearRightRailAnimStyles() {
+  if (!rightIconRail) return;
+  rightIconRail.style.width = "";
+  rightIconRail.style.minWidth = "";
+  rightIconRail.style.maxWidth = "";
+  rightIconRail.style.marginRight = "";
+  rightIconRail.style.opacity = "";
+  rightIconRail.style.pointerEvents = "";
+}
+
+/** During scripted collapse/expand, rail width is driven in sync with the right panel (px). */
+function setRightRailAnimWidth(px) {
+  if (!rightIconRail) return;
+  if (px <= 0.5) {
+    clearRightRailAnimStyles();
+    return;
+  }
+  const w = Math.round(px * 100) / 100;
+  rightIconRail.style.width = `${w}px`;
+  rightIconRail.style.minWidth = `${w}px`;
+  rightIconRail.style.maxWidth = `${w}px`;
+  rightIconRail.style.opacity = "1";
+  rightIconRail.style.pointerEvents = "auto";
+}
+
 const SIDEBAR_TITLE_EXPANDED = "Sidebar: show icons only";
 const SIDEBAR_TITLE_COLLAPSED = "Sidebar: expand labels";
 
@@ -75,7 +107,7 @@ const DRILLDOWN = {
   "external-suggestions": {
     subtitle: "External signals",
     html: `
-      <div class="right-drill-hint">News, competitors, and laws — grouped suggestions with confidence and auto-approve ribbon (mock).</div>
+      <div class="right-drill-hint">News, competitors, and laws — grouped suggestions with confidence and auto-approve ribbon.</div>
       <div class="right-drill-section"><h4>Feeds</h4>
         <div class="w-card"><div class="w-card-body">
           <p class="right-drill-hint" style="margin:0">3 active feeds · 2 paused</p>
@@ -251,8 +283,14 @@ function qsWorkflowViewByContext(ctx) {
 
 /** Docked: thread picker + message input always visible; live widgets scroll above. */
 const CHAT_UI_DOCKED = "docked";
-/** Full-panel overlay: snapshot + messages scroll; composer pinned to bottom. */
+/** Full-panel overlay: DOM snapshot of the canvas + messages scroll; composer pinned to bottom. */
 const CHAT_UI_OVERLAY = "overlay";
+
+function stripIdsFromSubtree(root) {
+  if (!root) return;
+  if (root.nodeType === 1) root.removeAttribute("id");
+  root.querySelectorAll?.("[id]").forEach((n) => n.removeAttribute("id"));
+}
 
 const INLINE_AGENT_REPLY_MS = 950;
 
@@ -273,13 +311,7 @@ function nextInlineAgentReplyText() {
   return INLINE_AGENT_REPLY_VARIANTS[i];
 }
 
-function stripIdsFromSubtree(root) {
-  if (!root) return;
-  if (root.nodeType === 1) root.removeAttribute("id");
-  root.querySelectorAll?.("[id]").forEach((n) => n.removeAttribute("id"));
-}
-
-/** Overlay thread (snapshot + messages) is hidden in docked mode; composer stays in place below the toolbar. */
+/** Overlay thread (messages) is hidden in docked mode; composer stays in place below the toolbar. */
 function setInlineOverlayStackHidden(section, hidden) {
   if (!section) return;
   section.querySelector(".mp-inline-chat__thread-scroll")?.toggleAttribute("hidden", hidden);
@@ -301,7 +333,7 @@ function syncInlinePanelToggleButton(section) {
   btn.setAttribute("aria-label", expanded ? "Collapse thread to input only" : "Expand thread to full panel");
 }
 
-/** Match overlay column width to the live main canvas (.mp-view__main border box) — snapshot + composer + toolbar */
+/** Match overlay column width to the live main canvas (.mp-view__main border box) — composer + toolbar */
 function syncInlineChatColumnWidths(ctx) {
   const run = () => {
     const view = qsWorkflowViewByContext(ctx);
@@ -443,19 +475,14 @@ function setInlineComposerBusy(section, busy) {
   if (send) send.disabled = busy;
 }
 
+/** Clones `.mp-view__main` into the overlay thread column as a frozen “screencap” for context. */
 function fillInlineSnapshot(ctx) {
   const view = qsWorkflowViewByContext(ctx);
   const main = view?.querySelector(".mp-view__main");
   const section = qsInlineChatSection(ctx);
   const snap = section?.querySelector("[data-inline-snapshot]");
   if (!main || !snap) return;
-  const thread = getThreadById(getSelectedThreadIdForContext(ctx));
   snap.innerHTML = "";
-  if (!threadShowsPageSnapshot(thread)) {
-    snap.setAttribute("aria-hidden", "true");
-    syncInlineChatColumnWidths(ctx);
-    return;
-  }
   const clone = main.cloneNode(true);
   stripIdsFromSubtree(clone);
   clone.classList.add("mp-inline-chat__snapshot-clone");
@@ -560,15 +587,20 @@ function getMainRowInnerWidth() {
 }
 
 /**
- * Width shared by the middle column + right column (everything in the main row
- * after the sidebar, minus the middle icon rail and resize handle).
+ * Width available for middle + right together (after sidebar, handle, and right icon rail).
  * Keeps mw + rw equal to this value so the split always fills the row.
+ * @param {number} [railWPx]  When set, uses this rail width instead of measuring the DOM (for coordinated animations).
  */
-function pairSlotWidth() {
+function pairSlotWidth(railWPx) {
   if (!mainRow) return 0;
   const inner = mainRow.clientWidth;
   const sb = getSidebarOuterWidth();
-  const rrailW = rightIconRail ? rightIconRail.getBoundingClientRect().width : 0;
+  const rrailW =
+    typeof railWPx === "number" && !Number.isNaN(railWPx)
+      ? railWPx
+      : rightIconRail
+        ? rightIconRail.getBoundingClientRect().width
+        : 0;
   const hw = resizeHandle ? resizeHandle.getBoundingClientRect().width : HANDLE_W;
   return Math.max(0, inner - sb - rrailW - hw);
 }
@@ -642,7 +674,6 @@ function syncResizeHandleVisibility() {
 
 function applyRightCollapsedLayout() {
   if (!middlePanel || !rightPanel) return;
-  rightPanel.classList.add("right-panel--collapse-content-hidden");
   const wasRightCollapseAnimating =
     rightPanel.classList.contains("right-panel--collapse-animating") ||
     (mainRow && mainRow.classList.contains("main-row--right-collapse-animating"));
@@ -666,6 +697,7 @@ function applyRightCollapsedLayout() {
     requestAnimationFrame(() => {
       if (rightPanel) rightPanel.classList.remove("right-panel--collapse-animating");
       if (mainRow) mainRow.classList.remove("main-row--right-collapse-animating");
+      if (mainRow) mainRow.classList.remove("main-row--right-rail-animating");
     });
   }
 }
@@ -679,7 +711,6 @@ function applyRightWidthPx(w) {
 
 function collapseRight() {
   if (rightCollapsed || rightCollapseAnimating) return;
-  rightPanel.classList.add("right-panel--collapse-content-hidden");
   rightCollapseAnimating = true;
   savedRightPanelWidth = rightPanelWidth;
   runRightCollapseAnimation(() => {
@@ -699,8 +730,16 @@ function commitExpandedFromDrag(middleWIntent) {
     "right-panel--collapse-animating",
     "right-panel--collapse-content-hidden"
   );
-  middlePanel.classList.remove("middle-panel--fill");
-  if (mainRow) mainRow.classList.remove("main-row--right-collapsed", "main-row--right-expanding");
+  middlePanel.classList.remove("middle-panel--fill", "middle-panel--collapse-animating");
+  if (mainRow) {
+    mainRow.classList.remove(
+      "main-row--right-collapsed",
+      "main-row--right-expanding",
+      "main-row--right-rail-animating",
+      "main-row--right-expand-animating"
+    );
+  }
+  clearRightRailAnimStyles();
   layoutMiddleRightPair(middleWIntent);
   savedRightPanelWidth = rightPanelWidth;
   syncRightToggleButtons();
@@ -712,9 +751,25 @@ function expandRight() {
   if (rightCollapseAnimating) {
     cancelRightCollapseAnimation();
   }
-  rightPanelWidth = clampRightPanelWidth(savedRightPanelWidth);
-  const slot = pairSlotWidth();
-  commitExpandedFromDrag(Math.max(0, slot - rightPanelWidth));
+  const targetRw = clampRightPanelWidth(savedRightPanelWidth);
+  if (prefersReducedMotion()) {
+    const rw0 = rightIconRail ? rightIconRail.getBoundingClientRect().width : getRightRailTargetWidthPx();
+    setRightRailAnimWidth(rw0 || getRightRailTargetWidthPx());
+    if (mainRow) mainRow.classList.remove("main-row--right-collapsed");
+    rightPanel.classList.remove("is-hidden", "right-panel--collapse-content-hidden");
+    middlePanel.classList.remove("middle-panel--fill");
+    clearMiddleInlineFlex();
+    clearRightRailAnimStyles();
+    const slot = pairSlotWidth();
+    commitExpandedFromDrag(Math.max(0, slot - targetRw));
+    return;
+  }
+  rightCollapseAnimating = true;
+  runRightExpandAnimation(targetRw, () => {
+    const slot = pairSlotWidth();
+    commitExpandedFromDrag(Math.max(0, slot - rightPanelWidth));
+    rightCollapseAnimating = false;
+  });
 }
 
 function applySidebarState() {
@@ -1013,14 +1068,6 @@ function generalThreads() {
   return AGENT_THREADS.filter((t) => t.workflowView == null);
 }
 
-/** Topic threads, page snapshot, and element-pick threads use a live canvas snapshot; general-only threads do not. */
-function threadShowsPageSnapshot(thread) {
-  if (!thread) return false;
-  if (thread.workflowView) return true;
-  if (thread.fromElementPick) return true;
-  return thread.id === "at-page-element";
-}
-
 function threadsForInlinePicker(ctx) {
   const topics = topicThreadsFor(ctx);
   const gens = generalThreads().filter((t) => t.id !== "at-page-element");
@@ -1054,10 +1101,7 @@ function updateInlineComposerHint(ctx) {
   const section = qsInlineChatSection(ctx);
   const hint = section?.querySelector(".mp-chat-composer__hint");
   if (!hint) return;
-  const thread = getThreadById(getSelectedThreadIdForContext(ctx));
-  hint.textContent = threadShowsPageSnapshot(thread)
-    ? "Sending captures the page and opens the conversation panel."
-    : "This thread does not include a page snapshot.";
+  hint.textContent = "Sending captures the page and opens the conversation panel.";
 }
 
 function defaultThreadIdForContext(ctx) {
@@ -1656,7 +1700,7 @@ let dragPendingX = null;
 let dragRaf = 0;
 
 let rightCollapseAnimating = false;
-let rightCollapseRafId = 0;
+let rightPanelLayoutRafId = 0;
 
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1671,57 +1715,133 @@ function easeOutCubic(t) {
 }
 
 /**
- * Animate right width → 0 via layoutMiddleRightPair, then run onComplete (apply collapsed chrome).
+ * Animate right panel width → 0 while the icon rail grows into place in the same motion,
+ * so the middle column does not absorb the rail’s space before the rail appears.
  */
 function runRightCollapseAnimation(onComplete) {
   if (!middlePanel || !rightPanel) {
     onComplete();
     return;
   }
-  const slot = pairSlotWidth();
+  const railTarget = getRightRailTargetWidthPx();
   if (prefersReducedMotion()) {
-    layoutMiddleRightPair(slot);
+    setRightRailAnimWidth(railTarget);
+    const slotRm = pairSlotWidth(railTarget);
+    layoutMiddleRightPair(slotRm, { bypassRightClamp: true, slot: slotRm });
+    clearRightRailAnimStyles();
     onComplete();
     return;
   }
 
   rightPanel.classList.add("right-panel--collapse-animating");
-  if (mainRow) mainRow.classList.add("main-row--right-collapse-animating");
+  if (mainRow) mainRow.classList.add("main-row--right-collapse-animating", "main-row--right-rail-animating");
+  middlePanel.classList.add("middle-panel--collapse-animating");
   const startRw = rightPanel.getBoundingClientRect().width;
   const t0 = performance.now();
 
   function done() {
-    /* Last frame already committed rw=0; do not call layoutMiddleRightPair here — it would re-enable
-     * transitions (see done() previously removing collapse classes) and fight applyRightCollapsedLayout. */
-    rightCollapseRafId = 0;
+    rightPanelLayoutRafId = 0;
+    clearRightRailAnimStyles();
+    if (mainRow) mainRow.classList.remove("main-row--right-rail-animating");
+    middlePanel.classList.remove("middle-panel--collapse-animating");
     onComplete();
   }
 
   function frame(now) {
     const elapsed = now - t0;
     const u = Math.min(1, elapsed / RIGHT_COLLAPSE_MS);
-    const rw = startRw * (1 - easeOutCubic(u));
-    /* Bypass min-width clamp so width eases smoothly from current size to 0 (see layoutMiddleRightPair). */
-    layoutMiddleRightPair(slot - rw, { bypassRightClamp: true });
+    const e = easeOutCubic(u);
+    const railW = railTarget * e;
+    const rw = startRw * (1 - e);
+    const slot = pairSlotWidth(railW);
+    setRightRailAnimWidth(railW);
+    const mw = slot - rw;
+    layoutMiddleRightPair(mw, { bypassRightClamp: true, slot });
     if (u < 1) {
-      rightCollapseRafId = requestAnimationFrame(frame);
+      rightPanelLayoutRafId = requestAnimationFrame(frame);
     } else {
       done();
     }
   }
 
-  rightCollapseRafId = requestAnimationFrame(frame);
+  rightPanelLayoutRafId = requestAnimationFrame(frame);
+}
+
+/**
+ * Animate rail width → 0 while the right panel grows from 0 to target (inverse of collapse).
+ */
+function runRightExpandAnimation(targetRw, onComplete) {
+  if (!middlePanel || !rightPanel || !rightIconRail) {
+    onComplete();
+    return;
+  }
+  if (prefersReducedMotion()) {
+    onComplete();
+    return;
+  }
+
+  const railTarget = getRightRailTargetWidthPx();
+  const rw0 = rightIconRail.getBoundingClientRect().width || railTarget;
+  setRightRailAnimWidth(rw0);
+  if (mainRow) mainRow.classList.remove("main-row--right-collapsed");
+  rightPanel.classList.remove("is-hidden", "right-panel--collapse-content-hidden");
+  rightPanel.classList.add("right-panel--collapse-animating");
+  middlePanel.classList.remove("middle-panel--fill");
+  clearMiddleInlineFlex();
+  if (mainRow) mainRow.classList.add("main-row--right-expand-animating", "main-row--right-rail-animating");
+  middlePanel.classList.add("middle-panel--collapse-animating");
+
+  rightPanel.style.width = "0px";
+  const t0 = performance.now();
+
+  function done() {
+    rightPanelLayoutRafId = 0;
+    clearRightRailAnimStyles();
+    if (mainRow) mainRow.classList.remove("main-row--right-expand-animating", "main-row--right-rail-animating");
+    middlePanel.classList.remove("middle-panel--collapse-animating");
+    rightPanel.classList.remove("right-panel--collapse-animating");
+    rightPanel.style.width = "";
+    onComplete();
+  }
+
+  function frame(now) {
+    const elapsed = now - t0;
+    const u = Math.min(1, elapsed / RIGHT_COLLAPSE_MS);
+    const e = easeOutCubic(u);
+    const railW = rw0 * (1 - e);
+    const rw = targetRw * e;
+    const slot = pairSlotWidth(railW);
+    setRightRailAnimWidth(railW);
+    const mw = slot - rw;
+    layoutMiddleRightPair(mw, { bypassRightClamp: true, slot });
+    if (u < 1) {
+      rightPanelLayoutRafId = requestAnimationFrame(frame);
+    } else {
+      done();
+    }
+  }
+
+  rightPanelLayoutRafId = requestAnimationFrame(frame);
 }
 
 function cancelRightCollapseAnimation() {
-  if (rightCollapseRafId) {
-    cancelAnimationFrame(rightCollapseRafId);
-    rightCollapseRafId = 0;
+  if (rightPanelLayoutRafId) {
+    cancelAnimationFrame(rightPanelLayoutRafId);
+    rightPanelLayoutRafId = 0;
   }
   if (rightPanel) {
     rightPanel.classList.remove("right-panel--collapse-animating", "right-panel--collapse-content-hidden");
+    rightPanel.style.width = "";
   }
-  if (mainRow) mainRow.classList.remove("main-row--right-collapse-animating");
+  if (mainRow) {
+    mainRow.classList.remove(
+      "main-row--right-collapse-animating",
+      "main-row--right-rail-animating",
+      "main-row--right-expand-animating"
+    );
+  }
+  if (middlePanel) middlePanel.classList.remove("middle-panel--collapse-animating");
+  clearRightRailAnimStyles();
   rightCollapseAnimating = false;
 }
 
@@ -1734,7 +1854,7 @@ function endOuterDrag() {
 
 function layoutMiddleRightPair(middleW, opts) {
   if (!middlePanel || !rightPanel) return;
-  const slot = pairSlotWidth();
+  const slot = opts?.slot != null ? opts.slot : pairSlotWidth();
   let mw = Math.max(0, Math.min(slot, middleW));
   let rw = slot - mw;
   if (rw > 0) {
