@@ -126,6 +126,7 @@ h4.w-section-title {
   line-height: var(--type-text-body-line-height);
   letter-spacing: var(--type-text-body-letter-spacing);
   color: var(--color-type-default);
+  margin: 0;
   min-width: 0;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -139,6 +140,7 @@ h4.w-section-title {
   font-weight: var(--type-text-md-weight);
   line-height: var(--type-text-md-line-height);
   color: var(--color-type-muted);
+  margin: 0;
   flex-shrink: 0;
 }
 
@@ -182,6 +184,41 @@ h4.w-section-title {
 .w-card-flush:has(.w-table)::-webkit-scrollbar-thumb {
   background: var(--color-ui-scrollbar-handle);
   border-radius: 4px;
+}
+
+/* Table blocks: default is no clipping so toolbars/dropdowns can render fully.
+   Horizontal scrolling should be applied to the table’s dedicated scroll region, not the whole block. */
+.wf-table-block {
+  overflow: visible;
+  max-width: 100%;
+}
+
+/* For non-suggestion tables (plain `.w-table` inside the block), allow sideways scrolling if needed. */
+.wf-table-block:has(> .w-table),
+.wf-table-block:has(> table.w-table) {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ui-scrollbar-handle) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.wf-table-block:has(> .w-table)::-webkit-scrollbar,
+.wf-table-block:has(> table.w-table)::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.wf-table-block:has(> .w-table)::-webkit-scrollbar-track,
+.wf-table-block:has(> table.w-table)::-webkit-scrollbar-track {
+  background: transparent;
+}
+.wf-table-block:has(> .w-table)::-webkit-scrollbar-thumb,
+.wf-table-block:has(> table.w-table)::-webkit-scrollbar-thumb {
+  background: var(--color-ui-scrollbar-handle);
+  border-radius: 4px;
+}
+
+/* Suggestion tables mount their own scroll container; do not clip toolbars or dropdown panels. */
+.wf-table-block:has(.wf-suggestion-table-scroll) {
+  overflow: visible;
 }
 
 
@@ -495,6 +532,7 @@ h4.w-section-title {
 }
 .w-collapsible-content {
   overflow: hidden;
+  width: 100%;
   min-height: 0;
 }
 .w-collapsible.is-open .w-collapsible-content {
@@ -1287,6 +1325,40 @@ h4.w-section-title {
   .middle-panel .wf-suggestion-table td {
     word-break: normal;
     overflow-wrap: normal;
+  }
+
+  /* Table toolbars: ensure search + filter never crop in narrow middle panel */
+  .middle-panel .wf-table-toolbar {
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+    gap: var(--space-1);
+  }
+
+  .middle-panel .wf-table-toolbar__search-wrap {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .middle-panel .wf-filter-dropdown {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .middle-panel .wf-filter-dropdown__trigger {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .middle-panel .wf-filter-dropdown__trigger-text {
+    max-width: 100%;
+  }
+
+  /* Prevent dropdown panel from being clipped/offscreen in narrow panels */
+  .middle-panel .wf-filter-dropdown__panel {
+    left: 0;
+    right: auto;
+    min-width: min(220px, 100%);
+    max-width: 100%;
   }
 
   /* Recent responses: Status column single-line + ellipsis */

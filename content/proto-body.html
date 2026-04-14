@@ -498,12 +498,10 @@
             <span class="w-stat-trend">Open survey manager</span>
           </button>
         </div>
-            <div class="w-card wf-id-viz wf-id-viz--foot">
-            <div class="w-card-header">
-              <span class="w-card-title">Pipeline &amp; throughput</span>
-              <span class="w-card-count">Current snapshot</span>
-            </div>
-            <div class="w-card-body wf-id-throughput">
+
+        <section class="wf-id-dashboard__section" aria-labelledby="wfIdQueueHeading">
+          <h2 id="wfIdQueueHeading" class="w-section-title">Identification queue</h2>
+          <div class="wf-id-throughput wf-id-dashboard__throughput" role="group" aria-labelledby="wfIdQueueHeading">
               <div class="wf-id-throughput__item">
                 <span class="wf-id-throughput__n">35</span>
                 <span class="wf-id-throughput__lbl">Awaiting first review</span>
@@ -520,13 +518,16 @@
                 <span class="wf-id-throughput__n">8</span>
                 <span class="wf-id-throughput__lbl">Deferred or duplicate</span>
               </div>
-            </div>
           </div>
+        </section>
 
+        <section class="wf-id-dashboard__section" aria-labelledby="wfIdMixHeading">
+          <h2 id="wfIdMixHeading" class="w-section-title">Source mix &amp; trends</h2>
+          <div class="wf-id-dashboard__viz-pair">
             <div class="w-card wf-id-viz">
               <div class="w-card-header">
-                <span class="w-card-title">Newly surfaced risks by origin</span>
-                <span class="w-card-count">Last 90 days · 62 items</span>
+                <span class="w-card-title">Risks by intake source</span>
+                <span class="w-card-count">90d · 62 items</span>
               </div>
               <div class="w-card-body wf-id-viz__body">
                 <p class="wf-id-viz__intro" id="wfIdVizSummary">
@@ -569,8 +570,8 @@
 
             <div class="w-card wf-id-viz wf-id-viz--chart">
               <div class="w-card-header">
-                <span class="w-card-title">Suggestions logged over time</span>
-                <span class="w-card-count">Monthly · identification queue</span>
+                <span class="w-card-title">Queue volume by month</span>
+                <span class="w-card-count">Rolling 6 months · queue</span>
               </div>
               <div class="w-card-body">
                 <p class="wf-id-viz__intro">
@@ -625,6 +626,8 @@
                 </figure>
               </div>
             </div>
+          </div>
+        </section>
 
         </div>
 
@@ -672,7 +675,7 @@
                 </span>
                 <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
               </button>
-              <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation(); WorkflowViews.approveAllInPool('internal')">Approve all</button>
+              <button type="button" class="w-btn is-secondary wf-approve-all" onclick="event.stopPropagation(); WorkflowViews.approveAllInPool('internal')">Approve all</button>
             </div>
             <div class="w-collapsible-content">
               <div id="idInternalSugTableMount"></div>
@@ -815,7 +818,7 @@
                   </span>
                   <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
                 </button>
-                <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation(); WorkflowViews.approveAllInPool('external-news')">Approve all</button>
+                <button type="button" class="w-btn is-secondary wf-approve-all" onclick="event.stopPropagation(); WorkflowViews.approveAllInPool('external-news')">Approve all</button>
               </div>
               <div class="w-collapsible-content">
                 <div id="idExtSugNewsMount"></div>
@@ -848,7 +851,7 @@
                   </span>
                   <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
                 </button>
-                <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation(); WorkflowViews.approveAllInPool('external-competitors')">Approve all</button>
+                <button type="button" class="w-btn is-secondary wf-approve-all" onclick="event.stopPropagation(); WorkflowViews.approveAllInPool('external-competitors')">Approve all</button>
               </div>
               <div class="w-collapsible-content">
                 <div id="idExtSugCompetitorsMount"></div>
@@ -881,7 +884,7 @@
                   </span>
                   <svg class="w-collapsible-chevron" width="20" height="20" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
                 </button>
-                <button type="button" class="w-btn is-secondary" onclick="event.stopPropagation(); WorkflowViews.approveAllInPool('external-laws')">Approve all</button>
+                <button type="button" class="w-btn is-secondary wf-approve-all" onclick="event.stopPropagation(); WorkflowViews.approveAllInPool('external-laws')">Approve all</button>
               </div>
               <div class="w-collapsible-content">
                 <div id="idExtSugLawsMount"></div>

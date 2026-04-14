@@ -349,10 +349,17 @@ body {
   width: var(--middle-rail-width);
   min-width: var(--middle-rail-width);
   max-width: var(--middle-rail-width);
-  margin-right: var(--panel-gap);
+  /* When the resize handle is hidden, keep the same inter-panel gap. */
+  margin-left: var(--panel-gap);
+  margin-right: 0;
   opacity: 1;
   pointer-events: auto;
   overflow: hidden;
+}
+
+/* "Approve all" should only appear when the right panel is expanded (not collapsed). */
+.main-row.main-row--right-collapsed .wf-approve-all {
+  display: none !important;
 }
 .main-row.main-row--right-expanding .right-icon-rail {
   width: 0 !important;
@@ -612,11 +619,7 @@ body {
 .sb-subitem.is-active { background: var(--color-selection-primary-default); }
 
 .sb-footer {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1-5);
-  padding: var(--space-2) 0;
-  flex-shrink: 0;
+  display: none;
 }
 .sb-logo {
   width: 28px;
@@ -1708,7 +1711,7 @@ body.is-agent-context-picking .mp-view__main {
 .right-pane-body {
   flex: 1;
   min-height: 0;
-  background: var(--color-surface-variant);
+  background: var(--color-background-base);
   border-radius: 0;
 }
 .right-pane-drilldown {
@@ -1783,8 +1786,37 @@ button.wf-id-link.w-stat:hover {
   align-items: stretch;
   margin-bottom: 0;
 }
-.wf-id-dashboard > .wf-id-viz--foot {
+/* H2 + subtitle + content share one section; Atlas text-md for supporting line */
+.wf-id-dashboard__section {
   grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+}
+.wf-id-dashboard__section > h2.w-section-title {
+  margin: 0;
+}
+.wf-id-dashboard__throughput {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.wf-id-dashboard__viz-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--mp-section-gap);
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+@media (max-width: 900px) {
+  .wf-id-dashboard__viz-pair {
+    grid-template-columns: 1fr;
+  }
 }
 .wf-id-dashboard > .w-stat-row.wf-id-cards {
   grid-column: 1 / -1;
@@ -2161,6 +2193,9 @@ button.wf-id-link.w-stat:hover {
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--color-ui-divider-default);
   background: var(--color-surface-variant-subtle, var(--color-background-base));
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 .wf-table-toolbar.wf-toolbar {
   margin-bottom: 0;
@@ -2184,14 +2219,23 @@ button.wf-id-link.w-stat:hover {
 .wf-filter-dropdown {
   position: relative;
   flex-shrink: 0;
+  max-width: 100%;
 }
 .wf-filter-dropdown__trigger {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  max-width: 100%;
+}
+#wf-tb-sug-internal-filter-btn {
+  width: 100%;
 }
 .wf-filter-dropdown__trigger-text {
   font-size: var(--type-text-sm-size);
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .wf-filter-dropdown__panel {
   position: absolute;
@@ -2257,16 +2301,29 @@ button.wf-id-link.w-stat:hover {
 }
 .wf-suggestion-table-scroll-outer {
   min-width: 0;
+  max-width: 100%;
 }
 /* Horizontal scroll only when content is wider than the viewport; sticky edge columns stack above scrolling cells */
 .wf-suggestion-table-scroll {
   position: relative;
   isolation: isolate;
-  overflow-x: auto;
+  overflow-x: scroll;
   overflow-y: visible;
   width: 100%;
   max-width: 100%;
   -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  min-width: 0;
+  display: block;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
+}
+.wf-suggestion-table-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.wf-suggestion-table-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-ui-scrollbar-handle);
+  border-radius: 8px;
 }
 .wf-suggestion-table th,
 .wf-suggestion-table td {
@@ -2274,6 +2331,16 @@ button.wf-id-link.w-stat:hover {
   line-height: var(--type-text-md-line-height);
   letter-spacing: var(--type-text-md-letter-spacing);
   vertical-align: top;
+  white-space: nowrap;
+}
+
+/* Force the suggestions table to create horizontal overflow when needed.
+   (Otherwise, the browser may shrink columns and you never get a scrollbar.) */
+.wf-suggestion-table {
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  table-layout: auto;
 }
 .wf-suggestion-table td.wf-suggestion-td {
   max-height: none;
@@ -2310,50 +2377,39 @@ button.wf-id-link.w-stat:hover {
 .wf-suggestion-table .wf-suggestion-cell--badge-wrap .w-badge {
   vertical-align: baseline;
 }
-/* Sticky name column (left) — overlays scrolling body cells */
-.wf-suggestion-table thead th:first-child,
-.wf-suggestion-table tbody td.wf-suggestion-td--name {
-  position: sticky;
-  left: 0;
-  min-width: 14rem;
-  max-width: 24rem;
-  z-index: 2;
-  background: var(--color-background-base);
-  box-shadow: 6px 0 14px -6px rgba(0, 0, 0, 0.12);
-  border-right: 1px solid var(--color-ui-divider-default);
-  background-clip: padding-box;
+
+/* Suggestion table sizing: prefer overflow + sideways scroll rather than crushing columns. */
+.wf-suggestion-table th:first-child,
+.wf-suggestion-table td.wf-suggestion-td--name {
+  min-width: 18rem;
+  max-width: 30rem;
+  white-space: normal;
 }
-.wf-suggestion-table thead th:first-child {
-  z-index: 5;
-  vertical-align: bottom;
+.wf-suggestion-table td.wf-suggestion-td--score,
+.wf-suggestion-table th:nth-child(2) {
+  min-width: 7rem;
 }
-.wf-suggestion-table tbody td.wf-suggestion-td--name {
-  z-index: 2;
+.wf-suggestion-table td.wf-suggestion-td--cat,
+.wf-suggestion-table th:nth-child(3) {
+  min-width: 10rem;
 }
-.wf-suggestion-table tbody tr:hover td.wf-suggestion-td--name {
-  background: var(--color-surface-variant-subtle);
-  box-shadow: 6px 0 14px -6px rgba(0, 0, 0, 0.14);
+.wf-suggestion-table td.wf-suggestion-td--conf,
+.wf-suggestion-table th:nth-child(4) {
+  min-width: 6.5rem;
 }
-/* Sticky actions column (right) — overlays scrolling cells to its left */
-.wf-suggestion-table th:last-child,
-.wf-suggestion-table td.wf-suggestion-td--actions {
-  position: sticky;
-  right: 0;
-  z-index: 3;
-  width: 1%;
-  white-space: nowrap;
-  background: var(--color-background-base);
-  box-shadow: -10px 0 18px -8px rgba(0, 0, 0, 0.15);
-  border-left: 1px solid var(--color-ui-divider-default);
-  background-clip: padding-box;
-}
-.wf-suggestion-table thead th:last-child {
-  z-index: 6;
-  vertical-align: bottom;
-}
-.wf-suggestion-table tbody tr:hover td.wf-suggestion-td--actions {
-  background: var(--color-surface-variant-subtle);
-  box-shadow: -10px 0 18px -8px rgba(0, 0, 0, 0.18);
+/* Sticky edge columns disabled — columns scroll normally. (JS may still toggle helper classes.) */
+.wf-suggestion-table-scroll .wf-suggestion-table thead th:first-child,
+.wf-suggestion-table-scroll .wf-suggestion-table tbody td.wf-suggestion-td--name,
+.wf-suggestion-table-scroll .wf-suggestion-table thead th:last-child,
+.wf-suggestion-table-scroll .wf-suggestion-table tbody td.wf-suggestion-td--actions {
+  position: static;
+  left: auto;
+  right: auto;
+  z-index: auto;
+  box-shadow: none;
+  border-left: none;
+  border-right: none;
+  background-clip: border-box;
 }
 .wf-suggestion-table thead th {
   font-weight: var(--type-text-md-emphasis-weight);
@@ -2364,10 +2420,16 @@ button.wf-id-link.w-stat:hover {
   outline-offset: -2px;
 }
 .wf-suggestion-table-wrap {
+  width: 100%;
+  min-width: 0;
   border: 1px solid var(--color-outline-static);
   border-radius: var(--panel-radius-sm, 6px);
-  overflow: hidden;
+  /* Don't clip the scroll container's horizontal scrollbar or sticky edges */
+  overflow: visible;
   background: var(--color-background-base);
+}
+#idInternalSugTableMount {
+  width: 100%;
 }
 .wf-suggestion-table .wf-suggestion-actions {
   width: 1%;

@@ -6,12 +6,8 @@
 (function () {
   const SUGGESTION_TABLE_COLS = [
     "Name",
-    "Short description",
-    "Owner suggestion",
-    "Created",
     "Score",
     "Category",
-    "Suggested controls",
     "Confidence %",
     "Actions",
   ];
@@ -42,12 +38,8 @@
             `onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();WorkflowViews.openSuggestionRowDetail('${esc(pk)}',${i});}" ` +
             `title="Open details · rules: ${esc(r.rules || "—")}">` +
             `<td class="wf-suggestion-td wf-suggestion-td--name">${suggestionCell(r.name)}</td>` +
-            `<td class="wf-suggestion-td">${suggestionCell(r.desc)}</td>` +
-            `<td class="wf-suggestion-td">${suggestionCell(r.owner)}</td>` +
-            `<td class="wf-suggestion-td wf-suggestion-td--date">${suggestionCell(created, "wf-suggestion-cell--muted")}</td>` +
             `<td class="wf-suggestion-td wf-suggestion-td--score"><span class="wf-suggestion-cell wf-suggestion-cell--badge-wrap"><span class="w-badge ${r.sevClass}">${esc(r.sev)}</span></span></td>` +
-            `<td class="wf-suggestion-td">${suggestionCell(r.cat)}</td>` +
-            `<td class="wf-suggestion-td">${suggestionCell(r.ctrl)}</td>` +
+            `<td class="wf-suggestion-td wf-suggestion-td--cat">${suggestionCell(r.cat)}</td>` +
             `<td class="wf-suggestion-td wf-suggestion-td--conf"><span class="wf-suggestion-cell wf-suggestion-cell--conf">${esc(r.conf)}%</span></td>` +
             `<td class="wf-suggestion-td wf-suggestion-td--actions wf-suggestion-actions" onclick="event.stopPropagation();" onkeydown="event.stopPropagation();">` +
             `<span class="wf-suggestion-actions__btns">` +
@@ -78,6 +70,35 @@
     if (titleEl) titleEl.textContent = title;
     if (subEl) subEl.textContent = subtitle;
     if (bodyEl) bodyEl.innerHTML = html;
+  }
+
+  function syncSuggestionStickyState() {
+    const els = document.querySelectorAll(".wf-suggestion-table-scroll");
+    els.forEach((el) => {
+      const max = Math.max(0, el.scrollWidth - el.clientWidth);
+      const overflowing = max > 2;
+      const left = el.scrollLeft > 1;
+      const right = el.scrollLeft < max - 1;
+      el.classList.toggle("is-overflowing", overflowing);
+      el.classList.toggle("is-stuck-left", overflowing && left);
+      el.classList.toggle("is-stuck-right", overflowing && right);
+    });
+  }
+
+  function wireSuggestionStickyOnce() {
+    if (wireSuggestionStickyOnce._done) return;
+    wireSuggestionStickyOnce._done = true;
+    document.addEventListener(
+      "scroll",
+      (e) => {
+        const t = e.target;
+        if (t && t.classList && t.classList.contains("wf-suggestion-table-scroll")) {
+          syncSuggestionStickyState();
+        }
+      },
+      true
+    );
+    window.addEventListener("resize", () => syncSuggestionStickyState());
   }
 
   /** Single field for assessment risk detail form (right panel) */
@@ -229,6 +250,7 @@
     mount("idExtSugNewsMount", midPanelSuggestionBlock(MOCK_EXTERNAL_NEWS, "external-news"));
     mount("idExtSugCompetitorsMount", midPanelSuggestionBlock(MOCK_EXTERNAL_COMPETITORS, "external-competitors"));
     mount("idExtSugLawsMount", midPanelSuggestionBlock(MOCK_EXTERNAL_LAWS, "external-laws"));
+    syncSuggestionStickyState();
   }
 
   /** 9 rows · H 2 · M 4 · L 3 — matches identification overview + internal accordion */
@@ -1176,6 +1198,8 @@
     onNavigate(viewId) {
       this.syncMpHeaderActions(viewId);
       mountSuggestionAccordionBodies();
+      wireSuggestionStickyOnce();
+      syncSuggestionStickyState();
     },
   };
 
@@ -1297,4 +1321,6 @@
     });
   }
   wireTableToolbarsOnce();
+  wireSuggestionStickyOnce();
+  syncSuggestionStickyState();
 })();
